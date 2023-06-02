@@ -8,6 +8,7 @@ OUTDIR=${OUTDIR:-"new_model"}
 
 if [ ! -d dolly ]; then
   git clone https://github.com/databrickslabs/dolly.git
+  pip install -r ./dolly/requirements.txt
 fi
 if [ ! -d out ]; then
   mkdir out
@@ -19,4 +20,4 @@ cd dolly
 rm -rf out
 cp -af ../out ./
 
-python ./trainer_main.py --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 1
+python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 1
