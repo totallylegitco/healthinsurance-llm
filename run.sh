@@ -22,8 +22,14 @@ if [ ! -d dolly ]; then
   pip install -r ./dolly/requirements.txt
 fi
 
+if [ -d "appeals-llm-data" ]; then
+  git clone https://github.com/totallylegitco/appeals-llm-data.git
+fi
+
 # Check bits and bytes, it needs to be compiled from source for the jetson (and some others)
-python -m bitsandbytes || ./setup_bits_and_bytes.sh
+if [ -z "$QLORA" ]; then
+  python -m bitsandbytes || ./setup_bits_and_bytes.sh
+fi
 if [ ! -d out ]; then
   mkdir out
   python dataset_generator.py

@@ -1,9 +1,0 @@
-Dear [HealthInsuranceCompany];
-
-I am writing regarding [ClaimNumber]. I believe this service is medically necessary as I have tried a variety of medicines which have not resulted in any substantial decrease in pain. An MRI TM Joints scan uses an MRI Scanner to produce detailed images of the Temporomandibular Joint (the jaw joint) which is located just in front of the ear, to help diagnose and assess TM Joint disorders. As a person at high risk of cancer, excessive X-Ray exposure is counter indicated.
-
-
-
-Sincerely,
-
-<MemberName>.
