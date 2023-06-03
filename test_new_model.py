@@ -26,6 +26,6 @@ rejection_files = [f for f in data_files if f.endswith("_rejection.txt")]
 
 for f in rejection_files:
         print(f)
-        with open(join(raw_dataset, f)) as r: print(generate_response("I received a denial: " + r.read() + ". Write an appeal to this denial", model=model, tokenizer=tokenizer))
+        with open(join(raw_dataset, f), encoding="utf-8") as r: print(generate_response("I received a denial: " + r.read() + ". Write an appeal to this denial", model=model, tokenizer=tokenizer))
         print(f)
-        with open(join(raw_dataset, f)) as r: print(old_instruct_pipeline("I received a denial: " + r.read() + ". Write an appeal to this denial"))
+        with open(join(raw_dataset, f), encoding="utf-8") as r: print(old_instruct_pipeline("I received a denial: " + r.read() + ". Write an appeal to this denial"))

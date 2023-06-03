@@ -21,10 +21,10 @@ def make_appeal_name(rejection, index):
 
 with open("out/out.jsonl", "w") as o:
     for f in rejection_files:
-        with open(join(raw_dataset, f)) as r: rejection = r.read()
+        with open(join(raw_dataset, f), encoding="utf-8") as r: rejection = r.read()
         for i in range(0, 1000):
             try:
-                with open(join(raw_dataset, make_appeal_name(f, i))) as a: appeal = a.read()
+                with open(join(raw_dataset, make_appeal_name(f, i)), encoding="utf-8") as a: appeal = a.read()
                 prompt = f"{header}{rejection}"
                 record = json.dumps({
                     "instruction": prompt,
