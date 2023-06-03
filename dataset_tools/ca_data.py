@@ -58,5 +58,5 @@ def generate_prompts(imr):
 
 prompts = generate_prompts(imrs.iloc[0])
 
-for prompt in promts:
+for prompt in prompts:
     print(instruct_pipeline(prompt))
