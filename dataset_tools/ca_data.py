@@ -10,12 +10,15 @@ import torch
 
 import re
 
-treatement_regex = re.compile(r"""Summary: The\s*\W+\s*\W+\s*(requested|required)\s*[^.]for(\W+).""")
+treatement_regex = re.compile(r"""Summary:\s*The\s*\w+\s*[^.]*(requested|required|asked|requires)\s*[^.]*for\s+([^.]+?)\.""")
 def get_treatement_from_imr(imr):
     treatement = None
-    result = treatement_regex.search(imr["Findings"])
+    findings = imr["Findings"]
+    result = treatement_regex.search(findings)
     if result is not None:
-        treatement = result.group(1)
+        treatement = result.group(2)
+    else:
+        print(f"No match in {findings}")
     return treatement  or imr["TreatmentSubCategory"] or imr["TreatmentCategory"]
 
 
@@ -94,7 +97,7 @@ def work_with_biogpt():
 #    tokenizer = AutoTokenizer.from_pretrained("microsoft/BioGPT-Large-PubMedQA")
 
 #    model = AutoModelForCausalLM.from_pretrained("microsoft/BioGPT-Large-PubMedQA")
-    instruct_pipeline = pipeline(model="microsoft/BioGPT-Large-PubMedQA")
+    instruct_pipeline = pipeline(model="microsoft/BioGPT-Large-PubMedQA", max_new_tokens=100)
 
 
     def generate_biogpt_hacks(imr):
@@ -103,17 +106,21 @@ def work_with_biogpt():
         diagnosis = imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
         findings = imr["Findings"]
         questions = [
-            f"What is the treatment discussed in {findings}?",
-            f"Why is {treatement} necessary for {diagnosis}?",
-            f"According to {findings} why is {treatement} necessary?",
-            f"Summarize the medical reasoning in {findings}",
+            f"{treatement} is medically necessary for {diagnosis} because",
         ]
         for q in questions:
+            i = i + 1
+            print(i)
+            print("\n")
  #           inputs = tokenizer(q)
             print(q)
+            print("\n")
+            print("\n")
             print(instruct_pipeline(q))
+            print("\n")
+            print("\n")
 #            print(model.generate(inputs))
-    generate_biogpt_hacks(imrs.iloc[0])
+    imrs.iloc[0:20].apply(generate_biogpt_hacks, axis=1)
 
 #work_with_dolly()
 work_with_biogpt()
