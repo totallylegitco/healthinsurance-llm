@@ -61,6 +61,7 @@ def generate_prompts(imr):
         f"Write a denial for {treatment}.",
         f"Expand on \"{treatment} is not medically necessary for {diagnosis}.\"",
         f"Refute \"{treatment} is not medically necessary for {diagnosis}.\""
+        f"Summarize {findings}",
         ]
     return [generate_denial, generate_denial2, generate_appeal]
 
