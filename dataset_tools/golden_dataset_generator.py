@@ -7,7 +7,7 @@ with open('header.txt') as x: header = x.read()
 
 category = "creative_writing"
 
-raw_dataset = "appeals-llm-data"
+raw_dataset = "combined-llm-data"
 
 data_files = [f for f in listdir(raw_dataset) if (isfile(join(raw_dataset, f)))]
 

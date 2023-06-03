@@ -10,16 +10,21 @@ import torch
 
 import re
 
-treatement_regex = re.compile(r"""Summary:\s*The\s*\w+\s*[^.]*(requested|required|asked|requires)\s*[^.]*for\s+([^.]+?)\.""")
-def get_treatement_from_imr(imr):
-    treatement = None
+gen_loc = "generated-llm-data"
+
+treatment_regex = re.compile(
+    r"""Summary:\s*(The|An)\s*\w+\s*[^.]*(requested|required|asked|requires)\s*[^.]*for\s+([^.]+?)\.""",
+    re.IGNORECASE)
+
+def get_treatment_from_imr(imr):
+    treatment = None
     findings = imr["Findings"]
-    result = treatement_regex.search(findings)
+    result = treatment_regex.search(findings)
     if result is not None:
-        treatement = result.group(2)
+        treatment = result.group(3)
     else:
         print(f"No match in {findings}")
-    return treatement  or imr["TreatmentSubCategory"] or imr["TreatmentCategory"]
+    return treatment  or imr["TreatmentSubCategory"] or imr["TreatmentCategory"]
 
 
 # Load some strings we know the current model puts in appeals that are bad right away
@@ -63,10 +68,11 @@ def work_with_dolly():
     def generate_prompts(imr):
         print(imr)
         determination = imr["Determination"]
-        treatement = get_treatement_from_imr(imr)
+        treatment = get_treatment_from_imr(imr)
         diagnosis = imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
         findings = imr["Findings"]
         grounds = imr["Type"]
+        index = imr["ReferenceID"]
         return [
             f"What was the reason that {treatment} was originally denied in {findings}.",
             f"Write a health insurance denial for {treatment} for diagnosis {diagnosis} on the grounds of {grounds}.",
@@ -102,25 +108,31 @@ def work_with_biogpt():
 
     def generate_biogpt_hacks(imr):
         print(imr)
-        treatement = get_treatement_from_imr(imr)
+        treatment = get_treatment_from_imr(imr)
         diagnosis = imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
         findings = imr["Findings"]
-        questions = [
-            f"{treatement} is medically necessary for {diagnosis} because",
-        ]
-        for q in questions:
-            i = i + 1
-            print(i)
-            print("\n")
- #           inputs = tokenizer(q)
-            print(q)
-            print("\n")
-            print("\n")
-            print(instruct_pipeline(q))
-            print("\n")
-            print("\n")
-#            print(model.generate(inputs))
-    imrs.iloc[0:20].apply(generate_biogpt_hacks, axis=1)
+        index = imr["ReferenceID"]
+        return (index, f"{treatment} is medically necessary for {diagnosis} because")
+    l = imrs.iloc[0:20].apply(generate_biogpt_hacks, axis=1).tolist()
+    idxs = map(lambda r: r[0], l)
+    qs = map(lambda r: r[1], l)
+    transformed = instruct_pipeline(qs)
+    joined = zip(idxs, transformed)
+
+    def write_result(res):
+        idx = res[0]
+        reason = res[1]
+        with open(join(gen_loc, f"{idx}_appeal2.txt")) as o:
+            o.write("""Dear [InsuranceCompany];
+
+I am writing you to appeal claim [CLAIMNUMBER]. I believe that it is medically necessary.""")
+            o.write(reason)
+            o.write("\n")
+            o.write("Sincerely,\n[YOURNAME]")
+
+    for res in joined:
+        write_result(res)
+
 
 #work_with_dolly()
 work_with_biogpt()
