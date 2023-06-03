@@ -8,6 +8,17 @@ from os import listdir
 import pandas
 import torch
 
+import re
+
+treatement_regex = re.compile(r"""Summary: The\s*\W+\s*\W+\s*(requested|required)\s*[^.]for(\W+).""")
+def get_treatement_from_imr(imr):
+    treatement = None
+    result = treatement_regex.searc(imr["Findings"])
+    if result is not None:
+        treatement = result.group(1)
+    return treatement  or imr["TreatmentSubCategory"] or imr["TreatmentCategory"]
+
+
 # Load some strings we know the current model puts in appeals that are bad right away
 with open("bad_appeal_strings.txt") as f: bad_appeal_strings = f.read().split("\n")
 
@@ -47,8 +58,9 @@ def work_with_dolly():
 
 
     def generate_prompts(imr):
+        print(imr)
         determination = imr["Determination"]
-        treatment = imr["TreatmentSubCategory"] or imr["TreatmentCategory"]
+        treatment = get_treatement_from_imr(imr)
         diagnosis = imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
         findings = imr["Findings"]
         grounds = imr["Type"]
@@ -70,7 +82,7 @@ def work_with_dolly():
     prompts = generate_prompts(imrs.iloc[0])
     results = instruct_pipeline(prompts)
 
-    joined = zip(prompt, results)
+    joined = zip(prompts, results)
 
     for (prompt, result) in joined:
         print(prompt)
@@ -78,25 +90,30 @@ def work_with_dolly():
         print(result)
         print("\n")
 
-
 def work_with_biogpt():
-    tokenizer = AutoTokenizer.from_pretrained("microsoft/BioGPT-Large-PubMedQA")
+#    tokenizer = AutoTokenizer.from_pretrained("microsoft/BioGPT-Large-PubMedQA")
 
-    model = AutoModelForCausalLM.from_pretrained("microsoft/BioGPT-Large-PubMedQA")
+#    model = AutoModelForCausalLM.from_pretrained("microsoft/BioGPT-Large-PubMedQA")
+    instruct_pipeline = pipeline(model="microsoft/BioGPT-Large-PubMedQA")
 
 
     def generate_biogpt_hacks(imr):
-        treatment = imr["TreatmentSubCategory"] or imr["TreatmentCategory"]
+        print(imr)
+        treatment = get_treatement_from_imr(imr)
         diagnosis = imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
-        reason = imr["Findings"]
+        findings = imr["Findings"]
         questions = [
+            f"What is the treatment discussed in {findings}?",
             f"Why is {treatement} necessary for {diagnosis}?",
-            f"According to {reason} why is {treatement} necessary?",
+            f"According to {findings} why is {treatement} necessary?",
+            f"Summarize the medical reasoning in {findings}",
         ]
         for q in questions:
-            inputs = tokenizer(q)
+ #           inputs = tokenizer(q)
             print(q)
-            print(model.generate(**inputs))
+            print(instruct_pipeline(q))
+#            print(model.generate(inputs))
+    generate_biogpt_hacks(imrs.iloc[0])
 
 #work_with_dolly()
 work_with_biogpt()

@@ -1,3 +1,4 @@
 click
 tensorboard
 sacremoses
+Xformers
