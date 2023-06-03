@@ -67,9 +67,12 @@ def generate_prompts(imr):
 
 
 prompts = generate_prompts(imrs.iloc[0])
+results = instruct_pipeline(prompts)
 
-for prompt in prompts:
+joined = prompts.zip(results)
+
+for (prompt, result) in joined:
     print(prompt)
     print("\n")
-    print(instruct_pipeline(prompt))
+    print(result)
     print("\n")
