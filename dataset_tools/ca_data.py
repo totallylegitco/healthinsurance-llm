@@ -24,6 +24,10 @@ for model in candidate_models:
     except Exception as e:
         print(f"Error {e} loading {model}")
 
+biogpt_tokenizer = AutoTokenizer.from_pretrained("microsoft/BioGPT-Large-PubMedQA")
+
+biogpt_model = AutoModelForCausalLM.from_pretrained("microsoft/BioGPT-Large-PubMedQA")
+
 if instruct_pipeline is None:
     raise Exception("Could not load any model")
 
@@ -69,7 +73,7 @@ def generate_prompts(imr):
 prompts = generate_prompts(imrs.iloc[0])
 results = instruct_pipeline(prompts)
 
-joined = prompts.zip(results)
+joined = zip(prompt, results)
 
 for (prompt, result) in joined:
     print(prompt)
