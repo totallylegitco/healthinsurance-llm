@@ -11,7 +11,7 @@ import torch
 # Load the model to do our magic
 
 candidate_models = [
-#    "databricks/dolly-v2-7b",
+    "databricks/dolly-v2-7b",
     "databricks/dolly-v2-3b",
 ]
 
