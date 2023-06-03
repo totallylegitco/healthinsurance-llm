@@ -17,14 +17,14 @@ treatment_regex = re.compile(
     r"""\s*(The|An|A)?\s*(parent|father|mother|patient|enrollee|member)\s*[^.]*(requested|required|asked|requires|reimbursement|coverage)\s*[^.]*(for|medication|reimbursement|coverage)\s+(\d*\w+.+?)\.""",
     re.IGNORECASE)
 alt_treatment_regex = re.compile(
-    r"""At issue\s*(in this case|)\s*(is|)\s*(whether|if)\s+(\d*\w+.+?) (is|were) medically necessary""",
+    r"""At issue\s*(in this case|)\s*(is|)\s*(whether|if)\s+(\d*\w+.+?) (is|were) medically (necessary|indicated)""",
     re.IGNORECASE)
 more_alt_treatment_regex = re.compile(
-    r"""the requested (medication|treatment|service|procedure)\s+(\d*\w+.+?) (is|were) (likely to be|medically necessary)""",
+    r"""the requested (medication|treatment|service|procedure)\s+(\d*\w+.+?) (is|were) (likely to be|medically necessary|medically indicated)""",
     re.IGNORECASE)
 
 even_more_alt_treatment_regex = re.compile(
-    r"""(Therefore|Thus),\s+(an|a|the) (\w+[^.]+?) (is|were) (medically necessary|likely to be)""",
+    r"""(Therefore|Thus|As such),\s+(an|a|the) (\w+[^.]+?) (is|were) (medically necessary|medically indicated|likely to be)""",
     re.IGNORECASE)
 
 perscribed_regex = re.compile(
@@ -32,7 +32,7 @@ perscribed_regex = re.compile(
 
 wishes_to_regex = re.compile(r"""(wishes|desires) to (undergo|take)\s+([^.]+?).""", re.IGNORECASE)
 
-sketchy_regex = re.compile(r"""(requested|required|asked|requires|reimbursement|coverage)\s*[^.]*(for|medication|reimbursement|coverage)\s+(\d*\w+.+?)\.""",
+sketchy_regex = re.compile(r"""(requested|required|asked|requires|reimbursement|coverage|request)\s*[^.]*(for|medication|reimbursement|coverage)\s+(\d*\w+.+?)\.""",
     re.IGNORECASE)
 
 def get_treatment_from_imr(imr):
@@ -158,13 +158,13 @@ def work_with_dolly():
         i = 0
         for r in rejections:
             i = i + 1
-            with open(join(gen_loc, f"{idx}MAGIC{i}_rejection.txt")) as f:
+            with open(join(gen_loc, f"{idx}MAGIC{i}_rejection.txt"), "w") as f:
                 f.write(r)
         for a in appeals:
             if a is None:
                 continue
             i = i + 1
-            with open(join(gen_loc, f"{idx}MAGIC{i}_appeal.txt")) as f:
+            with open(join(gen_loc, f"{idx}MAGIC{i}_appeal.txt"), "w") as f:
                 f.write(a)
 
 
@@ -189,7 +189,7 @@ def work_with_biogpt():
     def write_result(res):
         idx = res[0]
         reason = res[1]
-        with open(join(gen_loc, f"{idx}MAGICB_appeal.txt")) as o:
+        with open(join(gen_loc, f"{idx}MAGICB_appeal.txt"), "w") as o:
             o.write("""Dear [InsuranceCompany];
 
 I am writing you to appeal claim [CLAIMNUMBER]. I believe that it is medically necessary.""")
