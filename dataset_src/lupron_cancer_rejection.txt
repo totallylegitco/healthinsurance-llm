@@ -1,0 +1,32 @@
+[CUSTOMER]
+
+
+
+
+Regarding:
+Member Name:
+Member ID#:
+Date of Birth: Requesting Provider: Rendering Provider:
+Diagnosis:
+
+Drug:
+Date of Service:
+Reference#:
+Dear [CUSTOMER]:
+Denial - Medical Necessity [CUSTOMER] HPCG0281501
+11/24/1962
+Beth lsrael Deaconess
+Come, Steven
+  Malignant neoplasm of unsp site of unspecified
+female breast (ICD-10) 
+Lupron Depot (3-Month) 7/31/2017 – 1/30/2018 CV966757
+
+
+CVS Caremark performs medical necessity and utilization review for select medical benefit drugs on behalf of Harvard Pilgrim Health Care. This letter is to notify you that authorization for the above drug has been denied as ut does not meet the clinical criteria for a covered benefit under your Harvard Pilgrim plan. As a result, Harvard Pilgrim will not pay for this drug or its administration. Please refer to your Harvard Pilgrim Benefit Handbook for details on prior approval and utilization review requirements. In the event you and your physician decide that you should receive this drug, you will be responsible for the charges.
+
+CVS Caremark’s Peer Clinical Reviewer,                                 , determined the Lupron Depot (3-Month) requested is not medically necessary based on CVS Caremark’s clinical guidelined due to the following reason(s):
+
+Standard Lupron Depot Policy does not allow coverage for breast cancer if the prescribed dosage strength is not for Lupron Depot 3.75 mg.
+
+If you wish to discuss or have questions about the clinical criteria used to make this determination, please contact CVS Caremark at 1-844-387-1435, Monday through Friday from 7:00 a.m. to 8:00 p.m. CST. The clinical review criteria provided to you are used by Harvard Pilgrim/CVS Caremark to authorize, modify, or deny care for persons
+             

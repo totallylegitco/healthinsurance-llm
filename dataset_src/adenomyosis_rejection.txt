@@ -1,0 +1,54 @@
+
+
+
+Notice of Coverage Denial
+
+Patient:  [Patient]
+Date of Birth:
+Benefit Plan:  PPO
+Date of Admission/Service:  [DENIALDATE]
+Req Provider:
+Facility:
+Reference Number:  [CASE]
+
+
+Dear Valued Member:
+
+We are writing to inform you of a coverage denial regarding requested services or 
+letter also summarizes your health benefit information, and gives the reason for this
+
+[HealthCo] has been authorized by your health plan to provide man 
+of the requested service(s). As such, [HealthCo] is responsible for reviewing requests for the requested service(s) to ensure they are medically necessary and appropriate for pay purposes.	
+
+
+DETAILS ABOUT DENIED SERVICES OR ITEMS	•
+Service:  [CASE]
+Service/Item: 72197 MRI Scan of Pelvis Before and After Contrast
+
+
+
+This request is denied as not medically necessary because: Your doctor is checking abnormalities in your bladder. Your doctor ordered two MRI scans of your pelvis to 
+of these tests was already approved for you. Your doctor did not tell us why you done test at this time. For this reason, this test is not medically necessary for you.
+We use [HealthCo] Specialty Health Guideline titled Simultaneous Ordering of Multiple to make this decision. You may view this guideline at aimspecialtyhealth.com.
+
+Treating physician or provider would like to discuss this case with a physician reviewer. You can call [HealthCo] Specialty Health at 1-800-859-5288, then following the prompts, ask for the physician reviewer.
+
+
+
+
+
+not tell us why y ne test at this time. For this reason, this test is not medically necessary for y e used [HealthCo] Specialty Health Guideline titled Simultaneous Ordering of Mu make this decision. You may view this guideline at aimspecialtyhealth.cor
+
+
+
+ating physician or provider would like to discuss this case with a physiciar call AlM Specialty Health at 1-800-859-5288, then following the prompts
+,• a•an rev,• ewer.
+
+
+
+
+
+
+offetl produ	directty, through itl sublldiariea Keystone IlealthPlan Eastand acelnlUfll
+Lice	·
+II an	-	mmpany that pe,fo,ms
