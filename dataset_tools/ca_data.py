@@ -13,20 +13,35 @@ import re
 gen_loc = "generated-llm-data"
 
 treatment_regex = re.compile(
-    r"""Summary:\s*(The|An|A)\s*\w+\s*[^.]*(requested|required|asked|requires|reimbursement)\s*[^.]*(for|medication)\s+([^.]+?)\.""",
+    r"""\s*(The|An|A)?\s*(patient|enrollee|member)\s*[^.]*(requested|required|asked|requires|reimbursement|coverage)\s*[^.]*(for|medication|reimbursement|coverage)\s+(\w+[^.]+?)\.""",
     re.IGNORECASE)
 alt_treatment_regex = re.compile(
-    r"""At issue\s*(in this case|)\s*(is|)\s*(whether|if) ([^.]+?) is medically necessary""",
+    r"""At issue\s*(in this case|)\s*(is|)\s*(whether|if)\s+(\w+[^.]+?) (is|were) medically necessary""",
     re.IGNORECASE)
+more_alt_treatment_regex = re.compile(
+    r"""the requested (medication|treatment|service|procedure)\s+(\w+[^.]+?) (is|were) (likely to be|medically necessary)""",
+    re.IGNORECASE)
+
+even_more_alt_treatment_regex = re.compile(
+    r"""(Therefore|Thus),\s+(an|a|the) (\w+[^.]+?) (is|were) (medically necessary|likely to be)""",
+    re.IGNORECASE)
+
+
 
 def get_treatment_from_imr(imr):
     findings = imr["Findings"]
     result = treatment_regex.search(findings)
     alt_result = alt_treatment_regex.search(findings)
+    more_alt_result = more_alt_treatment_regex.search(findings)
+    even_more_alt_result = even_more_alt_treatment_regex.search(findings)
     if result is not None:
-        return result.group(4)
+        return result.group(5)
     elif alt_result is not None:
         return alt_result.group(4)
+    elif more_alt_result is not None:
+        return more_alt_result.group(2)
+    elif even_more_alt_result is not None:
+        return even_more_alt_result.group(3)
     else:
         print(f"No match in {findings}")
     return imr["TreatmentSubCategory"] or imr["TreatmentCategory"]
@@ -80,7 +95,6 @@ def work_with_dolly():
         return True
 
     def generate_prompts(imr):
-        print(imr)
         determination = imr["Determination"]
         treatment = get_treatment_from_imr(imr)
         diagnosis = imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
@@ -111,7 +125,7 @@ def work_with_dolly():
             less_sketchy = f"Dear [INSURANCECOMPANY];\n{less_sketchy}"
         return less_sketchy
 
-    def cleanup_rejections(text):
+    def cleanup_rejection(text):
         if not "[MEMBER]" in text:
             text = f"Dear [MEMBER]; {text}."
         if not "appeal" in text:
@@ -120,7 +134,7 @@ def work_with_dolly():
 
 
 
-    l = imrs.iloc[0:20].apply(generate_prompts, axis=1).tolist()
+    l = imrs.apply(generate_prompts, axis=1).tolist()
     for (idx, rejection_prompts, appeal_prompts) in l:
         results = instruct_pipeline(rejection_prompts + appeal_prompts)
         rejections = map(cleanup_rejection, results[0:len(rejection_prompts)])
@@ -150,7 +164,7 @@ def work_with_biogpt():
         findings = imr["Findings"]
         index = imr["ReferenceID"]
         return (index, f"{treatment} is medically necessary for {diagnosis} because")
-    l = imrs.iloc[0:20].apply(generate_biogpt_hacks, axis=1).tolist()
+    l = imrs.iloc[0:2000].apply(generate_biogpt_hacks, axis=1).tolist()
     idxs = map(lambda r: r[0], l)
     qs = map(lambda r: r[1], l)
     transformed = instruct_pipeline(list(qs))
