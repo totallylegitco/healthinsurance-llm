@@ -2,7 +2,7 @@
 
 set -ex
 
-INPUT_MODEL=${INPUT_MODEL:-"databricks/dolly-v2-3b"}
+INPUT_MODEL=${INPUT_MODEL:-"databricks/dolly-v2-7b"}
 TR_DATA=${TR_DATA:-"out"}
 OUTDIR=${OUTDIR:-"new_model"}
 # Only in holden's branch and even then it its kind of funky.
