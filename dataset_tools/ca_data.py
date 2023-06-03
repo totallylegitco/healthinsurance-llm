@@ -20,6 +20,7 @@ instruct_pipeline = None
 for model in candidate_models:
     try:
         instruct_pipeline = pipeline(model=model, torch_dtype=torch.bfloat16, trust_remote_code=True, device_map="auto")
+        break
     except Exception as e:
         print(f"Error {e} loading {model}")
 
