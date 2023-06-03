@@ -1,0 +1,14 @@
+Dear [insurancecompany];
+
+I am writing you regarding claim [CLAIMNUMBER]. These services are preventive care and should be treated as such. Per  https://www.hiv.va.gov/provider/tools/ICD-Codes.asp  everything with z20.6 is related to PrEP.
+
+Based on https://www.healthcare.gov/preventive-care-women/ HIV screening is preventive care and there is no mention of limitations to specific diagnostic codes. This appears to be a government requirement, which seems to be unlikely to be overruled by any specific language CollectiveHealth/Anthem may choose. I believe the same is true for the some of other CPT codes that you have rejected (Gonorrhea screening for all women at higher risk, etc.). HIV screening especially when associated with PReP (which I'm on) must be free ( https://www.cdc.gov/hiv/basics/prep/paying-for-prep/index.html#:~:text=Under%20the%20Affordable%20Care%20Act,need%20to%20maintain%20your%20prescription. )
+
+Kidney health for prep - https://prep.health/initial-ongoing-health-screening/
+
+The DOL ACA Part 47 - https://www.dol.gov/sites/dolgov/files/EBSA/about-ebsa/our-activities/resource-center/faqs/aca-part-47.pdf does an excelent job of answering questions of the responsibility of [insurancecompany] with regards to this type of preventive care.
+
+
+Sincerely,
+
+[YOURNAME]

@@ -1,0 +1,179 @@
+Claim #: [CLAIMNUMBER]
+Statement Date: 3/3/23
+Scan the QR code with your phone's
+camera to go to the settings page on
+your mobile web browser.
+Medical Benefits Statement
+Go paperless!
+Save trees and save
+space. Update your
+setting to go
+paperless.
+[MEMBERNAME]
+[YOURADDRESS]
+San Francisco, CA [YOURZIP]
+For your medical services provided by:
+Patient: [MEMBERNAME]
+Member ID: [MEMBERNUMBER]
+Laboratory Corporation Of
+Date(s) of service: 2/8/23
+13112 Evening Creek Dr So Ste 200
+San Diego, CA 92128-4108
+Reason to Visit: Contact W/ & Exposure To Hiv (Z206)
+Place of Service: Independent Laboratory
+In-Network
+Summary
+Next Step
+$205.20For additional notes associated with this claim, please
+see page 3.
+Provider charged$649.31Plan covers up to$230.79Plan paid$25.59Your anticipated cost is $205.20. This is how much
+we've calculated your provider has, or will, charge you
+for this care. If you haven't already paid them, they'll bill
+you directly. Double check that your bill is not higher
+than this — if it is, call us so we can help.
+Deductible$205.20
+Your anticipated cost
+Copay$0.00
+Coinsurance$0.00
+Not covered$0.00
+[Insurancecompany]
+Page 1 of 5
+844-516-3832 or visit my.collectivehealth.comClaim #: [CLAIMNUMBER]
+Statement Date: 3/3/23
+Statement Details
+Date of Service: 2/8/23
+Laboratory services - Outpatient: (Procedure code: 82565, Diagnosis
+code: Z206)
+Provider chargedPlan covers up toPlan paidDeductibleCopayCoinsuranceNot covered
+$43.05$4.35$0.00$4.35$0.00$0.00$0.00
+Deductible
+$4.35
+Anticipated cost
+Date of Service: 2/8/23
+Laboratory services - Outpatient: (Procedure code: 86592, Diagnosis
+code: Z206)
+Provider chargedPlan covers up toPlan paidDeductibleCopayCoinsuranceNot covered
+$40.95$4.43$0.00$4.43$0.00$0.00$0.00
+Deductible
+$4.43
+Anticipated cost
+Date of Service: 2/8/23
+Preventive care: (Procedure code: 87389, Diagnosis code: Z206)
+Provider chargedPlan covers up toPlan paidDeductibleCopayCoinsuranceNot covered
+$176.40$25.59$25.59$0.00$0.00$0.00$0.00
+$0.00
+Anticipated cost
+Date of Service: 2/8/23
+Laboratory services - Outpatient: (Procedure code: 87591, Diagnosis
+code: Z206)
+Provider chargedPlan covers up toPlan paidDeductibleCopayCoinsuranceNot covered
+$194.45$98.21$0.00$98.21$0.00$0.00$0.00
+Deductible
+Anticipated cost
+Date of Service: 2/8/23
+$98.21
+Laboratory services - Outpatient: (Procedure code: 87491, Diagnosis
+code: Z206)
+Provider chargedPlan covers up toPlan paidDeductibleCopayCoinsuranceNot covered
+$194.46$98.21$0.00$98.21$0.00$0.00$0.00
+Deductible
+Anticipated cost
+[Insurancecompany]
+$98.21
+Page 2 of 5
+844-516-3832 or visit my.collectivehealth.comClaim #: [CLAIMNUMBER]
+Statement Date: 3/3/23
+Snapshot of your Accumulators
+Your medical plan status as of 3/3/23
+[MEMBERNAME]Family Totals
+IN-NETWORKIN-NETWORK
+Out-of-pocket Maximum
+$446.54 / $3,400
+OUT-OF-NETWORK
+Deductible$424.88 / $3,400
+Out-of-pocket Maximum$446.54 / $6,800
+Out-of-pocket Maximum
+$0 / $6,800
+OUT-OF-NETWORK
+DeductibleOut-of-pocket Maximum
+$0 / $6,800$0 / $13,600
+If you have any questions about your benefits or the appeals process please visit my.collectivehealth.com, or call Collective
+Health at 844-516-3832 for further assistance.
+If you disagree with any part of this statement, you have the right to appeal. Once your appeal is received, [Insurancecompany]
+will take a "fresh" look at your claim and provide you with a decision within 60 days. If your appeal is urgent, you can call
+[Insurancecompany] for expedited processing.
+To file an appeal, please send a secure message in your account at my.collectivehealth.com or write to [Insurancecompany]
+1557 W Innovation Way, Suite 300, Lehi, UT 84043 within 180 days, with the following information:
+1.Either a copy of your benefits statement OR relevant information about the claim (claim #, provider name,
+subscriber ID, date of service and patient name); and
+2.The reason for the appeal.
+You can provide additional information or request copies of the information relating to your claim, including billing and
+diagnosis codes, by contacting [Insurancecompany]. You have the right to bring a civil action under ERISA §502(a) if you file
+an appeal and your request for coverage or benefits is denied following review. You also have access to a government
+consumer assistance program. For contact information for the program in your state, please go to
+download.collectivehealth.com/cap.pdf. [Insurancecompany] and Anthem Blue Cross of California, an independent member of
+the Blue Shield Association, provide administrative claims payment services only and do not assume any financial risk or
+obligation with respect to claims.
+[Insurancecompany]
+Page 3 of 5
+844-516-3832 or visit my.collectivehealth.comClaim #: [CLAIMNUMBER]
+Statement Date: 3/3/23
+Your Rights and Protections Against Surprise Medical Bills
+When you get emergency care, get treated by an out-of-network provider at an in-network hospital or ambulatory surgical center,
+or get covered air ambulance services from an out-of-network provider, you are protected from surprise billing or balance billing.
+This protection applies to dates of service occurring on or after January 1, 2022 for the services described in this notice.
+What is “balance billing” (sometimes called “surprise billing”)?
+When you see a doctor or other health care provider, you may owe certain out-of-pocket costs, such as a copayment,
+coinsurance, and/or a deductible. You may have other costs or have to pay the entire bill if you see a provider or visit a
+health care facility that isn’t in your health plan’s network.
+“Out-of-network” describes providers and facilities that haven’t signed a contract with your plan’s medical network. Out-of-
+network providers may be permitted to bill you for the difference between what your plan agreed to pay and the full amount
+charged for a service. This is called “balance billing.” This amount is likely more than in-network costs for the same service
+and might not count toward your annual out-of-pocket limit.
+“Surprise billing” is an unexpected balance bill. This can happen when you can’t control who is involved in your care—like
+when you have an emergency or when you schedule a visit at an in-network facility but are unexpectedly treated by an out-
+of-network provider.
+You are protected from balance billing for:
+Emergency services
+If you have an emergency medical condition and get emergency services from an out-of-network provider or facility, the
+most the provider or facility may bill you is your plan’s in-network cost-sharing amount (such as copayments and
+coinsurance). You can’t be balance billed for these emergency services. This includes services you may get after you’re in
+stable condition, unless you give written consent and give up your protections not to be balanced billed for these post-
+stabilization services.
+Certain services at an in-network hospital or ambulatory surgical center
+When you get services from an in-network hospital or ambulatory surgical center, certain providers there may be out-of-
+network. In these cases, the most those providers may bill you is your plan’s in-network cost-sharing amount. This applies to
+emergency medicine, anesthesia, pathology, radiology, laboratory, neonatology, assistant surgeon, hospitalist, or intensivist
+services. These providers can’t balance bill you and may not ask you to give up your protections not to be balance billed.
+If you get other services at these in-network facilities, out-of-network providers can’t balance bill you, unless you give
+written consent and give up your protections.
+Air Ambulance services
+If you receive covered air ambulance services from an out-of-network provider of air ambulance services, the most the
+provider may bill you is your plan’s in-network cost-sharing amount. You can’t be balanced for covered air ambulance
+services provided by an out-of-network provider of air ambulance services.
+[Insurancecompany]
+Page 4 of 5
+844-516-3832 or visit my.collectivehealth.comClaim #: [CLAIMNUMBER]
+Statement Date: 3/3/23
+You’re never required to give up your protections from balance
+billing. You also aren’t required to get care out-of-network. You
+can choose a provider or facility in your plan’s network.
+When balance billing isn’t allowed, you also have the following protections:
+• You are only responsible for paying your share of the cost (like the copayments, coinsurance, and deductibles that
+you would pay if the provider or facility was in-network). Your health plan will pay out-of-network providers and
+facilities directly.
+• Your health plan generally must:
+• Cover emergency services without requiring you to get approval for services inadvance (prior authorization).
+• Cover emergency services by out-of-network providers.
+• Base what you owe the provider or facility (cost-sharing) on what it would pay anin-network provider or facility
+and show that amount in your explanation of benefits.
+• Count any amount you pay for emergency services or out-of-network services toward your deductible and out-
+of-pocket limit.
+If you believe you’ve been wrongly billed, you may contact the U.S. Department of Labor, Employee Benefits Security
+Administration at 1-866-487-2365.
+Visit https://www.dol.gov/agencies/ebsa for more information about your rights under federal law and for contact
+information of the U.S. Department of Labor regional offices.
+THIS NOTICE IS FOR INFORMATIONAL PURPOSES ONLY AND IS NOT LEGAL ADVICE.
+[Insurancecompany]
+Page 5 of 5
+844-516-3832 or visit my.collectivehealth.com
