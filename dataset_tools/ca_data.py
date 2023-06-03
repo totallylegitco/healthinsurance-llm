@@ -13,7 +13,7 @@ import re
 treatement_regex = re.compile(r"""Summary: The\s*\W+\s*\W+\s*(requested|required)\s*[^.]for(\W+).""")
 def get_treatement_from_imr(imr):
     treatement = None
-    result = treatement_regex.searc(imr["Findings"])
+    result = treatement_regex.search(imr["Findings"])
     if result is not None:
         treatement = result.group(1)
     return treatement  or imr["TreatmentSubCategory"] or imr["TreatmentCategory"]
