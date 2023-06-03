@@ -47,17 +47,28 @@ imrs = load_data("./data_sources/ca-independent-medical-review-imr-determination
 def generate_prompts(imr):
     determination = imr["Determination"]
     treatment = imr["TreatmentSubCategory"] or imr["TreatmentCategory"]
+    diagnosis = imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
     findings = imr["Findings"]
-    type = imr["Type"]
-    print(determination)
-    print(findings)
-    generate_denial = f"What was the reason that {treatment} was originally denied in {findings}."
-    generate_denial2 = f"Write a health insurance denial for {treatment} on the grounds of {type}."
-    generate_appeal = f"The denial of {treatment} procedure was overturned in {findings}. Write an appeal for {treatment}."
+    grounds = imr["Type"]
+    return [
+        f"What was the reason that {treatment} was originally denied in {findings}.",
+        f"Write a health insurance denial for {treatment} for diagnosis {diagnosis} on the grounds of {grounds}.",
+        f"Write a for {treatment} for diagnosis {diagnosis} on the grounds of {type}.",
+        f"The denial of {treatment} procedure was overturned in {findings}. Write an appeal for {treatment}.",
+        f"The denial of {treatment} procedure was overturned in {findings}. Write an appeal for {treatment} for {diagnosis}.",
+        f"Deny coverage for {treatment} for {diagnosis}",
+        f"Deny coverage for {treatment}",
+        f"Write a denial for {treatment}.",
+        f"Expand on \"{treatment} is not medically necessary for {diagnosis}.\"",
+        f"Refute \"{treatment} is not medically necessary for {diagnosis}.\""
+        ]
     return [generate_denial, generate_denial2, generate_appeal]
 
 
 prompts = generate_prompts(imrs.iloc[0])
 
 for prompt in prompts:
+    print(prompt)
+    print("\n")
     print(instruct_pipeline(prompt))
+    print("\n")
