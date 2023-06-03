@@ -32,7 +32,16 @@ if [ ! -z "$QLORA" ]; then
 fi
 if [ ! -d out ]; then
   mkdir out
-  python dataset_generator.py
+  python -m dataset_tools.golden_dataset_generator
+  mkdir -p data_sources
+  if [ ! -f "./data_sources/ca-independent-medical-review-imr-determinations-trends.csv" ]; then
+    # From https://data.chhs.ca.gov/dataset/independent-medical-review-imr-determinations-trend/resource/3340c5d7-4054-4d03-90e0-5f44290ed095
+    # From https://data.chhs.ca.gov/dataset/independent-medical-review-imr-determinations-trend
+    wget https://data.chhs.ca.gov/dataset/b79b3447-4c10-4ae6-84e2-1076f83bb24e/resource/3340c5d7-4054-4d03-90e0-5f44290ed095/download/independent-medical-review-imr-determinations-trends.csv -O \
+	 ./data_sources/ca-independent-medical-review-imr-determinations-trends.csv
+    iconv -c -t utf-8 ./data_sources/ca-independent-medical-review-imr-determinations-trends.csv  > ./data_sources/ca-independent-medical-review-imr-determinations-trends-utf8.csv
+    python -m dataset_tools.ca_data
+  fi
 fi
 
 cd dolly

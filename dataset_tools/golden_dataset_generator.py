@@ -35,4 +35,6 @@ with open("out/out.jsonl", "w") as o:
                 o.write(record)
                 o.write("\n")
             except FileNotFoundError:
+                if i == 0:
+                    print(f"No appeal found for {f}")
                 break
