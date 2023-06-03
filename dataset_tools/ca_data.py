@@ -5,6 +5,7 @@ from transformers import (
     pipeline)
 from dolly.training.generate import generate_response
 from os import listdir
+from os.path import join
 import pandas
 import torch
 
@@ -13,20 +14,26 @@ import re
 gen_loc = "generated-llm-data"
 
 treatment_regex = re.compile(
-    r"""\s*(The|An|A)?\s*(patient|enrollee|member)\s*[^.]*(requested|required|asked|requires|reimbursement|coverage)\s*[^.]*(for|medication|reimbursement|coverage)\s+(\w+[^.]+?)\.""",
+    r"""\s*(The|An|A)?\s*(parent|father|mother|patient|enrollee|member)\s*[^.]*(requested|required|asked|requires|reimbursement|coverage)\s*[^.]*(for|medication|reimbursement|coverage)\s+(\d*\w+.+?)\.""",
     re.IGNORECASE)
 alt_treatment_regex = re.compile(
-    r"""At issue\s*(in this case|)\s*(is|)\s*(whether|if)\s+(\w+[^.]+?) (is|were) medically necessary""",
+    r"""At issue\s*(in this case|)\s*(is|)\s*(whether|if)\s+(\d*\w+.+?) (is|were) medically necessary""",
     re.IGNORECASE)
 more_alt_treatment_regex = re.compile(
-    r"""the requested (medication|treatment|service|procedure)\s+(\w+[^.]+?) (is|were) (likely to be|medically necessary)""",
+    r"""the requested (medication|treatment|service|procedure)\s+(\d*\w+.+?) (is|were) (likely to be|medically necessary)""",
     re.IGNORECASE)
 
 even_more_alt_treatment_regex = re.compile(
     r"""(Therefore|Thus),\s+(an|a|the) (\w+[^.]+?) (is|were) (medically necessary|likely to be)""",
     re.IGNORECASE)
 
+perscribed_regex = re.compile(
+    r"""patients provider has prescribed the medication\s+([^.]+?).""", re.IGNORECASE)
 
+wishes_to_regex = re.compile(r"""(wishes|desires) to (undergo|take)\s+([^.]+?).""", re.IGNORECASE)
+
+sketchy_regex = re.compile(r"""(requested|required|asked|requires|reimbursement|coverage)\s*[^.]*(for|medication|reimbursement|coverage)\s+(\d*\w+.+?)\.""",
+    re.IGNORECASE)
 
 def get_treatment_from_imr(imr):
     findings = imr["Findings"]
@@ -34,6 +41,9 @@ def get_treatment_from_imr(imr):
     alt_result = alt_treatment_regex.search(findings)
     more_alt_result = more_alt_treatment_regex.search(findings)
     even_more_alt_result = even_more_alt_treatment_regex.search(findings)
+    perscribed_result = perscribed_regex.search(findings)
+    wishes_to_result = wishes_to_regex.search(findings)
+    sketchy_result = sketchy_regex.search(findings)
     if result is not None:
         return result.group(5)
     elif alt_result is not None:
@@ -42,6 +52,12 @@ def get_treatment_from_imr(imr):
         return more_alt_result.group(2)
     elif even_more_alt_result is not None:
         return even_more_alt_result.group(3)
+    elif perscribed_result is not None:
+        return perscribed_result.group(1)
+    elif wishes_to_result is not None:
+        return wishes_to_result.group(3)
+    elif sketchy_result is not None:
+        return sketchy_result.group(3)
     else:
         print(f"No match in {findings}")
     return imr["TreatmentSubCategory"] or imr["TreatmentCategory"]
@@ -164,7 +180,7 @@ def work_with_biogpt():
         findings = imr["Findings"]
         index = imr["ReferenceID"]
         return (index, f"{treatment} is medically necessary for {diagnosis} because")
-    l = imrs.iloc[0:2000].apply(generate_biogpt_hacks, axis=1).tolist()
+    l = imrs.apply(generate_biogpt_hacks, axis=1).tolist()
     idxs = map(lambda r: r[0], l)
     qs = map(lambda r: r[1], l)
     transformed = instruct_pipeline(list(qs))
