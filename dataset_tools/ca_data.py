@@ -60,7 +60,7 @@ def work_with_dolly():
     def generate_prompts(imr):
         print(imr)
         determination = imr["Determination"]
-        treatment = get_treatement_from_imr(imr)
+        treatement = get_treatement_from_imr(imr)
         diagnosis = imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
         findings = imr["Findings"]
         grounds = imr["Type"]
@@ -99,7 +99,7 @@ def work_with_biogpt():
 
     def generate_biogpt_hacks(imr):
         print(imr)
-        treatment = get_treatement_from_imr(imr)
+        treatement = get_treatement_from_imr(imr)
         diagnosis = imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
         findings = imr["Findings"]
         questions = [
