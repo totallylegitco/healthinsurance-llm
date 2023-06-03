@@ -9,6 +9,7 @@ OUTDIR=${OUTDIR:-"new_model"}
 #QLORA=${QLORA:-"--qlora-4bit true"}
 EPOCHS=${EPOCHS:-"10"}
 
+pip install -r requirements.txt
 if [ $(uname -m) == "aarch64" ]; then
   # On ARM for bits and bytes we need neon
   if [ ! -d sse2neon ]; then

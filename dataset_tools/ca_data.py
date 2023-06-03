@@ -65,19 +65,18 @@ def work_with_dolly():
             f"Refute \"{treatment} is not medically necessary for {diagnosis}.\""
             f"Summarize {findings}",
         ]
-    return [generate_denial, generate_denial2, generate_appeal]
 
 
-   prompts = generate_prompts(imrs.iloc[0])
-   results = instruct_pipeline(prompts)
+    prompts = generate_prompts(imrs.iloc[0])
+    results = instruct_pipeline(prompts)
 
-   joined = zip(prompt, results)
+    joined = zip(prompt, results)
 
-   for (prompt, result) in joined:
-       print(prompt)
-       print("\n")
-       print(result)
-       print("\n")
+    for (prompt, result) in joined:
+        print(prompt)
+        print("\n")
+        print(result)
+        print("\n")
 
 
 def work_with_biogpt():
@@ -99,5 +98,5 @@ def work_with_biogpt():
             print(q)
             print(model.generate(**inputs))
 
-work_with_dolly()
+#work_with_dolly()
 work_with_biogpt()
