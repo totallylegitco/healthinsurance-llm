@@ -47,11 +47,16 @@ def generate_prompts(imr):
     determination = imr["Determination"]
     treatment = imr["TreatmentSubCategory"] or imr["TreatmentCategory"]
     findings = imr["Findings"]
-    generate_denial = f"The denial of {treatment} procedure was overturned in {findings}. Write the original denial."
+    type = imr["Type"]
+    print(determination)
+    print(findings)
+    generate_denial = f"What was the reason that {treatment} was originally denied in {findings}."
+    generate_denial2 = f"Write a health insurance denial for {treatment} on the grounds of {type}."
     generate_appeal = f"The denial of {treatment} procedure was overturned in {findings}. Write an appeal for {treatment}."
-    return (generate_denial, generate_appeal)
+    return [generate_denial, generate_denial2, generate_appeal]
 
-(generate_denial, generate_appeal) = generate_prompts(imrs.iloc[0])
 
-print(instruct_pipeline(generate_denial))
-print(instruct_pipeline(generate_appeal))
+prompts = generate_prompts(imrs.iloc[0])
+
+for prompt in promts:
+    print(instruct_pipeline(prompt))
