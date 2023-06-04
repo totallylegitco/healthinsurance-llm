@@ -140,7 +140,7 @@ def work_with_dolly():
     def extract_text(result):
         if result is None:
             return None
-        if "generated_next" is not in result[0]:
+        if "generated_next" not in result[0]:
             return None
         return resutlt[0]["generated_text"]
 
