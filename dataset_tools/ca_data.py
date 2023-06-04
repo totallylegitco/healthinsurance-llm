@@ -14,17 +14,17 @@ import re
 gen_loc = "generated-llm-data"
 
 treatment_regex = re.compile(
-    r"""\s*(The|An|A)?\s*(parent|father|mother|patient|enrollee|member)\s*[^.]*(requested|required|asked|requires|reimbursement|coverage)\s*[^.]*(for|medication|reimbursement|coverage)\s+(\d*\w+.+?)\.""",
+    r"""\s*(The|An|A)?\s*(parent|father|mother|patient|enrollee|member)\s*[^.]*(requested|required|asked|requires|reimbursement|coverage|requesting)\s*[^.]*(of|for|medication|reimbursement|coverage)\s+(\d*\w+.+?)\.""",
     re.IGNORECASE)
 alt_treatment_regex = re.compile(
-    r"""At issue\s*(in this case|)\s*(is|)\s*(whether|if)\s+(\d*\w+.+?) (is|were) medically (necessary|indicated)""",
+    r"""At issue\s*(in this case|)\s*(is|)\s*(whether|if)\s+(\d*\w+.+?) (is|were|was) medically (necessary|indicated)""",
     re.IGNORECASE)
 more_alt_treatment_regex = re.compile(
-    r"""the requested (medication|treatment|service|procedure)\s+(\d*\w+.+?) (is|were) (likely to be|medically necessary|medically indicated)""",
+    r"""the requested (medication|treatment|service|procedure)\s+(\d*\w+.+?) (is|were|was) (likely to be|medically necessary|medically indicated)""",
     re.IGNORECASE)
 
 even_more_alt_treatment_regex = re.compile(
-    r"""(Therefore|Thus|As such),\s+(an|a|the) (\w+[^.]+?) (is|were) (medically necessary|medically indicated|likely to be)""",
+    r"""(Therefore|Thus|As such),\s+(an|a|the) (\w+[^.]+?) (is|were|was) (medically necessary|medically indicated|likely to be)""",
     re.IGNORECASE)
 
 perscribed_regex = re.compile(
@@ -32,7 +32,9 @@ perscribed_regex = re.compile(
 
 wishes_to_regex = re.compile(r"""(wishes|desires) to (undergo|take)\s+([^.]+?).""", re.IGNORECASE)
 
-sketchy_regex = re.compile(r"""(requested|required|asked|requires|reimbursement|coverage|request)\s*[^.]*(for|medication|reimbursement|coverage)\s+(\d*\w+.+?)\.""",
+treatment_regex = re.compile(r"""treatment[^.]*with\s+([^.]+?) (is|were|was)""", re.IGNORECASE)
+
+sketchy_regex = re.compile(r"""(requested|required|asked|requires|reimbursement|coverage|request|requesting)\s*[^.]*(for|medication|reimbursement|coverage|of)\s+(\d*\w+.+?)\.""",
     re.IGNORECASE)
 
 def get_treatment_from_imr(imr):
@@ -43,6 +45,7 @@ def get_treatment_from_imr(imr):
     even_more_alt_result = even_more_alt_treatment_regex.search(findings)
     perscribed_result = perscribed_regex.search(findings)
     wishes_to_result = wishes_to_regex.search(findings)
+    treatment_result = treatment_regex.search(findings)
     sketchy_result = sketchy_regex.search(findings)
     if result is not None:
         return result.group(5)
@@ -56,6 +59,8 @@ def get_treatment_from_imr(imr):
         return perscribed_result.group(1)
     elif wishes_to_result is not None:
         return wishes_to_result.group(3)
+    elif treatment_result is not None:
+        return treatment_result.group(1)
     elif sketchy_result is not None:
         return sketchy_result.group(3)
     else:
