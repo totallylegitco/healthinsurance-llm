@@ -32,7 +32,7 @@ perscribed_regex = re.compile(
 
 wishes_to_regex = re.compile(r"""(wishes|desires) to (undergo|take)\s+([^.]+?).""", re.IGNORECASE)
 
-treatment_regex = re.compile(r"""treatment[^.]*with\s+([^.]+?) (is|were|was)""", re.IGNORECASE)
+alt_treatment_regex = re.compile(r"""treatment[^.]*with\s+([^.]+?) (is|were|was)""", re.IGNORECASE)
 
 sketchy_regex = re.compile(r"""(requested|required|asked|requires|reimbursement|coverage|request|requesting)\s*[^.]*(for|medication|reimbursement|coverage|of)\s+(\d*\w+.+?)\.""",
     re.IGNORECASE)
@@ -45,7 +45,7 @@ def get_treatment_from_imr(imr):
     even_more_alt_result = even_more_alt_treatment_regex.search(findings)
     perscribed_result = perscribed_regex.search(findings)
     wishes_to_result = wishes_to_regex.search(findings)
-    treatment_result = treatment_regex.search(findings)
+    alt_treatment_result = alt_treatment_regex.search(findings)
     sketchy_result = sketchy_regex.search(findings)
     if result is not None:
         return result.group(5)
@@ -59,8 +59,8 @@ def get_treatment_from_imr(imr):
         return perscribed_result.group(1)
     elif wishes_to_result is not None:
         return wishes_to_result.group(3)
-    elif treatment_result is not None:
-        return treatment_result.group(1)
+    elif alt_treatment_result is not None:
+        return alt_treatment_result.group(1)
     elif sketchy_result is not None:
         return sketchy_result.group(3)
     else:
