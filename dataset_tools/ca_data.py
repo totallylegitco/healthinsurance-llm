@@ -140,7 +140,7 @@ def work_with_dolly():
     def extract_text(result):
         if result is None:
             return None
-        if "generated_next" not in result[0]:
+        if "generated_text" not in result[0]:
             return None
         return resutlt[0]["generated_text"]
 
@@ -156,6 +156,8 @@ def work_with_dolly():
         return less_sketchy
 
     def cleanup_rejection(text):
+        if text is None:
+            return None
         if not "[MEMBER]" in text:
             text = f"Dear [MEMBER]; {text}."
         if not "appeal" in text:
@@ -171,9 +173,12 @@ def work_with_dolly():
         appeals = map(cleanup_appeal, results[len(rejection_prompts):])
         i = 0
         for r in rejections:
+            if r is None:
+                continue
             i = i + 1
             with open(join(gen_loc, f"{idx}MAGIC{i}_rejection.txt"), "w") as f:
                 f.write(r)
+        i = 0
         for a in appeals:
             if a is None:
                 continue

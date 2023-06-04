@@ -163,3 +163,6 @@ dolly/
 out/
 appeals-llm-data/
 data_sources/
+sse2neon/
+generated-llm-data/
+bitsandbytes/
