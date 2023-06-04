@@ -138,6 +138,7 @@ def work_with_dolly():
         return (index, rejection_prompts, appeal_prompts)
 
     def cleanup_appeal(text):
+        print(f"Cleaning up appeal {text}")
         sentences = text.split(".")
         less_sketchy = ".".join(filter(sketchy_sentence_filter, sentences))
         if len(less_sketchy) < 40:
