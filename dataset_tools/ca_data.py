@@ -32,7 +32,7 @@ perscribed_regex = re.compile(
 
 wishes_to_regex = re.compile(r"""(wishes|desires) to (undergo|take)\s+([^.]+?).""", re.IGNORECASE)
 
-health_plan_not_necessary_regex = re.compile(r"""The (Health Plan|Plan|Insurance Company) (determined the|determined) (.+?) (is|was|were) not""", re.IGNORECASE)
+health_plan_not_necessary_regex = re.compile(r"""The (Health Plan|Plan|Insurance Company) (determined the|determined|indicates) (.+?) (is|was|were) not""", re.IGNORECASE)
 
 almost_sketchy_regex = re.compile(r"""treatment[^.]*with\s+([^.]+?) (is|were|was)""", re.IGNORECASE)
 
@@ -72,6 +72,13 @@ def get_treatment_from_imr(imr):
         print(f"No match in {findings}")
     return imr["TreatmentSubCategory"] or imr["TreatmentCategory"]
 
+
+def extract_text(result):
+    if result is None:
+        return None
+    if "generated_text" not in result[0]:
+        return None
+    return result[0]["generated_text"]
 
 # Load some strings we know the current model puts in appeals that are bad right away
 with open("bad_appeal_strings.txt") as f: bad_appeal_strings = f.read().split("\n")
@@ -142,13 +149,6 @@ def work_with_dolly():
 
         return (index, rejection_prompts, appeal_prompts)
 
-    def extract_text(result):
-        if result is None:
-            return None
-        if "generated_text" not in result[0]:
-            return None
-        return result[0]["generated_text"]
-
     def cleanup_appeal(text):
         if text is None:
             return None
@@ -163,10 +163,14 @@ def work_with_dolly():
     def cleanup_rejection(text):
         if text is None:
             return None
+        if not "denied" in text:
+            text = f"{text}. Your request is denied."
         if not "[MEMBER]" in text:
             text = f"Dear [MEMBER]; {text}."
         if not "appeal" in text:
             text = f"{text}. You have the right to appeal this decision."
+        if "are medically necess" in text:
+            text = text.replace("are medically necess", "are not medically necess")
         return text
 
 
@@ -207,7 +211,8 @@ def work_with_biogpt():
 
     def write_result(res):
         idx = res[0]
-        reason = res[1]
+        reason = extract_text(res[1])
+        print(res)
         with open(join(gen_loc, f"{idx}MAGICB_appeal.txt"), "w") as o:
             o.write("""Dear [InsuranceCompany];
 
