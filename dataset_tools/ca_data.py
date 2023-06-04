@@ -137,8 +137,14 @@ def work_with_dolly():
 
         return (index, rejection_prompts, appeal_prompts)
 
+    def extract_text(result):
+        if result is None:
+            return None
+        if "generated_next" is not in result[0]:
+            return None
+        return resutlt[0]["generated_text"]
+
     def cleanup_appeal(text):
-        print(f"Cleaning up appeal {text}")
         if text is None:
             return None
         sentences = text.split(".")
@@ -160,7 +166,7 @@ def work_with_dolly():
 
     l = imrs.apply(generate_prompts, axis=1).tolist()
     for (idx, rejection_prompts, appeal_prompts) in l:
-        results = instruct_pipeline(rejection_prompts + appeal_prompts)
+        results = list(map(extract_text, instruct_pipeline(rejection_prompts + appeal_prompts)))
         rejections = map(cleanup_rejection, results[0:len(rejection_prompts)])
         appeals = map(cleanup_appeal, results[len(rejection_prompts):])
         i = 0
