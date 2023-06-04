@@ -24,7 +24,7 @@ more_alt_treatment_regex = re.compile(
     re.IGNORECASE)
 
 even_more_alt_treatment_regex = re.compile(
-    r"""(Therefore|Thus|As such),\s+(an|a|the) (\w+[^.]+?) (is|were|was) (medically necessary|medically indicated|likely to be)""",
+    r"""(Therefore|Thus|As such),\s+(an|a|the) (\w+[^.]+?) (is|were|was|should be) (medically necessary|medically indicated|likely to be|authorized)""",
     re.IGNORECASE)
 
 perscribed_regex = re.compile(
