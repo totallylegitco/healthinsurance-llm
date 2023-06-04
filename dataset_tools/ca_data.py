@@ -142,7 +142,7 @@ def work_with_dolly():
             return None
         if "generated_text" not in result[0]:
             return None
-        return resutlt[0]["generated_text"]
+        return result[0]["generated_text"]
 
     def cleanup_appeal(text):
         if text is None:
