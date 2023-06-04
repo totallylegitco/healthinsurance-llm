@@ -32,6 +32,8 @@ perscribed_regex = re.compile(
 
 wishes_to_regex = re.compile(r"""(wishes|desires) to (undergo|take)\s+([^.]+?).""", re.IGNORECASE)
 
+health_plan_not_necessary_regex = re.compile(r"""The (Health Plan|Plan|Insurance Company) (determined the|determined) (.+?) (is|was|were) not""", re.IGNORECASE)
+
 almost_sketchy_regex = re.compile(r"""treatment[^.]*with\s+([^.]+?) (is|were|was)""", re.IGNORECASE)
 
 sketchy_regex = re.compile(r"""(requested|required|asked|requires|reimbursement|coverage|request|requesting)\s*[^.]*(for|medication|reimbursement|coverage|of)\s+(\d*\w+.+?)\.""",
@@ -46,6 +48,7 @@ def get_treatment_from_imr(imr):
     perscribed_result = perscribed_regex.search(findings)
     wishes_to_result = wishes_to_regex.search(findings)
     almost_sketchy_result = almost_sketchy_regex.search(findings)
+    health_plan_not_necessary_result = health_plan_not_necessary_regex.search(findings)
     sketchy_result = sketchy_regex.search(findings)
     if result is not None:
         return result.group(5)
@@ -59,6 +62,8 @@ def get_treatment_from_imr(imr):
         return perscribed_result.group(1)
     elif wishes_to_result is not None:
         return wishes_to_result.group(3)
+    elif health_plan_not_necessary_result is not None:
+        return health_plan_not_necessary_result.group(3)
     elif almost_sketchy_result is not None:
         return almost_sketchy_result.group(1)
     elif sketchy_result is not None:
@@ -199,11 +204,6 @@ def work_with_biogpt():
         findings = imr["Findings"]
         index = imr["ReferenceID"]
         return (index, f"{treatment} is medically necessary for {diagnosis} because")
-    l = imrs.apply(generate_biogpt_hacks, axis=1).tolist()
-    idxs = map(lambda r: r[0], l)
-    qs = map(lambda r: r[1], l)
-    transformed = instruct_pipeline(list(qs))
-    joined = zip(idxs, transformed)
 
     def write_result(res):
         idx = res[0]
@@ -216,8 +216,18 @@ I am writing you to appeal claim [CLAIMNUMBER]. I believe that it is medically n
             o.write("\n")
             o.write("Sincerely,\n[YOURNAME]")
 
-    for res in joined:
-        write_result(res)
+    l = imrs.apply(generate_biogpt_hacks, axis=1).tolist()
+
+    batch_size = 200
+
+    for i in range(0, len(l), batch_size):
+        batch = l[i: i + batch_size]
+        idxs = map(lambda r: r[0], batch)
+        qs = map(lambda r: r[1], batch)
+        transformed = instruct_pipeline(list(qs))
+        joined = zip(idxs, transformed)
+        for res in joined:
+            write_result(res)
 
 
 #work_with_dolly()
