@@ -139,6 +139,8 @@ def work_with_dolly():
 
     def cleanup_appeal(text):
         print(f"Cleaning up appeal {text}")
+        if text is None:
+            return None
         sentences = text.split(".")
         less_sketchy = ".".join(filter(sketchy_sentence_filter, sentences))
         if len(less_sketchy) < 40:
