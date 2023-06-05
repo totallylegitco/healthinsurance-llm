@@ -131,9 +131,11 @@ def work_with_dolly():
         determination = imr["Determination"]
         treatment = get_treatment_from_imr(imr)
         diagnosis = imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
-        findings = imr["Findings"]
+        findings = imr["Findings"].strip("\n")
         grounds = imr["Type"]
         index = imr["ReferenceID"]
+        def append_context(prompt):
+            return f"{prompt}\n\nInput:\nOn review the following was found {findings}"
         rejection_prompts = [
             f"What was the reason that {treatment} was originally denied in {findings}.",
             f"Write a health insurance denial for {treatment} for diagnosis {diagnosis} on the grounds of {grounds}.",
@@ -169,31 +171,50 @@ def work_with_dolly():
             text = f"Dear [MEMBER]; {text}."
         if not "appeal" in text:
             text = f"{text}. You have the right to appeal this decision."
-        if "are medically necess" in text:
-            text = text.replace("are medically necess", "are not medically necess")
+        def mark_unnecessary(match_objc):
+            return f"{match_obj.group(1)} not medically {match_object.group(2)}"
+        text = re.sub(r"(is|are|were)\s*medically\s*(necessary|required)", mark_unnecessary)
         return text
 
 
 
     l = imrs.apply(generate_prompts, axis=1).tolist()
-    for (idx, rejection_prompts, appeal_prompts) in l:
-        results = list(map(extract_text, instruct_pipeline(rejection_prompts + appeal_prompts)))
-        rejections = map(cleanup_rejection, results[0:len(rejection_prompts)])
-        appeals = map(cleanup_appeal, results[len(rejection_prompts):])
-        i = 0
-        for r in rejections:
-            if r is None:
-                continue
-            i = i + 1
-            with open(join(gen_loc, f"{idx}MAGIC{i}_rejection.txt"), "w") as f:
-                f.write(r)
-        i = 0
-        for a in appeals:
-            if a is None:
-                continue
-            i = i + 1
-            with open(join(gen_loc, f"{idx}MAGIC{i}_appeal.txt"), "w") as f:
-                f.write(a)
+
+    batch_size = 200
+
+    for b in range(0, len(l), batch_size):
+        batch = l[b: b + batch_size]
+        prompts = []
+
+        c = 0
+        start_idxs = []
+        for (idx, rejection_prompts, appeal_prompts) in batch:
+            combined = rejection_prompts + appeal_prompts
+            prompts += combined
+            start_idxs += c
+            c = c + len(combined)
+
+        ci = 0
+        for (idx, rejection_prompts, appeal_prompts) in batch:
+            start = start_idxs[c]
+            ci = ci + 1
+            results = list(map(extract_text, instruct_pipeline(prompts)))
+            rejections = map(cleanup_rejection, results[start:len(rejection_prompts)])
+            appeals = map(cleanup_appeal, results[len(rejection_prompts):len(appeal_prompts)])
+            i = 0
+            for r in rejections:
+                if r is None:
+                    continue
+                i = i + 1
+                with open(join(gen_loc, f"{idx}MAGIC{i}_rejection.txt"), "w") as f:
+                    f.write(r)
+            i = 0
+            for a in appeals:
+                if a is None:
+                    continue
+                i = i + 1
+                with open(join(gen_loc, f"{idx}MAGIC{i}_appeal.txt"), "w") as f:
+                    f.write(a)
 
 
 
