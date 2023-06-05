@@ -14,7 +14,7 @@ import re
 gen_loc = "generated-llm-data"
 
 treatment_regex = re.compile(
-    r"""\s*(The|An|A)?\s*(parent|father|mother|patient|enrollee|member)\s*[^.]*(requested|required|asked|requires|reimbursement|coverage|requesting)\s*[^.]*(of|for|medication|reimbursement|coverage)\s+(\d*\w+.+?)\.""",
+    r"""\s*(The|An|A)?\s*(parent|father|mother|patient|enrollee|member)\s*[^.]*(requested|required|asked|requires|reimbursement|coverage|requesting)\s*[^.]*(of|for|medication|reimbursement|coverage|services)\s+(\d*\w+.+?)\.""",
     re.IGNORECASE)
 alt_treatment_regex = re.compile(
     r"""At issue\s*(in this case|)\s*(is|)\s*(whether|if)\s+(\d*\w+.+?) (is|were|was) medically (necessary|indicated)""",
@@ -24,13 +24,13 @@ more_alt_treatment_regex = re.compile(
     re.IGNORECASE)
 
 even_more_alt_treatment_regex = re.compile(
-    r"""(Therefore|Thus|As such),\s+(an|a|the) (\w+[^.]+?) (is|were|was|should be) (medically necessary|medically indicated|likely to be|authorized)""",
+    r"""(Therefore|Thus|As such),[^.]*?\s+(an|a|the|that) (\w+[^.]+?) (is|were|was|should be) (medically necessary|medically indicated|likely to be|authorized)""",
     re.IGNORECASE)
 
 perscribed_regex = re.compile(
     r"""patients provider has prescribed the medication\s+([^.]+?).""", re.IGNORECASE)
 
-wishes_to_regex = re.compile(r"""(wishes|desires) to (undergo|take)\s+([^.]+?).""", re.IGNORECASE)
+wishes_to_regex = re.compile(r"""(wishes|desires|like) to (undergo|take)\s+([^.]+?).""", re.IGNORECASE)
 
 health_plan_not_necessary_regex = re.compile(r"""The (Health Plan|Plan|Insurance Company) (determined the|determined|indicates) (.+?) (is|was|were) not""", re.IGNORECASE)
 
