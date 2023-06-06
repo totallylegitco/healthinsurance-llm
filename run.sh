@@ -19,7 +19,9 @@ if [ $(uname -m) == "aarch64" ]; then
   fi
 else
   pip install bitsandbytes
+  python -m bitsandbytes || ./setup_bits_and_bytes.sh
 fi
+
 if [ ! -d dolly ]; then
   git clone https://github.com/databrickslabs/dolly.git
   pip install -r ./dolly/requirements.txt
@@ -48,13 +50,10 @@ if [ ! -d data_sources ]; then
     wget https://data.chhs.ca.gov/dataset/b79b3447-4c10-4ae6-84e2-1076f83bb24e/resource/3340c5d7-4054-4d03-90e0-5f44290ed095/download/independent-medical-review-imr-determinations-trends.csv -O \
 	 ./data_sources/ca-independent-medical-review-imr-determinations-trends.csv
     iconv -c -t utf-8 ./data_sources/ca-independent-medical-review-imr-determinations-trends.csv  > ./data_sources/ca-independent-medical-review-imr-determinations-trends-utf8.csv
+    # If we don't have much memory and bitsandbytes works then we go for it
     if [ $(gpu_memory) < 40564 ]; then
-      # We can't run bitsandbytes on arm64
-      if [ $(uname -m) == "aarch64" ]; then
-	python -m dataset_tools.ca_data
-      else
-	python -m dataset_tools.ca_data --small-gpu
-      fi
+      (python -m bitsandbytes && python -m dataset_tools.ca_data --small-gpu) || \
+	(python -m dataset_tools.ca_data)
     else
       python -m dataset_tools.ca_data
     fi
