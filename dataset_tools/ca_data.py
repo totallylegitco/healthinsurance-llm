@@ -3,7 +3,6 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     pipeline)
-from dolly.training.generate import generate_response
 from os import listdir
 from os.path import join
 import pandas
@@ -97,18 +96,22 @@ def load_data(path):
 
 imrs = load_data("./data_sources/ca-independent-medical-review-imr-determinations-trends-utf8.csv")
 
-def work_with_dolly():
+def work_with_generative():
     # Load the model to do our magic
 
     candidate_models = [
+        "ausboss/llama-30b-supercot"
         "databricks/dolly-v2-7b",
         "databricks/dolly-v2-3b",
     ]
 
     instruct_pipeline = None
 
+    m = None
+
     for model in candidate_models:
         try:
+            m = model
             instruct_pipeline = pipeline(model=model, torch_dtype=torch.bfloat16, trust_remote_code=True, device_map="auto")
             break
         except Exception as e:
@@ -134,8 +137,30 @@ def work_with_dolly():
         findings = imr["Findings"].strip("\n")
         grounds = imr["Type"]
         index = imr["ReferenceID"]
+
         def append_context(prompt):
-            return f"{prompt}\n\nInput:\nOn review the following was found {findings}"
+            if "dolly" in m:
+                return append_context_dolly(prompt)
+            else:
+                return append_context_alpasta(prompt)
+                
+        def append_context_dolly(prompt):
+            return f"""{prompt}
+
+Input:
+On review the following was found {findings}"""
+        
+        def append_context_alpasta(prompt):
+            return f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+
+### Instruction:
+{prompt}
+
+### Input:
+{findings}
+
+### Response:
+"""
         rejection_prompts = [
             f"What was the reason that {treatment} was originally denied in {findings}.",
             f"Write a health insurance denial for {treatment} for diagnosis {diagnosis} on the grounds of {grounds}.",
@@ -149,7 +174,7 @@ def work_with_dolly():
             f"Refute \"{treatment} is not medically necessary for {diagnosis}.\"",
         ]
 
-        return (index, rejection_prompts, appeal_prompts)
+        return (index, map(append_context, rejection_prompts), map(append_context, appeal_prompts))
 
     def cleanup_appeal(text):
         if text is None:
@@ -256,5 +281,5 @@ I am writing you to appeal claim [CLAIMNUMBER]. I believe that it is medically n
             write_result(res)
 
 
-#work_with_dolly()
+work_with_generative()
 work_with_biogpt()
