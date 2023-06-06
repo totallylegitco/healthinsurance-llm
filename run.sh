@@ -31,6 +31,7 @@ fi
 if [ ! -z "$QLORA" ]; then
   python -m bitsandbytes || ./setup_bits_and_bytes.sh
 fi
+
 if [ ! -d out ]; then
   mkdir out
   python -m dataset_tools.golden_dataset_generator

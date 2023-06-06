@@ -100,7 +100,7 @@ def work_with_generative():
     # Load the model to do our magic
 
     candidate_models = [
-        "ausboss/llama-30b-supercot"
+        "ausboss/llama-30b-supercot",
         "databricks/dolly-v2-7b",
         "databricks/dolly-v2-3b",
     ]
@@ -174,7 +174,9 @@ On review the following was found {findings}"""
             f"Refute \"{treatment} is not medically necessary for {diagnosis}.\"",
         ]
 
-        return (index, map(append_context, rejection_prompts), map(append_context, appeal_prompts))
+        return (index,
+                list(map(append_context, rejection_prompts)),
+                list(map(append_context, appeal_prompts)))xs
 
     def cleanup_appeal(text):
         if text is None:
