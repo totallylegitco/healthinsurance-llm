@@ -114,7 +114,7 @@ def work_with_generative():
     # Load the model to do our magic
 
     candidate_models = [
-        "ausboss/llama-30b-supercot",
+#        "ausboss/llama-30b-supercot",
         "databricks/dolly-v2-12b",
         "databricks/dolly-v2-7b",
         "databricks/dolly-v2-3b",
