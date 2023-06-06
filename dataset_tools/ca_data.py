@@ -114,7 +114,7 @@ def work_with_generative():
     # Load the model to do our magic
 
     candidate_models = [
-#        "ausboss/llama-30b-supercot",
+        "ausboss/llama-30b-supercot",
         "databricks/dolly-v2-12b",
         "databricks/dolly-v2-7b",
         "databricks/dolly-v2-3b",
@@ -250,13 +250,11 @@ On review the following was found {findings[0:1000]}""",
     for b in range(0, len(l), batch_size):
         print(f"Running batch {b}")
         batch = l[b: b + batch_size]
-        prompts = []
 
         c = 0
         start_idxs = []
         for (idx, rejection_prompts, appeal_prompts) in batch:
             combined = rejection_prompts + appeal_prompts
-            prompts += combined
             start_idxs += [c]
             c = c + len(combined)
 
@@ -264,8 +262,10 @@ On review the following was found {findings[0:1000]}""",
         for (idx, rejection_prompts, appeal_prompts) in batch:
             start = start_idxs[ci]
             ci = ci + 1
+            combined = rejection_prompts + appeal_prompts
             try:
-                results = list(map(extract_text, instruct_pipeline(prompts)))
+                print(f"Computing {len(combined)} prompts :)")
+                results = list(map(extract_text, instruct_pipeline(combined)))
             except Exception as e:
                 print(f"Error with {e}")
                 break
