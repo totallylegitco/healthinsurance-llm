@@ -12,6 +12,17 @@ import re
 
 gen_loc = "generated-llm-data"
 
+parser = argparse.ArgumentParser(
+    prog='CA Data Generator',
+    description='Generate data',
+    epilog='Magic')
+
+parser.add_argument(
+    '--small-gpu',
+    action='store_true')
+
+args = parser.parse_args()
+
 treatment_regex = re.compile(
     r"""\s*(The|An|A)?\s*(parent|father|mother|patient|enrollee|member)\s*[^.]*(requested|required|asked|requires|reimbursement|coverage|requesting)\s*[^.]*(of|for|medication|reimbursement|coverage|services)\s+(\d*\w+.+?)\.""",
     re.IGNORECASE)
@@ -114,7 +125,19 @@ def work_with_generative():
         try:
             m = model
             print(f"Loading {m}\n")
-            instruct_pipeline = pipeline(model=model, torch_dtype=torch.bfloat16, trust_remote_code=True, device_map="auto")
+            if args.small_gpu:
+                instruct_pipeline = pipeline(
+                    model=model,
+                    torch_dtype=torch.bfloat16,
+                    trust_remote_code=True,
+                    model_kwargs={'load_in_8bit': True},
+                    device_map="auto")
+            else:
+                instruct_pipeline = pipeline(
+                    model=model,
+                    torch_dtype=torch.bfloat16,
+                    trust_remote_code=True,
+                    device_map="auto")
             break
         except Exception as e:
             print(f"Error {e} loading {model}")
@@ -209,7 +232,7 @@ On review the following was found {findings}"""
 
     l = imrs.apply(generate_prompts, axis=1).tolist()
 
-    batch_size = 100
+    batch_size = 5
 
     for b in range(0, len(l), batch_size):
         batch = l[b: b + batch_size]

@@ -17,6 +17,8 @@ if [ $(uname -m) == "aarch64" ]; then
     make
     sudo cp sse2neon.h /usr/include/
   fi
+else
+  pip install bitsandbytes
 fi
 if [ ! -d dolly ]; then
   git clone https://github.com/databrickslabs/dolly.git
@@ -36,6 +38,8 @@ if [ ! -d out ]; then
   mkdir out
 fi
 
+gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut -f 1 -d " ")
+
 if [ ! -d data_sources ]; then
   mkdir -p data_sources
   if [ ! -f "./data_sources/ca-independent-medical-review-imr-determinations-trends.csv" ]; then
@@ -44,7 +48,11 @@ if [ ! -d data_sources ]; then
     wget https://data.chhs.ca.gov/dataset/b79b3447-4c10-4ae6-84e2-1076f83bb24e/resource/3340c5d7-4054-4d03-90e0-5f44290ed095/download/independent-medical-review-imr-determinations-trends.csv -O \
 	 ./data_sources/ca-independent-medical-review-imr-determinations-trends.csv
     iconv -c -t utf-8 ./data_sources/ca-independent-medical-review-imr-determinations-trends.csv  > ./data_sources/ca-independent-medical-review-imr-determinations-trends-utf8.csv
-    python -m dataset_tools.ca_data
+    if [ $(gpu_memory) < 40564 ]; then
+      python -m dataset_tools.ca_data --small-gpu
+    else
+      python -m dataset_tools.ca_data
+    fi
   fi
 fi
 
