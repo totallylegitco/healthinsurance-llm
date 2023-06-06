@@ -34,7 +34,6 @@ fi
 
 if [ ! -d out ]; then
   mkdir out
-  python -m dataset_tools.golden_dataset_generator
 fi
 
 if [ ! -d data_sources ]; then
@@ -48,6 +47,18 @@ if [ ! -d data_sources ]; then
     python -m dataset_tools.ca_data
   fi
 fi
+
+if [ ! -d combined-llm-data ]; then
+  mkdir -p combined-llm-data
+fi
+
+
+
+if [ ! -f "out/out.jsonl" ]; then
+  python -m dataset_tools.final
+fi
+
+
 
 cd dolly
 
