@@ -191,7 +191,7 @@ def work_with_dolly():
         for (idx, rejection_prompts, appeal_prompts) in batch:
             combined = rejection_prompts + appeal_prompts
             prompts += combined
-            start_idxs += c
+            start_idxs += [c]
             c = c + len(combined)
 
         ci = 0
