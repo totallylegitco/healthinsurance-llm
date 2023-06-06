@@ -176,7 +176,7 @@ On review the following was found {findings}"""
 
         return (index,
                 list(map(append_context, rejection_prompts)),
-                list(map(append_context, appeal_prompts)))xs
+                list(map(append_context, appeal_prompts)))
 
     def cleanup_appeal(text):
         if text is None:
