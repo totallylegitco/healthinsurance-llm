@@ -232,7 +232,7 @@ On review the following was found {findings}"""
 
     l = imrs.apply(generate_prompts, axis=1).tolist()
 
-    batch_size = 5
+    batch_size = 100
 
     for b in range(0, len(l), batch_size):
         batch = l[b: b + batch_size]
@@ -250,7 +250,11 @@ On review the following was found {findings}"""
         for (idx, rejection_prompts, appeal_prompts) in batch:
             start = start_idxs[ci]
             ci = ci + 1
-            results = list(map(extract_text, instruct_pipeline(prompts)))
+            try:
+                results = list(map(extract_text, instruct_pipeline(prompts)))
+            except Exception as e:
+                print(f"Error with {e}")
+                break
             rejections = map(cleanup_rejection, results[start:len(rejection_prompts)])
             appeals = map(cleanup_appeal, results[len(rejection_prompts):len(appeal_prompts)])
             i = 0
