@@ -273,8 +273,12 @@ On review the following was found {findings[0:1000]}""",
             except Exception as e:
                 print(f"Error with {e}")
                 break
-            rejections = map(cleanup_rejection, results[start:len(rejection_prompts)])
-            appeals = map(cleanup_appeal, results[len(rejection_prompts):len(appeal_prompts)])
+            rejections = map(
+                cleanup_rejection,
+                results[start:start + len(rejection_prompts)])
+            appeals = map(
+                cleanup_appeal,
+                results[start + len(rejection_prompts):start + len(appeal_prompts)])
             i = 0
             for r in rejections:
                 if r is None:
