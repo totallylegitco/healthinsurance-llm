@@ -34,6 +34,9 @@ fi
 if [ ! -d out ]; then
   mkdir out
   python -m dataset_tools.golden_dataset_generator
+fi
+
+if [ ! -d data_sources ]; then
   mkdir -p data_sources
   if [ ! -f "./data_sources/ca-independent-medical-review-imr-determinations-trends.csv" ]; then
     # From https://data.chhs.ca.gov/dataset/independent-medical-review-imr-determinations-trend/resource/3340c5d7-4054-4d03-90e0-5f44290ed095
