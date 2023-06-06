@@ -173,7 +173,7 @@ def work_with_generative():
             return f"""{prompt}
 
 Input:
-On review the following was found {findings}"""
+On review the following was found {findings[0:1000]}"""
         
         def append_context_alpasta(prompt):
             return f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
