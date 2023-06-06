@@ -170,13 +170,17 @@ def work_with_generative():
                 return append_context_alpasta(prompt)
                 
         def append_context_dolly(prompt):
-            return f"""{prompt}
+            return [
+                f"""{prompt}
 
 Input:
-On review the following was found {findings[0:1000]}"""
+On review the following was found {findings[0:1000]}""",
+                prompt
+            ]
         
         def append_context_alpasta(prompt):
-            return f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
+            return [
+                f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 
 ### Instruction:
 {prompt}
@@ -185,7 +189,13 @@ On review the following was found {findings[0:1000]}"""
 {findings}
 
 ### Response:
-"""
+""",
+                f"""Below is an instruction that describes a task, Write a response that appropriately completes the request.
+### Instruction:
+{prompt}
+
+### Response:
+"""]
         rejection_prompts = [
             f"What was the reason that {treatment} was originally denied in {findings}.",
             f"Write a health insurance denial for {treatment} for diagnosis {diagnosis} on the grounds of {grounds}.",
@@ -200,8 +210,8 @@ On review the following was found {findings[0:1000]}"""
         ]
 
         return (index,
-                list(map(append_context, rejection_prompts)),
-                list(map(append_context, appeal_prompts)))
+                list(sum(map(append_context, rejection_prompts))),
+                list(sum(map(append_context, appeal_prompts))))
 
     def cleanup_appeal(text):
         if text is None:
