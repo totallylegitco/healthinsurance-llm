@@ -134,13 +134,16 @@ def work_with_generative():
                     torch_dtype=torch.bfloat16,
                     trust_remote_code=True,
                     model_kwargs={'load_in_8bit': True},
-                    device_map="auto")
+                    device_map="auto",
+                    max_new_tokens=512
+                )
             else:
                 instruct_pipeline = pipeline(
                     model=model,
                     torch_dtype=torch.bfloat16,
                     trust_remote_code=True,
-                    device_map="auto")
+                    device_map="auto",
+                    max_new_tokens=512)
             break
         except Exception as e:
             print(f"Error {e} loading {model}")
