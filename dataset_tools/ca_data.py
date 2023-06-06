@@ -235,6 +235,7 @@ On review the following was found {findings}"""
     batch_size = 100
 
     for b in range(0, len(l), batch_size):
+        print(f"Running batch {b}")
         batch = l[b: b + batch_size]
         prompts = []
 
@@ -262,6 +263,7 @@ On review the following was found {findings}"""
                 if r is None:
                     continue
                 i = i + 1
+                print(f"Writing out to {idx}MAGIC{i}_rejection.txt")
                 with open(join(gen_loc, f"{idx}MAGIC{i}_rejection.txt"), "w") as f:
                     f.write(r)
             i = 0
