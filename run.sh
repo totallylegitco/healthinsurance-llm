@@ -50,8 +50,9 @@ fi
 
 if [ ! -d combined-llm-data ]; then
   mkdir -p combined-llm-data
+  ln -s $(pwd)/appeals-llm-data/* $(pwd)/combined-llm-data/
+  ln -s $(pwd)/generated-llm-data/* $(pwd)/combined-llm-data/
 fi
-
 
 
 if [ ! -f "out/out.jsonl" ]; then
