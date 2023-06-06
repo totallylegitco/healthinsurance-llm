@@ -257,7 +257,7 @@ On review the following was found {findings[0:1000]}""",
 
         c = 0
         start_idxs = []
-        pipelines = []
+        prompts = []
         for (idx, rejection_prompts, appeal_prompts) in batch:
             combined = rejection_prompts + appeal_prompts
             start_idxs += [c]
