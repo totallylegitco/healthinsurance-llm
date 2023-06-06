@@ -249,7 +249,7 @@ On review the following was found {findings[0:1000]}""",
 
     l = imrs.apply(generate_prompts, axis=1).tolist()
 
-    batch_size = 100
+    batch_size = 5
 
     for b in range(0, len(l), batch_size):
         print(f"Running batch {b}")
@@ -257,28 +257,34 @@ On review the following was found {findings[0:1000]}""",
 
         c = 0
         start_idxs = []
+        pipelines = []
         for (idx, rejection_prompts, appeal_prompts) in batch:
             combined = rejection_prompts + appeal_prompts
             start_idxs += [c]
             c = c + len(combined)
+            prompts += combined
 
+        try:
+            print(f"Computing {len(prompts)} prompts :)")
+            results = list(map(extract_text, instruct_pipeline(prompts)))
+        except Exception as e:
+            print(f"Error with {e}")
+            break
+
+        print(f"Got back {len(results)}")
         ci = 0
+
         for (idx, rejection_prompts, appeal_prompts) in batch:
             start = start_idxs[ci]
             ci = ci + 1
-            combined = rejection_prompts + appeal_prompts
-            try:
-                print(f"Computing {len(combined)} prompts :)")
-                results = list(map(extract_text, instruct_pipeline(combined)))
-            except Exception as e:
-                print(f"Error with {e}")
-                break
             rejections = map(
                 cleanup_rejection,
-                results[start:start + len(rejection_prompts)])
+                results[start:
+                        start + len(rejection_prompts)])
             appeals = map(
                 cleanup_appeal,
-                results[start + len(rejection_prompts):start + len(appeal_prompts)])
+                results[start + len(rejection_prompts):
+                        start + len(rejection_prompts) + len(appeal_prompts)])
             i = 0
             for r in rejections:
                 if r is None:
