@@ -9,6 +9,9 @@ import pandas
 import torch
 import argparse
 import re
+import itertools
+
+flatten = itertools.chain.from_iterable
 
 gen_loc = "generated-llm-data"
 
@@ -210,8 +213,8 @@ On review the following was found {findings[0:1000]}""",
         ]
 
         return (index,
-                list(sum(map(append_context, rejection_prompts))),
-                list(sum(map(append_context, appeal_prompts))))
+                list(flatten(map(append_context, rejection_prompts))),
+                list(flatten(map(append_context, appeal_prompts))))
 
     def cleanup_appeal(text):
         if text is None:
