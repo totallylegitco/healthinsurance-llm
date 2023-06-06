@@ -49,7 +49,12 @@ if [ ! -d data_sources ]; then
 	 ./data_sources/ca-independent-medical-review-imr-determinations-trends.csv
     iconv -c -t utf-8 ./data_sources/ca-independent-medical-review-imr-determinations-trends.csv  > ./data_sources/ca-independent-medical-review-imr-determinations-trends-utf8.csv
     if [ $(gpu_memory) < 40564 ]; then
-      python -m dataset_tools.ca_data --small-gpu
+      # We can't run bitsandbytes on arm64
+      if [ $(uname -m) == "aarch64" ]; then
+	python -m dataset_tools.ca_data
+      else
+	python -m dataset_tools.ca_data --small-gpu
+      fi
     else
       python -m dataset_tools.ca_data
     fi
