@@ -27,7 +27,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 treatment_regex = re.compile(
-    r"""\s*(The|An|A)?\s*(parent|father|mother|patient|enrollee|member)\s*[^.]*(requested|required|asked|requires|reimbursement|coverage|requesting)\s*[^.]*(of|for|medication|reimbursement|coverage|services)\s+(\d*\w+.+?)\.""",
+    r"""\s*(The|An|A)?\s*(parent|father|mother|patient|enrollee|member|provider)\s*[^.]*(requested|required|asked|requires|reimbursement|coverage|requesting|has)\s*[^.]*(of|for|medication|reimbursement|coverage|services)\s+(\d*\w+.+?)\.""",
     re.IGNORECASE)
 alt_treatment_regex = re.compile(
     r"""At issue\s*(in this case|)\s*(is|)\s*(whether|if)\s+(\d*\w+.+?) (is|were|was) medically (necessary|indicated)""",
@@ -176,13 +176,14 @@ def work_with_generative():
                 return append_context_alpasta(prompt)
                 
         def append_context_dolly(prompt):
-            return [
-                f"""{prompt}
-
-Input:
-On review the following was found {findings[0:1000]}""",
-                prompt
-            ]
+#            return [
+#                f"""{prompt}
+#
+#Input:
+#On review the following was found {findings[0:1000]}""",
+#                prompt
+#            ]
+            return [prompt]
         
         def append_context_alpasta(prompt):
             return [
