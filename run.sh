@@ -12,7 +12,7 @@ EPOCHS=${EPOCHS:-"10"}
 gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut -f 1 -d " ")
 
 pip install -r requirements.txt
-if [ $(gpu_memory) < 40564 ]; then
+if [ ${gpu_memory} < 40564 ]; then
   if [ $(uname -m) == "aarch64" ]; then
     # On ARM for bits and bytes we need neon
     if [ ! -d sse2neon ]; then
@@ -53,7 +53,7 @@ if [ ! -d data_sources ]; then
 	 ./data_sources/ca-independent-medical-review-imr-determinations-trends.csv
     iconv -c -t utf-8 ./data_sources/ca-independent-medical-review-imr-determinations-trends.csv  > ./data_sources/ca-independent-medical-review-imr-determinations-trends-utf8.csv
     # If we don't have much memory and bitsandbytes works then we go for it
-    if [ $(gpu_memory) < 40564 ]; then
+    if [ ${gpu_memory} < 40564 ]; then
       (python -m bitsandbytes && python -m dataset_tools.ca_data --small-gpu) || \
 	(python -m dataset_tools.ca_data)
     else
