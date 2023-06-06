@@ -196,7 +196,7 @@ def work_with_dolly():
 
         ci = 0
         for (idx, rejection_prompts, appeal_prompts) in batch:
-            start = start_idxs[c]
+            start = start_idxs[ci]
             ci = ci + 1
             results = list(map(extract_text, instruct_pipeline(prompts)))
             rejections = map(cleanup_rejection, results[start:len(rejection_prompts)])
