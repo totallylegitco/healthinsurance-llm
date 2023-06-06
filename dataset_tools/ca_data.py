@@ -207,7 +207,7 @@ On review the following was found {findings}"""
 
     l = imrs.apply(generate_prompts, axis=1).tolist()
 
-    batch_size = 200
+    batch_size = 100
 
     for b in range(0, len(l), batch_size):
         batch = l[b: b + batch_size]
