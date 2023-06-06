@@ -9,17 +9,21 @@ OUTDIR=${OUTDIR:-"new_model"}
 #QLORA=${QLORA:-"--qlora-4bit true"}
 EPOCHS=${EPOCHS:-"10"}
 
+gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut -f 1 -d " ")
+
 pip install -r requirements.txt
-if [ $(uname -m) == "aarch64" ]; then
-  # On ARM for bits and bytes we need neon
-  if [ ! -d sse2neon ]; then
-    git clone https://github.com/DLTcollab/sse2neon.git
-    make
-    sudo cp sse2neon.h /usr/include/
+if [ $(gpu_memory) < 40564 ]; then
+  if [ $(uname -m) == "aarch64" ]; then
+    # On ARM for bits and bytes we need neon
+    if [ ! -d sse2neon ]; then
+      git clone https://github.com/DLTcollab/sse2neon.git
+      make
+      sudo cp sse2neon.h /usr/include/
+    fi
+  else
+    pip install bitsandbytes
+    python -m bitsandbytes || ./setup_bits_and_bytes.sh
   fi
-else
-  pip install bitsandbytes
-  python -m bitsandbytes || ./setup_bits_and_bytes.sh
 fi
 
 if [ ! -d dolly ]; then
@@ -39,8 +43,6 @@ fi
 if [ ! -d out ]; then
   mkdir out
 fi
-
-gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut -f 1 -d " ")
 
 if [ ! -d data_sources ]; then
   mkdir -p data_sources
