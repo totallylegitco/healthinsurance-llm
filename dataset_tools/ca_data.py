@@ -236,9 +236,10 @@ On review the following was found {findings[0:1000]}""",
             text = f"Dear [MEMBER]; {text}."
         if not "appeal" in text:
             text = f"{text}. You have the right to appeal this decision."
-        def mark_unnecessary(match_objc):
-            return f"{match_obj.group(1)} not medically {match_object.group(2)}"
-        text = re.sub(r"(is|are|were)\s*medically\s*(necessary|required)", mark_unnecessary, text)
+            
+        def mark_unnecessary(match):
+            return f"{match.group(1)} not medically {match.group(2)}"
+        text = re.sub(r"(is|are|were|be)\s*medically\s*(necessary|required)", mark_unnecessary, text)
         return text
 
 
