@@ -104,6 +104,6 @@ rm -rf out
 cp -af ../out ./
 
 # TODO: Select 4bit qlora based on GPU memory available.
-python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 1 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --config ./config/a100_config.json
+python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 1 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a100_config.json
 cd ..
 python test_new_model.py
