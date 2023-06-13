@@ -13,7 +13,7 @@ EPOCHS=${EPOCHS:-"10"}
 gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut -f 1 -d " ")
 
 pip install -r requirements.txt
-if [ ${gpu_memory} < 40564 ]; then
+if [ "${gpu_memory}" -lt 40564 ]; then
   if [ $(uname -m) == "aarch64" ]; then
     # On ARM for bits and bytes we need neon
     if [ ! -d sse2neon ]; then
@@ -105,7 +105,38 @@ cp -af ../out ./
 
 # TODO: Select 4bit qlora based on GPU memory available.
 if [ "$gpu_memory" == "40960" ]; then
-  python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 1 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a100_config.json
+  python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 1 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS}
+  # In theory this would be good but we get an error if we try and run with it.
+#  Traceback (most recent call last):
+#  File "/usr/lib/python3.8/runpy.py", line 194, in _run_module_as_main
+#    return _run_code(code, main_globals, None,
+#  File "/usr/lib/python3.8/runpy.py", line 87, in _run_code
+#    exec(code, run_globals)
+#  File "/home/ubuntu/dolly/training/trainer.py", line 332, in <module>
+#    main()
+#  File "/home/ubuntu/.local/lib/python3.8/site-packages/click/core.py", line 1130, in __call__
+#    return self.main(*args, **kwargs)
+#  File "/home/ubuntu/.local/lib/python3.8/site-packages/click/core.py", line 1055, in main
+#    rv = self.invoke(ctx)
+#  File "/home/ubuntu/.local/lib/python3.8/site-packages/click/core.py", line 1404, in invoke
+#    return ctx.invoke(self.callback, **ctx.params)
+#  File "/home/ubuntu/.local/lib/python3.8/site-packages/click/core.py", line 760, in invoke
+#    return __callback(*args, **kwargs)
+#  File "/home/ubuntu/dolly/training/trainer.py", line 324, in main
+#    train(**kwargs)
+#  File "/home/ubuntu/dolly/training/trainer.py", line 269, in train
+#    trainer = Trainer(
+#  File "/home/ubuntu/.local/lib/python3.8/site-packages/transformers/trainer.py", line 349, in __init__
+#    self.create_accelerator_and_postprocess()
+#  File "/home/ubuntu/.local/lib/python3.8/site-packages/transformers/trainer.py", line 3968, in create_accelerator_and_postprocess
+#    self.accelerator = Accelerator(
+#  File "/home/ubuntu/.local/lib/python3.8/site-packages/accelerate/accelerator.py", line 282, in __init__
+#    deepspeed_plugin.set_mixed_precision(mixed_precision)
+#  File "/home/ubuntu/.local/lib/python3.8/site-packages/accelerate/utils/dataclasses.py", line 652, in set_mixed_precision
+#    raise ValueError(
+#ValueError: `--mixed_precision` arg cannot be set to `fp16` when `bf16` is set in the DeepSpeed config file.
+
+  #--deepspeed ./config/a100_config.json
 else
   python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 1 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS}
 fi
