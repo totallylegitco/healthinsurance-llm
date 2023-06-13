@@ -46,6 +46,26 @@ fi
 
 if [ ! -d data_sources ]; then
   mkdir -p data_sources
+  if [ ! -f "./data_sources/wpath_soc7.pdf"]; then
+    wget https://www.wpath.org/media/cms/Documents/SOC%20v7/SOC%20V7_English2012.pdf?_t=1613669341 -O \
+	 ./data_sources/wpath_soc7.pdf
+  fi
+  if [ ! -f "./data_sources/wpath_soc8.pdf"]; then
+    wget https://www.tandfonline.com/doi/pdf/10.1080/26895269.2022.2100644 -O \
+	 ./data_sources/wpath_soc8.pdf
+  fi
+  if [ ! -f "./data_sources/hiv_prep_soc.pdf"]; then
+    wget https://www.cdc.gov/hiv/pdf/risk/prep/cdc-hiv-prep-guidelines-2021.pdf -O \
+	 ./data_sources/hiv_prep_soc.pdf
+  fi
+  if [ ! -f "./data_sources/erisa.pdf" ]; then
+    wget https://www.govinfo.gov/content/pkg/COMPS-896/pdf/COMPS-896.pdf -O \
+	 ./data_sources/erisa.pdf
+  fi
+  if [! -f "./data_sources/ppacacon.pdf" ]; then
+    wget http://housedocs.house.gov/energycommerce/ppacacon.pdf -O \
+	 ./data_sources/ppacacon.pdf
+  fi
   if [ ! -f "./data_sources/ca-independent-medical-review-imr-determinations-trends.csv" ]; then
     # From https://data.chhs.ca.gov/dataset/independent-medical-review-imr-determinations-trend/resource/3340c5d7-4054-4d03-90e0-5f44290ed095
     # From https://data.chhs.ca.gov/dataset/independent-medical-review-imr-determinations-trend
@@ -64,8 +84,10 @@ fi
 
 if [ ! -d combined-llm-data ]; then
   mkdir -p combined-llm-data
-  ln -s $(pwd)/appeals-llm-data/* $(pwd)/combined-llm-data/
-  ln -s $(pwd)/generated-llm-data/* $(pwd)/combined-llm-data/
+  # Generated file list can be too long to pass through the shell as an argument.
+  for i in ./generated-llm-data*/*.txt; do cp "$i" ./combined-llm-data/; done
+  # Manual not so much
+  cp $(pwd)/appeals-llm-data/* $(pwd)/combined-llm-data/
 fi
 
 
@@ -81,6 +103,6 @@ rm -rf out
 cp -af ../out ./
 
 # TODO: Select 4bit qlora based on GPU memory available.
-python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 1 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS}
+python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 1 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --config ./config/a100_config.json
 cd ..
 python test_new_model.py

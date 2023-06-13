@@ -3,7 +3,6 @@ from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     pipeline)
-from os import listdir
 from os.path import join
 import pandas
 import torch
@@ -174,7 +173,7 @@ def work_with_generative():
                 return append_context_dolly(prompt)
             else:
                 return append_context_alpasta(prompt)
-                
+
         def append_context_dolly(prompt):
 #            return [
 #                f"""{prompt}
@@ -184,7 +183,7 @@ def work_with_generative():
 #                prompt
 #            ]
             return [prompt]
-        
+
         def append_context_alpasta(prompt):
             return [
                 f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
@@ -240,7 +239,7 @@ def work_with_generative():
             text = f"Dear [MEMBER]; {text}."
         if not "appeal" in text:
             text = f"{text}. You have the right to appeal this decision."
-            
+
         def mark_unnecessary(match):
             return f"{match.group(1)} not medically {match.group(2)}"
         text = re.sub(r"(is|are|were|be)\s*medically\s*(necessary|required)", mark_unnecessary, text)
