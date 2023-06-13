@@ -2,6 +2,7 @@
 
 set -ex
 
+export PATH=$PATH:~/.local/bin
 INPUT_MODEL=${INPUT_MODEL:-"databricks/dolly-v2-7b"}
 TR_DATA=${TR_DATA:-"out"}
 OUTDIR=${OUTDIR:-"new_model"}

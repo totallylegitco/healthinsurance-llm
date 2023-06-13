@@ -2,3 +2,4 @@ click
 tensorboard
 sacremoses
 Xformers
+torch<2,>=1.13.1
