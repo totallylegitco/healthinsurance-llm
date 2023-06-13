@@ -50,10 +50,13 @@ with open("out/out.jsonl", "w") as o:
         for page in reader.pages:
             c = c + 1
             prompt = f"What is on page {c} of {pdf}?"
+            r = page.extract_text()
+            if r == "" or r is None:
+                continue
             record = json.dumps({
                 "instruction": prompt,
                 "context": "",
-                "response": page.extract_text(),
+                "response": r,
                 "category": "open_qa"})
             record.replace("\n", "")
             o.write(record)
@@ -70,7 +73,7 @@ with open("out/out.jsonl", "w") as o:
                     continue
                 for a in case["appeal"]:
                     appeal = load_record(a)
-                    if (a is None or a == "null" or
+                    if (a is None or a == "null" or a == "" or
                         len(a) < 10):
                         continue
                     prompt = f"{header}{rejection}"
