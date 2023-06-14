@@ -42,25 +42,24 @@ for f in filter(check_record, data_files):
     insert_into_case_dict(f)
 
 # This is going to be an explosion! But intentional.
+recommend_regex = re.compile(r"We recommend ([^.]+)\.", re.IGNORECASE)
 with open("out/out.jsonl", "w") as o:
     def process_pdf(pdf):
         print(f"Loading {pdf}")
         reader = PdfReader(pdf)
         c = 0
         for page in reader.pages:
-            c = c + 1
-            prompt = f"What is on page {c} of {pdf}?"
-            r = page.extract_text()
-            if r == "" or r is None:
-                continue
-            record = json.dumps({
-                "instruction": prompt,
-                "context": "",
-                "response": r,
+            t = page.extract_text()
+            for match in re.finditer(recommend_regex, t):
+                record = json.dumps({
+                    "instruction": f"What is one of the recommendations in {pdf}?",
+                    "context": "",
+                    "response": match.group(1),
                 "category": "open_qa"})
-            record.replace("\n", "")
-            o.write(record)
-            o.write("\n")
+                record.replace("\n", "")
+                o.write(record)
+                o.write("\n")
+
 
     for pdf in pdfs:
         process_pdf(pdf)

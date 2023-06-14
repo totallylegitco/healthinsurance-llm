@@ -16,5 +16,5 @@ fi
 cd bitsandbytes
 BUILD_COMMAND=$(python -m bitsandbytes 2>&1 |grep "make" |grep "CUDA_VERSION" |grep -v rm |grep -v "for example" |tail -n 1)
 bash -c "${BUILD_COMMAND}"
-python setup.py install
+sudo python setup.py install
 cd ..
