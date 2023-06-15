@@ -12,6 +12,8 @@ EPOCHS=${EPOCHS:-"10"}
 
 gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut -f 1 -d " ")
 
+python3 -m pip install --upgrade pip
+
 pip install -U -r requirements.txt
 if [ -z "${LD_LIBRARY_PATH}" ]; then
   export LD_LIBRARY_PATH=$PATH

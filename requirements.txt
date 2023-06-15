@@ -1,5 +1,6 @@
 accelerate
 pandas
+protobuf<3.20
 einops
 click
 tensorboard
