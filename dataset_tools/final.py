@@ -42,47 +42,66 @@ for f in filter(check_record, data_files):
     insert_into_case_dict(f)
 
 # This is going to be an explosion! But intentional.
-recommend_regex = re.compile(r"We recommend ([^.]+)\.", re.IGNORECASE)
-with open("out/out.jsonl", "w") as o:
-    def process_pdf(pdf):
-        print(f"Loading {pdf}")
-        reader = PdfReader(pdf)
-        c = 0
-        for page in reader.pages:
-            t = page.extract_text()
-            for match in re.finditer(recommend_regex, t):
-                record = json.dumps({
-                    "instruction": f"What is one of the recommendations in {pdf}?",
-                    "context": "",
-                    "response": match.group(1),
-                "category": "open_qa"})
-                record.replace("\n", "")
-                o.write(record)
-                o.write("\n")
-
-
-    for pdf in pdfs:
-        process_pdf(pdf)
-
-    for (case_key, case) in cases.items():
-        try:
-            for r in case["rejection"]:
-                rejection = load_record(r)
-                if r is None or r == "null":
-                    continue
-                for a in case["appeal"]:
-                    appeal = load_record(a)
-                    if (a is None or a == "null" or a == "" or
-                        len(a) < 10):
-                        continue
-                    prompt = f"{header}{rejection}"
+recommend_regex = re.compile(r"recommends* ([^.]+)\.", re.IGNORECASE)
+with open("out/train.jsonl", "w") as o:
+    with open("out_oa/train.jsonl", "w") as oa:
+        def process_pdf(pdf):
+            print(f"Loading {pdf}")
+            reader = PdfReader(pdf)
+            c = 0
+            for page in reader.pages:
+                t = page.extract_text().replace("-\n", "").replace("\n", "").replace(
+                    "\u201c", '"').replace("\u201d", '"')
+                results = set()
+                for match in re.finditer(recommend_regex, t):
+                    result = match.group(1)
+                    results.add(result)
+                for result in results:
+                    instruction = f"What is one of the recommendations in {pdf}?"
                     record = json.dumps({
-                        "instruction": prompt,
+                        "instruction": instruction,
                         "context": "",
-                        "response": appeal,
-                        "category": category})
+                        "response": result,
+                        "category": "open_qa"})
                     record.replace("\n", "")
                     o.write(record)
                     o.write("\n")
-        except Exception as e:
-            print(f"Exception {e} while processing case {case}")
+                    simple_text = f"### Human {instruction} ### Assistant {result}"
+                    simple_record = json.dumps({"text": simple_text})
+                    simple_record.replace("\n", "")
+                    oa.write(simple_record)
+                    oa.write("\n")
+
+
+        for pdf in pdfs:
+            process_pdf(pdf)
+
+        for (case_key, case) in cases.items():
+            try:
+                for r in case["rejection"]:
+                    rejection = load_record(r)
+                    if r is None or r == "null":
+                        continue
+                    for a in case["appeal"]:
+                        appeal = load_record(a)
+                        if (a is None or a == "null" or a == "" or
+                            len(a) < 10):
+                            continue
+                        prompt = f"{header}{rejection}"
+                        record = json.dumps({
+                            "instruction": prompt,
+                            "context": "",
+                            "response": appeal,
+                            "category": category})
+                        record.replace("\n", "")
+                        o.write(record)
+                        o.write("\n")
+                        simple_text = f"### Human {prompt} ### Assistant {appeal}"
+                        simple_record = json.dumps({
+                            "text": simple_text})
+                        simple_record.replace("\n", "")
+                        oa.write(simple_record)
+                        oa.write("\n")
+
+            except Exception as e:
+                print(f"Exception {e} while processing case {case}")

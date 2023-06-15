@@ -3,7 +3,7 @@
 set -ex
 
 export PATH=$PATH:~/.local/bin:/usr/lib/x86_64-linux-gnu
-INPUT_MODEL=${INPUT_MODEL:-"databricks/dolly-v2-3b"}
+INPUT_MODEL=${INPUT_MODEL:-"Falcon-7B"}
 TR_DATA=${TR_DATA:-"out"}
 OUTDIR=${OUTDIR:-"new_model"}
 # Only in holden's branch and even then it its kind of funky.
@@ -87,7 +87,9 @@ if [ ! -d data_sources ]; then
   fi
 fi
 
-if [ ! -f "out/out.jsonl" ]; then
+mkdir -p out_oa
+
+if [ ! -f "out/train.jsonl" ]; then
   if [ ! -d combined-llm-data ]; then
     mkdir -p combined-llm-data
     # Generated file list can be too long to pass through the shell as an argument.
@@ -101,18 +103,5 @@ fi
 
 
 
-cd dolly
-
-rm -rf out
-cp -af ../out ./
-
-# TODO: Select 4bit qlora based on GPU memory available.
-if [ "$gpu_memory" == "40960" ]; then
-  python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a100_config.json --bf16
-elif [ "$gpu_memory" == "23028" ]; then
-  python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a10_config.json --per-device-eval-batch-size 3 --per-device-train-batch-size 3 --bf16 false
-else
-  python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 2000 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS}
-fi
-cd ..
+python train.py --input-model "tiiuae/falcon-7b" --training-dataset out_oa
 python test_new_model.py
