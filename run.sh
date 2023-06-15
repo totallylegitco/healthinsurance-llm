@@ -105,7 +105,7 @@ fi
 
 
 
-if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b"]; then
+if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
 # dolly
   cd dolly
   pip install -r requirements.txt
@@ -117,7 +117,8 @@ if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b"]; then
      python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 2000 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS}
    fi
 else
-# falcon
-  python train.py --input-model ${INPUT_MODEL} --training-dataset out_oa
+  # falcon
+  pip install "torch>2"
+  python train.py --input-model ${INPUT_MODEL} --training-dataset out_oa --qlora-4bit true
   python test_new_model.py
 fi

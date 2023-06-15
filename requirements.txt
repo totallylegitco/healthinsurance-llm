@@ -9,6 +9,5 @@ click
 tensorboard
 sacremoses
 Xformers
-torch>=1.13.1,<2
 trl
 peft
