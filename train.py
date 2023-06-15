@@ -81,8 +81,8 @@ def train(local_output_dir: str,
         input_model,
         qlora_4bit)
     model.config.use_cache = False
-    print(model)
 
+    print("Training...")
     training_arguments = TrainingArguments(
         output_dir=local_output_dir,
         per_device_train_batch_size=1,

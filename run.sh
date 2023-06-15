@@ -3,7 +3,7 @@
 set -ex
 
 export PATH=$PATH:~/.local/bin:/usr/lib/x86_64-linux-gnu
-INPUT_MODEL=${INPUT_MODEL:-"Falcon-7B"}
+INPUT_MODEL=${INPUT_MODEL:-"databricks/dolly-v2-7b"}
 TR_DATA=${TR_DATA:-"out"}
 OUTDIR=${OUTDIR:-"new_model"}
 # Only in holden's branch and even then it its kind of funky.
@@ -105,5 +105,19 @@ fi
 
 
 
-python train.py --input-model "tiiuae/falcon-7b" --training-dataset out_oa
-python test_new_model.py
+if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b"]; then
+# dolly
+  cd dolly
+  pip install -r requirements.txt
+   if [ "$gpu_memory" == "40960" ]; then
+     python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a100_config.json --bf16
+   elif [ "$gpu_memory" == "23028" ]; then
+     python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a10_config.json --per-device-eval-batch-size 3 --per-device-train-batch-size 3 --bf16 false
+   else
+     python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 2000 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS}
+   fi
+else
+# falcon
+  python train.py --input-model ${INPUT_MODEL} --training-dataset out_oa
+  python test_new_model.py
+fi
