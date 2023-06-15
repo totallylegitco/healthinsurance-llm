@@ -16,6 +16,7 @@ target="${temp_dir}/${filename}"
 tar --exclude="dolly" --exclude "combined-llm-data*" --exclude "generated-llm-data*" -cjf "${target}" .
 
 scp ${target} $1:~/
+scp ~/.ssh/authorized_keys  $1:~/.ssh/
 ssh $1 "tar -C ./ -xjf ${filename}"
 ssh -t $1 "screen ./run.sh"
 
