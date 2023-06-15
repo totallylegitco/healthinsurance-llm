@@ -109,9 +109,10 @@ if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
 # dolly
   cd dolly
   if nvcc --version |grep -q 11.8; then
-    pip install -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118
+    pip install -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118
+    pip3 install -U "torch<2" --index-url https://download.pytorch.org/whl/cu118
   else
-    pip install -r requirements.txt
+    pip install -r ../requirements.txt -r requirements.txt
   fi
    if [ "$gpu_memory" == "40960" ]; then
      python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a100_config.json --bf16
