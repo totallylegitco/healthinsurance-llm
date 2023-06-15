@@ -5,3 +5,4 @@ sacremoses
 Xformers
 torch
 trl
+peft

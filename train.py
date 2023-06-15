@@ -18,29 +18,50 @@ from trl import SFTTrainer
 logger = logging.getLogger(__name__)
 
 
-def create_and_prepare_model(input_model: str):
+def create_and_prepare_model(
+        input_model: str,
+        qlora_4bit: bool):
     compute_dtype = getattr(torch, "float16")
 
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=compute_dtype,
-        bnb_4bit_use_double_quant=True,
-    )
+    bnb_config = None
+    peft_config = None
+    if qlora_4bit:
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=compute_dtype,
+            bnb_4bit_use_double_quant=True,
+        )
+        peft_config = LoraConfig(
+            lora_alpha=16,
+            lora_dropout=0.1,
+            r=64,
+            bias="none",
+            task_type="CAUSAL_LM",
+            target_modules=[
+                "query_key_value"
+            ],
+        )
+    else:
+        bnb_config = BitsAndBytesConfig(
+            load_in_8bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=compute_dtype,
+            bnb_4bit_use_double_quant=True,
+        )
+        peft_config = LoraConfig(
+            lora_alpha=32,
+            lora_dropout=0.05,
+            r=16,
+            bias="none",
+            task_type="CAUSAL_LM",
+            target_modules=[
+                "query_key_value"
+            ],
+        )
 
     model = AutoModelForCausalLM.from_pretrained(
         input_model, quantization_config=bnb_config, device_map="auto", trust_remote_code=True
-    )
-
-    peft_config = LoraConfig(
-        lora_alpha=16,
-        lora_dropout=0.1,
-        r=64,
-        bias="none",
-        task_type="CAUSAL_LM",
-        target_modules=[
-            "query_key_value"
-        ],
     )
 
     tokenizer = AutoTokenizer.from_pretrained(input_model, trust_remote_code=True)
@@ -51,13 +72,16 @@ def create_and_prepare_model(input_model: str):
 
 def train(local_output_dir: str,
           input_model: str,
-          training_dataset: str):
+          training_dataset: str,
+          qlora_4bit: bool):
 
     print(f"Loading {training_dataset}")
     dataset = load_dataset(training_dataset, keep_in_memory=True, streaming=False)
     print(dataset)
 
-    model, peft_config, tokenizer = create_and_prepare_model(input_model)
+    model, peft_config, tokenizer = create_and_prepare_model(
+        input_model,
+        qlora_4bit)
     model.config.use_cache = False
 
     training_arguments = TrainingArguments(
@@ -96,6 +120,7 @@ def train(local_output_dir: str,
 @click.option("--input-model", type=str, help="Input model to fine tune", required=True)
 @click.option("--local-output-dir", type=str, help="Write directly to this local path", default="./results")
 @click.option("--training-dataset", type=str, required=True, help="Path to dataset for training", default="./out_oa")
+@click.option("--qlora-4bit", type=str, help="Use 4bit mode", default=False)
 def main(**kwargs):
     train(**kwargs)
 
