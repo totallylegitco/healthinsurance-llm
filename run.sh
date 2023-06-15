@@ -45,6 +45,7 @@ fi
 # Check bits and bytes, it needs to be compiled from source for the jetson (and some others)
 if [ ! -z "$QLORA" ]; then
   python -m bitsandbytes || ./setup_bits_and_bytes.sh
+  python -m bitsandbytes | grep "The installed version of bitsandbytes was compiled without GPU support." || ./setup_bits_and_bytes.sh
 fi
 
 if [ ! -d out ]; then
@@ -128,6 +129,6 @@ else
   else
     pip3 install -U "torch>2" torchvision torchaudio
   fi
-  python train.py --input-model ${INPUT_MODEL} --training-dataset out_oa
+  python train.py --input-model ${INPUT_MODEL} --training-dataset out_oa --qlora-4bit true
   python test_new_model.py
 fi
