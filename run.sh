@@ -108,7 +108,7 @@ fi
 if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
 # dolly
   cd dolly
-  if [ nvcc --version |grep 11.8 ]; then
+  if nvcc --version |grep -q 11.8; then
     pip install -r requirements.txt  --index-url https://download.pytorch.org/whl/cu118
   else
     pip install -r requirements.txt
@@ -122,7 +122,7 @@ if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
    fi
 else
   # falcon
-  if [ nvcc --version |grep 11.8 ]; then
+  if nvcc --version |grep -q 11.8; then
     pip3 install -U "torch>2" torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
   else
     pip3 install -U "torch>2" torchvision torchaudio
