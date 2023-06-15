@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 def create_and_prepare_model(
         input_model: str,
         qlora_4bit: bool,
-        qlora_8bit):
+        qlora_8bit: bool):
     compute_dtype = getattr(torch, "float16")
 
     bnb_config = None
@@ -79,7 +79,7 @@ def train(local_output_dir: str,
     dataset = load_dataset(training_dataset, keep_in_memory=True, streaming=False)
     print(dataset)
 
-    print("Loading initial model...")
+    print("Loading initial model... 4bit {qlora_4bit} 8bit {qlora_8bit}")
     model, peft_config, tokenizer = create_and_prepare_model(
         input_model,
         qlora_4bit,
@@ -110,7 +110,7 @@ def train(local_output_dir: str,
         train_dataset=dataset['train'],
         peft_config=peft_config,
         dataset_text_field="text",
-        max_seq_length=5120,
+        max_seq_length=10614784,
         tokenizer=tokenizer,
         args=training_arguments,
         packing=True,

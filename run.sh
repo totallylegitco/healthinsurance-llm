@@ -109,7 +109,7 @@ if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
 # dolly
   cd dolly
   if nvcc --version |grep -q 11.8; then
-    pip install -r requirements.txt  --index-url https://download.pytorch.org/whl/cu118
+    pip install -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118
   else
     pip install -r requirements.txt
   fi
