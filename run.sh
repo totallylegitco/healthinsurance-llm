@@ -108,7 +108,11 @@ fi
 if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
 # dolly
   cd dolly
-  pip install -r requirements.txt
+  if [ nvcc --version |grep 11.8 ]; then
+    pip install -r requirements.txt  --index-url https://download.pytorch.org/whl/cu118
+  else
+    pip install -r requirements.txt
+  fi
    if [ "$gpu_memory" == "40960" ]; then
      python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a100_config.json --bf16
    elif [ "$gpu_memory" == "23028" ]; then
@@ -118,7 +122,11 @@ if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
    fi
 else
   # falcon
-  pip install "torch>2"
-  python train.py --input-model ${INPUT_MODEL} --training-dataset out_oa --qlora-4bit true
+  if [ nvcc --version |grep 11.8 ]; then
+    pip3 install -U "torch>2" torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+  else
+    pip3 install -U "torch>2" torchvision torchaudio
+  fi
+  python train.py --input-model ${INPUT_MODEL} --training-dataset out_oa
   python test_new_model.py
 fi

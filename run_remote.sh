@@ -1,5 +1,7 @@
 #!/bin/bash
 
+INPUT_MODEL=${INPUT_MODEL:-"databricks/dolly-v2-7b"}
+
 set -ex
 
 if [ -z "$1" ]; then
@@ -18,6 +20,6 @@ tar --exclude="dolly" --exclude "combined-llm-data*" --exclude "generated-llm-da
 scp ${target} $1:~/
 scp ~/.ssh/authorized_keys  $1:~/.ssh/
 ssh $1 "tar -C ./ -xjf ${filename}"
-ssh -t $1 "screen ./run.sh"
+ssh -t $1 "INPUT_MODEL=${INPUT_MODEL} screen ./run.sh"
 
 rm -rf ${temp_dir}

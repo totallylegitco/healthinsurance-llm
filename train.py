@@ -6,7 +6,6 @@ from peft import LoraConfig
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
-    BitsAndBytesConfig,
     AutoTokenizer,
     TrainingArguments
 )
@@ -20,12 +19,14 @@ logger = logging.getLogger(__name__)
 
 def create_and_prepare_model(
         input_model: str,
-        qlora_4bit: bool):
+        qlora_4bit: bool,
+        qlora_8bit):
     compute_dtype = getattr(torch, "float16")
 
     bnb_config = None
     peft_config = None
     if qlora_4bit:
+        from transformers import BitsAndBytesConfig
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
@@ -42,7 +43,8 @@ def create_and_prepare_model(
                 "query_key_value"
             ],
         )
-    else:
+    elif qlora_8bit:
+        from transformers import BitsAndBytesConfig
         bnb_config = BitsAndBytesConfig(
             load_in_8bit=True,
         )
@@ -70,7 +72,8 @@ def create_and_prepare_model(
 def train(local_output_dir: str,
           input_model: str,
           training_dataset: str,
-          qlora_4bit: bool):
+          qlora_4bit: bool,
+          qlora_8bit: bool):
 
     print(f"Loading {training_dataset}")
     dataset = load_dataset(training_dataset, keep_in_memory=True, streaming=False)
@@ -79,7 +82,8 @@ def train(local_output_dir: str,
     print("Loading initial model...")
     model, peft_config, tokenizer = create_and_prepare_model(
         input_model,
-        qlora_4bit)
+        qlora_4bit,
+        qlora_8bit)
     model.config.use_cache = False
 
     print("Training...")
@@ -120,6 +124,7 @@ def train(local_output_dir: str,
 @click.option("--local-output-dir", type=str, help="Write directly to this local path", default="./results")
 @click.option("--training-dataset", type=str, required=True, help="Path to dataset for training", default="./out_oa")
 @click.option("--qlora-4bit", type=str, help="Use 4bit mode", default=False)
+@click.option("--qlora-8bit", type=str, help="Use 8bit mode", default=False)
 def main(**kwargs):
     print(f"Running w/ {kwargs}")
     train(**kwargs)
