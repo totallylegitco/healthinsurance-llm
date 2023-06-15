@@ -19,7 +19,7 @@ if [ -z "${LD_LIBRARY_PATH}" ]; then
   export LD_LIBRARY_PATH=$PATH
 fi
 
-if [ "${gpu_memory}" -lt 40564 ]; then
+if [ "${gpu_memory}" -lt 49564 ]; then
   if [ $(uname -m) == "aarch64" ]; then
     # On ARM for bits and bytes we need neon
     if [ ! -d sse2neon ]; then

@@ -45,9 +45,6 @@ def create_and_prepare_model(
     else:
         bnb_config = BitsAndBytesConfig(
             load_in_8bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=compute_dtype,
-            bnb_4bit_use_double_quant=True,
         )
         peft_config = LoraConfig(
             lora_alpha=32,
