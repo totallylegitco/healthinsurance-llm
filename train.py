@@ -79,10 +79,12 @@ def train(local_output_dir: str,
     dataset = load_dataset(training_dataset, keep_in_memory=True, streaming=False)
     print(dataset)
 
+    print("Loading initial model...")
     model, peft_config, tokenizer = create_and_prepare_model(
         input_model,
         qlora_4bit)
     model.config.use_cache = False
+    print(model)
 
     training_arguments = TrainingArguments(
         output_dir=local_output_dir,
@@ -122,6 +124,7 @@ def train(local_output_dir: str,
 @click.option("--training-dataset", type=str, required=True, help="Path to dataset for training", default="./out_oa")
 @click.option("--qlora-4bit", type=str, help="Use 4bit mode", default=False)
 def main(**kwargs):
+    print(f"Running w/ {kwargs}")
     train(**kwargs)
 
 

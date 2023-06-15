@@ -12,7 +12,7 @@ EPOCHS=${EPOCHS:-"10"}
 
 gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut -f 1 -d " ")
 
-pip install -r requirements.txt
+pip install -U -r requirements.txt
 if [ -z "${LD_LIBRARY_PATH}" ]; then
   export LD_LIBRARY_PATH=$PATH
 fi
@@ -26,14 +26,14 @@ if [ "${gpu_memory}" -lt 40564 ]; then
       sudo cp sse2neon.h /usr/include/
     fi
   else
-    pip install bitsandbytes
+    pip install -U bitsandbytes
     python -m bitsandbytes || ./setup_bits_and_bytes.sh
   fi
 fi
 
 if [ ! -d dolly ]; then
   git clone https://github.com/databrickslabs/dolly.git
-  pip install -r ./dolly/requirements.txt
+#  pip install -r ./dolly/requirements.txt
 fi
 
 if [ ! -d "appeals-llm-data" ]; then

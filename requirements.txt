@@ -1,3 +1,5 @@
+accelerate
+pandas
 einops
 click
 tensorboard
