@@ -43,6 +43,7 @@ for f in filter(check_record, data_files):
 
 # This is going to be an explosion! But intentional.
 recommend_regex = re.compile(r"recommends* ([^.]+)\.", re.IGNORECASE)
+alpaca = open("out/train_alpaca.jsonl", "w")
 with open("out/train.jsonl", "w") as o:
     with open("out_oa/train.jsonl", "w") as oa:
         def process_pdf(pdf):
@@ -66,6 +67,13 @@ with open("out/train.jsonl", "w") as o:
                     record.replace("\n", "")
                     o.write(record)
                     o.write("\n")
+                    alpaca_record = json.dumps({
+                        "instruction": instruction,
+                        "input": "",
+                        "output": result})
+                    alpaca_record.replace("\n", "")
+                    alpaca.write(alpaca_record)
+                    alpaca.write("\n")
                     simple_text = f"### Human {instruction} ### Assistant {result}"
                     simple_record = json.dumps({"text": simple_text})
                     simple_record.replace("\n", "")
@@ -96,6 +104,13 @@ with open("out/train.jsonl", "w") as o:
                         record.replace("\n", "")
                         o.write(record)
                         o.write("\n")
+                        alpaca_record = json.dumps({
+                            "instruction": prompt,
+                            "input": "",
+                            "output": appeal})
+                        alpaca_record.replace("\n", "")
+                        alpaca.write(alpaca_record)
+                        alpaca.write("\n")
                         simple_text = f"### Human {prompt} ### Assistant {appeal}"
                         simple_record = json.dumps({
                             "text": simple_text})

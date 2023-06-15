@@ -14,7 +14,7 @@ gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut 
 
 python3 -m pip install --upgrade pip
 
-pip install -U -r requirements.txt
+pip3 install -U -r requirements.txt
 if [ -z "${LD_LIBRARY_PATH}" ]; then
   export LD_LIBRARY_PATH=$PATH
 fi
@@ -28,14 +28,14 @@ if [ "${gpu_memory}" -lt 49564 ]; then
       sudo cp sse2neon.h /usr/include/
     fi
   else
-    pip install -U bitsandbytes
+    pip3 install -U bitsandbytes
     python -m bitsandbytes || ./setup_bits_and_bytes.sh
   fi
 fi
 
 if [ ! -d dolly ]; then
   git clone https://github.com/databrickslabs/dolly.git
-#  pip install -r ./dolly/requirements.txt
+#  pip3 install -r ./dolly/requirements.txt
 fi
 
 if [ ! -d "appeals-llm-data" ]; then
@@ -104,16 +104,20 @@ if [ ! -f "out/train.jsonl" ]; then
   python -m dataset_tools.final
 fi
 
+if [ ! -d lit-parrot ]; then
+  git clone https://github.com/Lightning-AI/lit-parrot.git
+fi
+
 
 
 if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
 # dolly
   cd dolly
   if nvcc --version |grep -q 11.8; then
-    pip install -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118
+    pip3 install -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118
     pip3 install -U "torch<2" --index-url https://download.pytorch.org/whl/cu118
   else
-    pip install -r ../requirements.txt -r requirements.txt
+    pip3 install -r ../requirements.txt -r requirements.txt
   fi
    if [ "$gpu_memory" == "40960" ]; then
      python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a100_config.json --bf16
@@ -124,11 +128,21 @@ if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
    fi
 else
   # falcon
+  mkdir -p lit-parrot/data/alpaca
+  cp out/*.jsonl lit-parrot/data/alpaca/
+  cd lit-parrot
   if nvcc --version |grep -q 11.8; then
-    pip3 install -U "torch>2" torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+    pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118 --extra-index-url https://download.pytorch.org/whl/nightly/cu118
+    pip3 install -U --index-url https://download.pytorch.org/whl/nightly/cu118 --pre 'torch>=2.1.0dev'
   else
-    pip3 install -U "torch>2" torchvision torchaudio
+    pip3 install --index-url https://download.pytorch.org/whl/nightly/ --pre 'torch>=2.1.0dev'
+    pip3 install -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118
   fi
-  python train.py --input-model ${INPUT_MODEL} --training-dataset out_oa --qlora-4bit true
-  python test_new_model.py
+  python scripts/download.py --repo_id ${INPUT_MODEL}
+  python scripts/convert_hf_checkpoint.py --checkpoint_dir checkpoints/${INPUT_MODEL}
+  python ./scripts/prepare_alpaca.py --data_file_name train_alpaca.jsonl  --checkpoint_dir ./checkpoints/tiiuae/falcon-7b/
+  python generate/base.py --prompt "Hello, my name is" --checkpoint_dir checkpoints/${INPUT_MODEL}
+  python finetune/adapter_v2.py
+#  python train.py --input-model ${INPUT_MODEL} --training-dataset out_oa --qlora-4bit true
+#  python test_new_model.py
 fi

@@ -16,7 +16,7 @@ from trl import SFTTrainer
 
 logger = logging.getLogger(__name__)
 
-device_map = "auto"
+device_map = {"": 0}
 
 def create_and_prepare_model(
         input_model: str,
@@ -26,6 +26,7 @@ def create_and_prepare_model(
 
     bnb_config = None
     peft_config = None
+    model = None
     if qlora_4bit:
         from transformers import BitsAndBytesConfig
         bnb_config = BitsAndBytesConfig(
@@ -44,11 +45,15 @@ def create_and_prepare_model(
                 "query_key_value"
             ],
         )
+        model = AutoModelForCausalLM.from_pretrained(
+            input_model, quantization_config=bnb_config, device_map=device_map, trust_remote_code=True
+        )
     elif qlora_8bit:
         from transformers import BitsAndBytesConfig
-        bnb_config = BitsAndBytesConfig(
-            load_in_8bit=True,
+        model = AutoModelForCausalLM.from_pretrained(
+            input_model, load_in_8bit=True, device_map=device_map, trust_remote_code=True
         )
+
         peft_config = LoraConfig(
             lora_alpha=32,
             lora_dropout=0.05,
@@ -59,10 +64,6 @@ def create_and_prepare_model(
                 "query_key_value"
             ],
         )
-
-    model = AutoModelForCausalLM.from_pretrained(
-        input_model, quantization_config=bnb_config, device_map=device_map, trust_remote_code=True
-    )
 
     tokenizer = AutoTokenizer.from_pretrained(input_model, trust_remote_code=True)
     tokenizer.pad_token = tokenizer.eos_token
@@ -114,7 +115,7 @@ def train(local_output_dir: str,
 #        max_seq_length=10614784,
         tokenizer=tokenizer,
         args=training_arguments,
-        packing=True,
+        max_seq_length=2048,
     )
 
     trainer.train()
