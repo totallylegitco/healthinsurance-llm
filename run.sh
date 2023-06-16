@@ -129,7 +129,7 @@ if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
 else
   # falcon
   mkdir -p lit-parrot/data/alpaca
-  cp out/*.jsonl lit-parrot/data/alpaca/
+  cp out/*_alpaca.jsonl lit-parrot/data/alpaca/
   cd lit-parrot
   if nvcc --version |grep -q 11.8; then
     pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118 --extra-index-url https://download.pytorch.org/whl/nightly/cu118

@@ -44,6 +44,8 @@ for f in filter(check_record, data_files):
 # This is going to be an explosion! But intentional.
 recommend_regex = re.compile(r"recommends* ([^.]+)\.", re.IGNORECASE)
 alpaca = open("out/train_alpaca.jsonl", "w")
+alpaca.write("[")
+first = True
 with open("out/train.jsonl", "w") as o:
     with open("out_oa/train.jsonl", "w") as oa:
         def process_pdf(pdf):
@@ -72,13 +74,16 @@ with open("out/train.jsonl", "w") as o:
                         "input": "",
                         "output": result})
                     alpaca_record.replace("\n", "")
+                    if first:
+                        first = False
+                    else:
+                        alpaca.write(",")
                     alpaca.write(alpaca_record)
                     alpaca.write("\n")
                     simple_text = f"### Human {instruction} ### Assistant {result}"
                     simple_record = json.dumps({"text": simple_text})
                     simple_record.replace("\n", "")
                     oa.write(simple_record)
-                    oa.write("\n")
 
 
         for pdf in pdfs:
@@ -109,6 +114,7 @@ with open("out/train.jsonl", "w") as o:
                             "input": "",
                             "output": appeal})
                         alpaca_record.replace("\n", "")
+                        alpaca.write(",")
                         alpaca.write(alpaca_record)
                         alpaca.write("\n")
                         simple_text = f"### Human {prompt} ### Assistant {appeal}"
@@ -116,7 +122,8 @@ with open("out/train.jsonl", "w") as o:
                             "text": simple_text})
                         simple_record.replace("\n", "")
                         oa.write(simple_record)
-                        oa.write("\n")
 
             except Exception as e:
                 print(f"Exception {e} while processing case {case}")
+
+oa.write("]")
