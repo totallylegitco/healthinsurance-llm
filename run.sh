@@ -134,9 +134,12 @@ else
   if nvcc --version |grep -q 11.8; then
     pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118 --extra-index-url https://download.pytorch.org/whl/nightly/cu118
     pip3 install -U --index-url https://download.pytorch.org/whl/nightly/cu118 --pre 'torch>=2.1.0dev'
+  elif nvcc --version |grep -q 11.6; then
+    pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118 --extra-index-url https://download.pytorch.org/whl/nightly/cu116
+    pip3 install -U --index-url https://download.pytorch.org/whl/nightly/cu116 --pre 'torch>=2.1.0dev'
   else
-    pip3 install --index-url https://download.pytorch.org/whl/nightly/ --pre 'torch>=2.1.0dev'
-    pip3 install -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118
+    pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118 --extra-index-url https://download.pytorch.org/whl/nightly/
+    pip3 install -U --index-url https://download.pytorch.org/whl/nightly/ --pre 'torch>=2.1.0dev'
   fi
   python scripts/download.py --repo_id ${INPUT_MODEL}
   python scripts/convert_hf_checkpoint.py --checkpoint_dir checkpoints/${INPUT_MODEL}
