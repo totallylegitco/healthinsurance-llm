@@ -129,4 +129,4 @@ with open("out/train.jsonl", "w") as o:
             except Exception as e:
                 print(f"Exception {e} while processing case {case}")
 
-oa.write("]")
+alpaca.write("]")
