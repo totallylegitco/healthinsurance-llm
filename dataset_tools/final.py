@@ -45,7 +45,9 @@ for f in filter(check_record, data_files):
 recommend_regex = re.compile(r"recommends* ([^.]+)\.", re.IGNORECASE)
 alpaca = open("out/train_alpaca.jsonl", "w")
 alpaca.write("[")
+
 first = True
+
 with open("out/train.jsonl", "w") as o:
     with open("out_oa/train.jsonl", "w") as oa:
         def process_pdf(pdf):
@@ -74,6 +76,7 @@ with open("out/train.jsonl", "w") as o:
                         "input": "",
                         "output": result})
                     alpaca_record.replace("\n", "")
+                    global first
                     if first:
                         first = False
                     else:
