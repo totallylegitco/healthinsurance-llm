@@ -15,7 +15,7 @@ temp_dir=$(mktemp -d -t "fartsXXXXXXXXXXX")
 filename=upload.tbz2
 target="${temp_dir}/${filename}"
 
-tar --exclude="dolly" --exclude "combined-llm-data*" --exclude "generated-llm-data*" -cjf "${target}" .
+tar --exclude lit-parrot --exclude="dolly" --exclude "combined-llm-data*" --exclude "generated-llm-data*" -cjf "${target}" .
 
 scp ${target} $1:~/
 scp ~/.ssh/authorized_keys  $1:~/.ssh/
