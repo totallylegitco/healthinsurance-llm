@@ -143,9 +143,9 @@ else
   fi
   python scripts/download.py --repo_id ${INPUT_MODEL}
   python scripts/convert_hf_checkpoint.py --checkpoint_dir checkpoints/${INPUT_MODEL}
-  python ./scripts/prepare_alpaca.py --data_file_name train_alpaca.jsonl  --checkpoint_dir ./checkpoints/tiiuae/falcon-7b/
+  python ./scripts/prepare_alpaca.py --data_file_name train_alpaca.jsonl  --checkpoint_dir checkpoints/${INPUT_MODEL}
   python generate/base.py --prompt "Hello, my name is" --checkpoint_dir checkpoints/${INPUT_MODEL}
-  python finetune/adapter_v2.py --checkpoint_dir checkpoints/${INPUT_MODEL}
+  python finetune/adapter_v2.py --checkpoint_dir checkpoints/${INPUT_MODEL} --out_dir updated
 #  python train.py --input-model ${INPUT_MODEL} --training-dataset out_oa --qlora-4bit true
 #  python test_new_model.py
 fi
