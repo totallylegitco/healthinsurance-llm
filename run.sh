@@ -13,46 +13,13 @@ EPOCHS=${EPOCHS:-"10"}
 gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut -f 1 -d " ")
 
 if [ ! -f ".firstrun" ]; then
-  python3 -m pip install --upgrade pip
-  pip3 install -U -r requirements.txt
-  touch .firstrun
-  # Setup bits and bytes if we are likely to need it.
-  if [ "${gpu_memory}" -lt 49564 ]; then
-    if [ $(uname -m) == "aarch64" ]; then
-      # On ARM for bits and bytes we need neon
-      if [ ! -d sse2neon ]; then
-	git clone https://github.com/DLTcollab/sse2neon.git
-	make
-	sudo cp sse2neon.h /usr/include/
-      fi
-    else
-      pip3 install -U bitsandbytes
-      python -m bitsandbytes || ./setup_bits_and_bytes.sh
-      python -m bitsandbytes | grep "The installed version of bitsandbytes was compiled without GPU support." || ./setup_bits_and_bytes.sh
-    fi
-  fi
+  ./firstrun.sh
 fi
 if [ -z "${LD_LIBRARY_PATH}" ]; then
   export LD_LIBRARY_PATH=$PATH
 fi
 
 
-if [ ! -d dolly ]; then
-  git clone https://github.com/databrickslabs/dolly.git
-#  pip3 install -r ./dolly/requirements.txt
-fi
-
-if [ ! -d "appeals-llm-data" ]; then
-  git clone https://github.com/totallylegitco/appeals-llm-data.git
-fi
-
-if [ ! -d out ]; then
-  mkdir out
-fi
-
-if [ ! -d falcontune ]; then
-  git clone https://github.com/rmihaylov/falcontune.git
-fi
 
 if [ ! -d data_sources ]; then
   mkdir -p data_sources
