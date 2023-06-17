@@ -28,6 +28,9 @@ scp ${target} $1:~/
 scp ~/.ssh/authorized_keys  $1:~/.ssh/
 # ssh -t $1 "sudo apt-get update && sudo apt-get upgrade -y" &
 wait ${tpid}
+# Race condition with tbz2 file not being written all the way
+sync
+sleep 1
 ssh $1 "tar -C ./ -xjf ${filename}"
 wait
 scp remote_git $1:~/.git/config

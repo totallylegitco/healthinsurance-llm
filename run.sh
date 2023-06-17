@@ -153,7 +153,7 @@ else
     if [ ! -f ".firstrun" ]; then
       pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url "${extra_url}"
       pip3 install -U --index-url "${extra_url}" --pre 'torch>=2.1.0dev'
-      tocuh .firstrun
+      touch .firstrun
     fi
     if [ ! -d checkpoints/${INPUT_MODEL} ]; then
       python scripts/download.py --repo_id ${INPUT_MODEL}
