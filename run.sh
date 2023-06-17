@@ -12,9 +12,8 @@ EPOCHS=${EPOCHS:-"10"}
 
 gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut -f 1 -d " ")
 
-python3 -m pip install --upgrade pip
-
 if [ ! -f ".firstrun" ]; then
+  python3 -m pip install --upgrade pip
   pip3 install -U -r requirements.txt
   touch .firstrun
   # Setup bits and bytes if we are likely to need it.
