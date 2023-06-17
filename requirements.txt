@@ -4,7 +4,6 @@ accelerate>=0.16.0,<1
 numexpr>=2.7.3
 protobuf<3.20
 transformers[torch]
-datasets>=2.10.0,<3
 langchain>=0.0.139
 einops
 click
