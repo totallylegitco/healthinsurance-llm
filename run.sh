@@ -113,27 +113,25 @@ if [ ! -d lit-parrot ]; then
 fi
 
 
+# Figure out our version of CUDA so we can install the right package
 if nvcc --version |grep -q 11.8; then
   extra_url=https://download.pytorch.org/whl/nightly/cu118
 elif nvidia-smi  |grep "CUDA Version" |grep -q "11.7"; then
   extra_url=https://download.pytorch.org/whl/nightly/cu117
 elif nvcc --version |grep -q 11.6; then
-  extra_urlhttps://download.pytorch.org/whl/nightly/cu116
+  extra_url=https://download.pytorch.org/whl/nightly/cu116
 else
   extra_url=https://download.pytorch.org/whl/nightly
 fi
-  
+
+# Different models need different love for fine tuning.
 if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
 # dolly
   cd dolly
   mkdir -p ${TR_DATA}
   cp "../${TR_DATA}/train.jsonl" ./${TR_DATA}
-  if nvcc --version |grep -q 11.8; then
-    pip3 install -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118
-    pip3 install -U "torch<2" --index-url https://download.pytorch.org/whl/cu118
-  else
-    pip3 install -r ../requirements.txt -r requirements.txt
-  fi
+  pip3 install -r ../requirements.txt -r requirements.txt  --extra-index-url ${extra_url}
+  pip3 install -U "torch<2" --extra-index-url ${extra_url}
   if [ "$gpu_memory" == "81920" ]; then
      python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a100_config.json --bf16 true
    elif [ "$gpu_memory" == "40960" ]; then
@@ -144,6 +142,7 @@ if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
      python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 2000 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS}
   fi
 elif [ "${INPUT_MODEL}" == "NOPEtiiuae/falcon-7b-instruct" ];  then
+  # falcontune has some issues right now (seems to ignore our dataset param) and I'm lazy so we'll skip this one for now.
   cd falcontune
   pip install -r requirements.txt
   # Protobufs are compiled before 3.20
@@ -180,30 +179,22 @@ elif [ "${INPUT_MODEL}" == "NOPEtiiuae/falcon-7b-instruct" ];  then
     --do_sample \
     --instruction "Generate a health insurance appeal"
 else
+  # lit-parrot seems the happiest
   # falcon
   if [ -z "$QLORA" ]; then 
     mkdir -p lit-parrot/data/alpaca
     cp ${TR_DATA}/*_alpaca.jsonl lit-parrot/data/alpaca/
     cd lit-parrot
-    if nvcc --version |grep -q 11.8; then
-      pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118 --extra-index-url https://download.pytorch.org/whl/nightly/cu118
-      pip3 install -U --index-url https://download.pytorch.org/whl/nightly/cu118 --pre 'torch>=2.1.0dev'
-    elif nvidia-smi  |grep "CUDA Version" |grep -q "11.7"; then
-      pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu116 --extra-index-url https://download.pytorch.org/whl/nightly/cu117
-      pip3 install -U --index-url https://download.pytorch.org/whl/nightly/cu117 --pre 'torch>=2.1.0dev'
-    elif nvcc --version |grep -q 11.6; then
-      pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu116 --extra-index-url https://download.pytorch.org/whl/nightly/cu116
-      pip3 install -U --index-url https://download.pytorch.org/whl/nightly/cu116 --pre 'torch>=2.1.0dev'
-    else
-      pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118 --extra-index-url https://download.pytorch.org/whl/nightly/
-      pip3 install -U --index-url https://download.pytorch.org/whl/nightly/ --pre 'torch>=2.1.0dev'
-    fi
+    pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url "${extra_url}"
+    pip3 install -U --index-url "${extra_url}" --pre 'torch>=2.1.0dev'
     python scripts/download.py --repo_id ${INPUT_MODEL}
     python scripts/convert_hf_checkpoint.py --checkpoint_dir checkpoints/${INPUT_MODEL}
     python ./scripts/prepare_alpaca.py --data_file_name train_alpaca.jsonl  --checkpoint_dir ./checkpoints/${INPUT_MODEL}
     python generate/base.py --prompt "Hello, my name is" --checkpoint_dir checkpoints/${INPUT_MODEL}
     time python finetune/adapter_v2.py --checkpoint_dir checkpoints/${INPUT_MODEL} --out_dir adv2_ft --data_dir data/alpaca/ --precision bf16-mixed
   else
+    # We can run our own sketchy script too! But the result does not seem to produce a fully functioning model out of the box
+    # We might be able to copy some stuff from the src model and magic it but idk.
     pip install -q -U bitsandbytes
     pip install -q -U git+https://github.com/huggingface/transformers.git 
     pip install -q -U git+https://github.com/huggingface/peft.git

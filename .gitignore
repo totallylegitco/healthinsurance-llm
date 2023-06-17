@@ -164,6 +164,12 @@ out/
 appeals-llm-data/
 data_sources/
 sse2neon/
-generated-llm-data/
+generated-llm-data*/
 bitsandbytes/
 combined-llm-data/
+falcontune
+wandb
+*.tbz2
+lit-parrot
+out_oa
+results

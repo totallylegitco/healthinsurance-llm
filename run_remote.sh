@@ -15,9 +15,12 @@ temp_dir=$(mktemp -d -t "fartsXXXXXXXXXXX")
 filename=upload.tbz2
 target="${temp_dir}/${filename}"
 
-tar --exclude lit-parrot --exclude "results" --exclude="dolly" --exclude "combined-llm-data*" --exclude "generated-llm-data*" -cjf "${target}" .
+tar --exclude lit-parrot --exclude falcontune --exclude "*.tbz2" --exclude wandb --exclude "results" --exclude="dolly" --exclude "combined-llm-data*" --exclude "generated-llm-data*" -cjf "${target}" .
 
-scp ${target} $1:~/
+# Lambda labs seems to be having isssues with ssh not coming up quickly so retry.
+(scp ${target} $1:~/ || (sleep 120 && scp ${target} $1:~/ ))
+# Put the passwordless https config there
+scp remote_git $1:~/.git/config
 scp ~/.ssh/authorized_keys  $1:~/.ssh/
 # ssh -t $1 "sudo apt-get update && sudo apt-get upgrade -y" &
 ssh $1 "tar -C ./ -xjf ${filename}"

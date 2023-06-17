@@ -1,4 +1,4 @@
-ntokenizers
+tokenizers
 jsonargparse[signatures]
 accelerate>=0.16.0,<1
 numexpr>=2.7.3
