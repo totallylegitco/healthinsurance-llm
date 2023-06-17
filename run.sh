@@ -114,7 +114,7 @@ if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
 # dolly
   cd dolly
   mkdir -p ${TR_DATA}
-  cp "../${TR_DATA}/train.jsonl" ./
+  cp "../${TR_DATA}/train.jsonl" ./${TR_DATA}
   if nvcc --version |grep -q 11.8; then
     pip3 install -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118
     pip3 install -U "torch<2" --index-url https://download.pytorch.org/whl/cu118
@@ -136,8 +136,11 @@ else
   if nvcc --version |grep -q 11.8; then
     pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118 --extra-index-url https://download.pytorch.org/whl/nightly/cu118
     pip3 install -U --index-url https://download.pytorch.org/whl/nightly/cu118 --pre 'torch>=2.1.0dev'
+  elif nvidia-smi  |grep "CUDA Version" |grep -q "11.7"; then
+    pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu116 --extra-index-url https://download.pytorch.org/whl/nightly/cu117
+    pip3 install -U --index-url https://download.pytorch.org/whl/nightly/cu117 --pre 'torch>=2.1.0dev'
   elif nvcc --version |grep -q 11.6; then
-    pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118 --extra-index-url https://download.pytorch.org/whl/nightly/cu116
+    pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu116 --extra-index-url https://download.pytorch.org/whl/nightly/cu116
     pip3 install -U --index-url https://download.pytorch.org/whl/nightly/cu116 --pre 'torch>=2.1.0dev'
   else
     pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118 --extra-index-url https://download.pytorch.org/whl/nightly/
@@ -148,7 +151,7 @@ else
   python ./scripts/prepare_alpaca.py --data_file_name train_alpaca.jsonl  --checkpoint_dir ./checkpoints/${INPUT_MODEL}
   python generate/base.py --prompt "Hello, my name is" --checkpoint_dir checkpoints/${INPUT_MODEL}
   #time python finetune/lora.py --checkpoint_dir checkpoints/${INPUT_MODEL} --out_dir lora_ft --data_dir data/alpaca/
-  time python finetune/adapter_v2.py --checkpoint_dir checkpoints/${INPUT_MODEL} --out_dir adv2_ft --data_dir data/alpaca/
+  time python finetune/adapter_v2.py --checkpoint_dir checkpoints/${INPUT_MODEL} --out_dir adv2_ft --data_dir data/alpaca/ --precision bf16-mixed
 #  python train.py --input-model ${INPUT_MODEL} --training-dataset out_oa --qlora-4bit true
 #  python test_new_model.py
 fi

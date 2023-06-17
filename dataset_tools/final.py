@@ -11,7 +11,7 @@ with open('header.txt') as x: header = x.read()
 
 category = "creative_writing"
 
-raw_dataset = "combined-llm-data"
+datasets = "combined-llm-data"
 
 listed = map(lambda f: join(raw_dataset, f), listdir(raw_dataset))
 
