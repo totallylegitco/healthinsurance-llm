@@ -14,24 +14,29 @@ gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut 
 
 python3 -m pip install --upgrade pip
 
-pip3 install -U -r requirements.txt
+if [ ! -f ".firstrun" ]; then
+  pip3 install -U -r requirements.txt
+  touch .firstrun
+  # Setup bits and bytes if we are likely to need it.
+  if [ "${gpu_memory}" -lt 49564 ]; then
+    if [ $(uname -m) == "aarch64" ]; then
+      # On ARM for bits and bytes we need neon
+      if [ ! -d sse2neon ]; then
+	git clone https://github.com/DLTcollab/sse2neon.git
+	make
+	sudo cp sse2neon.h /usr/include/
+      fi
+    else
+      pip3 install -U bitsandbytes
+      python -m bitsandbytes || ./setup_bits_and_bytes.sh
+      python -m bitsandbytes | grep "The installed version of bitsandbytes was compiled without GPU support." || ./setup_bits_and_bytes.sh
+    fi
+  fi
+fi
 if [ -z "${LD_LIBRARY_PATH}" ]; then
   export LD_LIBRARY_PATH=$PATH
 fi
 
-if [ "${gpu_memory}" -lt 49564 ]; then
-  if [ $(uname -m) == "aarch64" ]; then
-    # On ARM for bits and bytes we need neon
-    if [ ! -d sse2neon ]; then
-      git clone https://github.com/DLTcollab/sse2neon.git
-      make
-      sudo cp sse2neon.h /usr/include/
-    fi
-  else
-    pip3 install -U bitsandbytes
-    python -m bitsandbytes || ./setup_bits_and_bytes.sh
-  fi
-fi
 
 if [ ! -d dolly ]; then
   git clone https://github.com/databrickslabs/dolly.git
@@ -40,12 +45,6 @@ fi
 
 if [ ! -d "appeals-llm-data" ]; then
   git clone https://github.com/totallylegitco/appeals-llm-data.git
-fi
-
-# Check bits and bytes, it needs to be compiled from source for the jetson (and some others)
-if [ ! -z "$QLORA" ]; then
-  python -m bitsandbytes || ./setup_bits_and_bytes.sh
-  python -m bitsandbytes | grep "The installed version of bitsandbytes was compiled without GPU support." || ./setup_bits_and_bytes.sh
 fi
 
 if [ ! -d out ]; then
@@ -185,8 +184,11 @@ else
     mkdir -p lit-parrot/data/alpaca
     cp ${TR_DATA}/*_alpaca.jsonl lit-parrot/data/alpaca/
     cd lit-parrot
-    pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url "${extra_url}"
-    pip3 install -U --index-url "${extra_url}" --pre 'torch>=2.1.0dev'
+    if [ ! -f ".firstrun" ]; then
+      pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url "${extra_url}"
+      pip3 install -U --index-url "${extra_url}" --pre 'torch>=2.1.0dev'
+      tocuh .firstrun
+    fi
     python scripts/download.py --repo_id ${INPUT_MODEL}
     python scripts/convert_hf_checkpoint.py --checkpoint_dir checkpoints/${INPUT_MODEL}
     python ./scripts/prepare_alpaca.py --data_file_name train_alpaca.jsonl  --checkpoint_dir ./checkpoints/${INPUT_MODEL}
