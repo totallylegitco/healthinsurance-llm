@@ -114,6 +114,7 @@ def work_with_generative():
 
     candidate_models = [
 #        "ausboss/llama-30b-supercot",
+        "tiiuae/falcon-40b-instruct",
         "databricks/dolly-v2-12b",
         "databricks/dolly-v2-7b",
         "databricks/dolly-v2-3b",
