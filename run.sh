@@ -155,6 +155,11 @@ else
     python generate/base.py --prompt "Hello, my name is" --checkpoint_dir checkpoints/${INPUT_MODEL}
     time python finetune/adapter_v2.py --checkpoint_dir checkpoints/${INPUT_MODEL} --out_dir adv2_ft --data_dir data/alpaca/ --precision bf16-mixed
   else
+    pip install -q -U bitsandbytes
+    pip install -q -U git+https://github.com/huggingface/transformers.git 
+    pip install -q -U git+https://github.com/huggingface/peft.git
+    pip install -q -U git+https://github.com/huggingface/accelerate.git
+    pip install -q datasets
     python train.py --input-model ${INPUT_MODEL} --training-dataset out_oa ${QLORA}
     python test_new_model.py
   fi
