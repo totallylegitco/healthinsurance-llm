@@ -189,9 +189,11 @@ else
       pip3 install -U --index-url "${extra_url}" --pre 'torch>=2.1.0dev'
       tocuh .firstrun
     fi
-    python scripts/download.py --repo_id ${INPUT_MODEL}
-    python scripts/convert_hf_checkpoint.py --checkpoint_dir checkpoints/${INPUT_MODEL}
-    python ./scripts/prepare_alpaca.py --data_file_name train_alpaca.jsonl  --checkpoint_dir ./checkpoints/${INPUT_MODEL}
+    if [ ! -d checkpoints/${INPUT_MODEL} ]; then
+      python scripts/download.py --repo_id ${INPUT_MODEL}
+      python scripts/convert_hf_checkpoint.py --checkpoint_dir checkpoints/${INPUT_MODEL}
+      python ./scripts/prepare_alpaca.py --data_file_name train_alpaca.jsonl  --checkpoint_dir ./checkpoints/${INPUT_MODEL}
+    fi
     python generate/base.py --prompt "Hello, my name is" --checkpoint_dir checkpoints/${INPUT_MODEL}
     time python finetune/adapter_v2.py --checkpoint_dir checkpoints/${INPUT_MODEL} --out_dir adv2_ft --data_dir data/alpaca/ --precision bf16-mixed
   else
