@@ -1,5 +1,4 @@
-lightning @ git+https://github.com/Lightning-AI/lightning@master
-tokenizers
+ntokenizers
 jsonargparse[signatures]
 accelerate>=0.16.0,<1
 numexpr>=2.7.3

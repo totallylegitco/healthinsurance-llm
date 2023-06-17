@@ -113,7 +113,16 @@ if [ ! -d lit-parrot ]; then
 fi
 
 
-
+if nvcc --version |grep -q 11.8; then
+  extra_url=https://download.pytorch.org/whl/nightly/cu118
+elif nvidia-smi  |grep "CUDA Version" |grep -q "11.7"; then
+  extra_url=https://download.pytorch.org/whl/nightly/cu117
+elif nvcc --version |grep -q 11.6; then
+  extra_urlhttps://download.pytorch.org/whl/nightly/cu116
+else
+  extra_url=https://download.pytorch.org/whl/nightly
+fi
+  
 if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
 # dolly
   cd dolly
@@ -134,8 +143,12 @@ if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
    else
      python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 2000 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS}
   fi
-elif [ "${INPUT_MODEL}" == "tiiuae/falcon-7b-instruct" ];  then
+elif [ "${INPUT_MODEL}" == "NOPEtiiuae/falcon-7b-instruct" ];  then
+  cd falcontune
   pip install -r requirements.txt
+  # Protobufs are compiled before 3.20
+  pip install -U protobuf<=3.19 numexpr>2.7.3
+  sudo python setup.py install
   cd ..
   export WANDB_MODE=offline
   falcontune finetune \
