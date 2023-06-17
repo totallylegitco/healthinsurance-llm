@@ -121,7 +121,9 @@ if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
   else
     pip3 install -r ../requirements.txt -r requirements.txt
   fi
-   if [ "$gpu_memory" == "40960" ]; then
+  if [ "$gpu_memory" == "81920" ]; then
+     python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a100_config.json --bf16
+   elif [ "$gpu_memory" == "40960" ]; then
      python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a100_config.json --bf16
    elif [ "$gpu_memory" == "23028" ]; then
      python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a10_config.json --per-device-eval-batch-size 3 --per-device-train-batch-size 3 --bf16 false
