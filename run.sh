@@ -122,9 +122,9 @@ if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
     pip3 install -r ../requirements.txt -r requirements.txt
   fi
   if [ "$gpu_memory" == "81920" ]; then
-     python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a100_config.json --bf16
+     python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a100_config.json --bf16 true
    elif [ "$gpu_memory" == "40960" ]; then
-     python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a100_config.json --bf16
+     python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a100_config.json --bf16 true
    elif [ "$gpu_memory" == "23028" ]; then
      python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a10_config.json --per-device-eval-batch-size 3 --per-device-train-batch-size 3 --bf16 false
    else
@@ -132,28 +132,30 @@ if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
    fi
 else
   # falcon
-  mkdir -p lit-parrot/data/alpaca
-  cp ${TR_DATA}/*_alpaca.jsonl lit-parrot/data/alpaca/
-  cd lit-parrot
-  if nvcc --version |grep -q 11.8; then
-    pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118 --extra-index-url https://download.pytorch.org/whl/nightly/cu118
-    pip3 install -U --index-url https://download.pytorch.org/whl/nightly/cu118 --pre 'torch>=2.1.0dev'
-  elif nvidia-smi  |grep "CUDA Version" |grep -q "11.7"; then
-    pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu116 --extra-index-url https://download.pytorch.org/whl/nightly/cu117
-    pip3 install -U --index-url https://download.pytorch.org/whl/nightly/cu117 --pre 'torch>=2.1.0dev'
-  elif nvcc --version |grep -q 11.6; then
-    pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu116 --extra-index-url https://download.pytorch.org/whl/nightly/cu116
-    pip3 install -U --index-url https://download.pytorch.org/whl/nightly/cu116 --pre 'torch>=2.1.0dev'
+  if [ -z "$QLORA" ]; then 
+    mkdir -p lit-parrot/data/alpaca
+    cp ${TR_DATA}/*_alpaca.jsonl lit-parrot/data/alpaca/
+    cd lit-parrot
+    if nvcc --version |grep -q 11.8; then
+      pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118 --extra-index-url https://download.pytorch.org/whl/nightly/cu118
+      pip3 install -U --index-url https://download.pytorch.org/whl/nightly/cu118 --pre 'torch>=2.1.0dev'
+    elif nvidia-smi  |grep "CUDA Version" |grep -q "11.7"; then
+      pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu116 --extra-index-url https://download.pytorch.org/whl/nightly/cu117
+      pip3 install -U --index-url https://download.pytorch.org/whl/nightly/cu117 --pre 'torch>=2.1.0dev'
+    elif nvcc --version |grep -q 11.6; then
+      pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu116 --extra-index-url https://download.pytorch.org/whl/nightly/cu116
+      pip3 install -U --index-url https://download.pytorch.org/whl/nightly/cu116 --pre 'torch>=2.1.0dev'
+    else
+      pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118 --extra-index-url https://download.pytorch.org/whl/nightly/
+      pip3 install -U --index-url https://download.pytorch.org/whl/nightly/ --pre 'torch>=2.1.0dev'
+    fi
+    python scripts/download.py --repo_id ${INPUT_MODEL}
+    python scripts/convert_hf_checkpoint.py --checkpoint_dir checkpoints/${INPUT_MODEL}
+    python ./scripts/prepare_alpaca.py --data_file_name train_alpaca.jsonl  --checkpoint_dir ./checkpoints/${INPUT_MODEL}
+    python generate/base.py --prompt "Hello, my name is" --checkpoint_dir checkpoints/${INPUT_MODEL}
+    time python finetune/adapter_v2.py --checkpoint_dir checkpoints/${INPUT_MODEL} --out_dir adv2_ft --data_dir data/alpaca/ --precision bf16-mixed
   else
-    pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118 --extra-index-url https://download.pytorch.org/whl/nightly/
-    pip3 install -U --index-url https://download.pytorch.org/whl/nightly/ --pre 'torch>=2.1.0dev'
+    python train.py --input-model ${INPUT_MODEL} --training-dataset out_oa ${QLORA}
+    python test_new_model.py
   fi
-  python scripts/download.py --repo_id ${INPUT_MODEL}
-  python scripts/convert_hf_checkpoint.py --checkpoint_dir checkpoints/${INPUT_MODEL}
-  python ./scripts/prepare_alpaca.py --data_file_name train_alpaca.jsonl  --checkpoint_dir ./checkpoints/${INPUT_MODEL}
-  python generate/base.py --prompt "Hello, my name is" --checkpoint_dir checkpoints/${INPUT_MODEL}
-  #time python finetune/lora.py --checkpoint_dir checkpoints/${INPUT_MODEL} --out_dir lora_ft --data_dir data/alpaca/
-  time python finetune/adapter_v2.py --checkpoint_dir checkpoints/${INPUT_MODEL} --out_dir adv2_ft --data_dir data/alpaca/ --precision bf16-mixed
-#  python train.py --input-model ${INPUT_MODEL} --training-dataset out_oa --qlora-4bit true
-#  python test_new_model.py
 fi

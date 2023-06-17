@@ -19,8 +19,8 @@ tar --exclude lit-parrot --exclude="dolly" --exclude "combined-llm-data*" --excl
 
 scp ${target} $1:~/
 scp ~/.ssh/authorized_keys  $1:~/.ssh/
-ssh -t $1 "sudo apt-get update && sudo apt-get upgrade -y" &
+# ssh -t $1 "sudo apt-get update && sudo apt-get upgrade -y" &
 ssh $1 "tar -C ./ -xjf ${filename}"
-ssh -t $1 "INPUT_MODEL=${INPUT_MODEL} screen ./run.sh"
+ssh -t $1 "QLORA=\"${QLORA}\" INPUT_MODEL=\"${INPUT_MODEL}\" screen ./run.sh"
 
 rm -rf ${temp_dir}

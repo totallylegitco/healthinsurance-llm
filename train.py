@@ -115,10 +115,12 @@ def train(local_output_dir: str,
 #        max_seq_length=10614784,
         tokenizer=tokenizer,
         args=training_arguments,
-        max_seq_length=2048,
+        max_seq_length=5048,
     )
 
     trainer.train()
+    trainer.save_model(f"{local_output_dir}/finetuned-4bit")
+    trainer.mode.save_config(f"{local_output_dir}/finetuned-4bit")
 
 
 @click.command()
