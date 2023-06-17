@@ -52,6 +52,10 @@ if [ ! -d out ]; then
   mkdir out
 fi
 
+if [ ! -d falcontune ]; then
+  git clone https://github.com/rmihaylov/falcontune.git
+fi
+
 if [ ! -d data_sources ]; then
   mkdir -p data_sources
   if [ ! -f "./data_sources/wpath_soc7.pdf"]; then
@@ -129,7 +133,39 @@ if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
      python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 100 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS} --deepspeed ./config/a10_config.json --per-device-eval-batch-size 3 --per-device-train-batch-size 3 --bf16 false
    else
      python -m training.trainer --input-model ${INPUT_MODEL} --training-dataset ${TR_DATA} --local-output-dir ${OUTDIR} --test-size 2000 --warmup-steps 1 ${QLORA} --epochs ${EPOCHS}
-   fi
+  fi
+elif [ "${INPUT_MODEL}" == "tiiuae/falcon-7b-instruct" ];  then
+  pip install -r requirements.txt
+  cd ..
+  export WANDB_MODE=offline
+  falcontune finetune \
+    --model=falcon-7b-instruct \
+    --weights=tiiuae/falcon-7b-instruct \
+    --dataset=./out/train_alpaca.jsonl \
+    --data_type=alpaca \
+    --lora_out_dir=./falcon-7b-instruct-alpaca/ \
+    --mbatch_size=1 \
+    --batch_size=2 \
+    --epochs=3 \
+    --lr=3e-4 \
+    --cutoff_len=256 \
+    --lora_r=8 \
+    --lora_alpha=16 \
+    --lora_dropout=0.05 \
+    --warmup_steps=5 \
+    --save_steps=50 \
+    --save_total_limit=3 \
+    --logging_steps=5 \
+    --target_modules='["query_key_value"]'
+  falcontune generate \
+    --interactive \
+    --model falcon-7b-instruct \
+    --weights mosaicml/falcon-7b-instruct \
+    --lora_apply_dir falcon-7b-instruct-alpaca \
+    --max_new_tokens 50 \
+    --use_cache \
+    --do_sample \
+    --instruction "Generate a health insurance appeal"
 else
   # falcon
   if [ -z "$QLORA" ]; then 
