@@ -112,15 +112,17 @@ def train(local_output_dir: str,
         train_dataset=dataset['train'],
         peft_config=peft_config,
         dataset_text_field="text",
-#        max_seq_length=10614784,
         tokenizer=tokenizer,
         args=training_arguments,
-        max_seq_length=5048,
+        max_seq_length=5,
     )
 
     trainer.train()
-    trainer.save_model(f"{local_output_dir}/finetuned-4bit")
-    trainer.mode.save_config(f"{local_output_dir}/finetuned-4bit")
+    trainer.save_model(f"{local_output_dir}/finetuned")
+    try:
+        trainer.mode.save_config(f"{local_output_dir}/finetuned")
+    except:
+        model.config.to_json(f"{local_output_dir}/finetuned/config.json")
 
 
 @click.command()
