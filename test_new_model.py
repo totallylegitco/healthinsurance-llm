@@ -33,7 +33,14 @@ def do_work(input_model: str,
 @click.command()
 @click.option("--input-model", type=str, help="Input model to fine tune", required=True)
 @click.option("--fine-tuned", type=str, help="Fine tuned model", required=True)
-
 def main(**kwargs):
     print(f"Running w/ {kwargs}")
-    dowork(**kwargs)
+    do_work(**kwargs)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception:
+        print("main failed")
+        raise

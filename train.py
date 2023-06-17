@@ -122,7 +122,7 @@ def train(local_output_dir: str,
     try:
         trainer.mode.save_config(f"{local_output_dir}/finetuned")
     except:
-        model.config.to_json(f"{local_output_dir}/finetuned/config.json")
+        model.config.to_json_file(f"{local_output_dir}/finetuned/config.json")
 
 
 @click.command()

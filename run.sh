@@ -161,6 +161,6 @@ else
     pip install -q -U git+https://github.com/huggingface/accelerate.git
     pip install -q datasets
     python train.py --input-model ${INPUT_MODEL} --training-dataset out_oa ${QLORA}
-    python test_new_model.py
+    python test_new_model.py --input-model ${INPUT_MODEL} --fine-tuned results/finetuned
   fi
 fi
