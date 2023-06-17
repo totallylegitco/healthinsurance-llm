@@ -90,9 +90,9 @@ if [ ! -d data_sources ]; then
   fi
 fi
 
-mkdir -p out_oa
+mkdir -p ${TR_DATA}/oa
 
-if [ ! -f "out/train.jsonl" ]; then
+if [ ! -f "${TR_DATA}/train.jsonl" ]; then
   if [ ! -d combined-llm-data ]; then
     mkdir -p combined-llm-data
     # Generated file list can be too long to pass through the shell as an argument.
@@ -113,6 +113,8 @@ fi
 if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
 # dolly
   cd dolly
+  mkdir -p ${TR_DATA}
+  cp "../${TR_DATA}/train.jsonl" ./
   if nvcc --version |grep -q 11.8; then
     pip3 install -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118
     pip3 install -U "torch<2" --index-url https://download.pytorch.org/whl/cu118
@@ -129,7 +131,7 @@ if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
 else
   # falcon
   mkdir -p lit-parrot/data/alpaca
-  cp out/*_alpaca.jsonl lit-parrot/data/alpaca/
+  cp ${TR_DATA}/*_alpaca.jsonl lit-parrot/data/alpaca/
   cd lit-parrot
   if nvcc --version |grep -q 11.8; then
     pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url https://download.pytorch.org/whl/cu118 --extra-index-url https://download.pytorch.org/whl/nightly/cu118
