@@ -17,12 +17,16 @@ target="${temp_dir}/${filename}"
 
 tar --exclude lit-parrot --exclude falcontune --exclude "*.tbz2" --exclude wandb --exclude "results" --exclude="dolly" --exclude "combined-llm-data*" --exclude "generated-llm-data*" -cjf "${target}" .
 
+# Copy over firstrun.sh so we can get the system setup a bit while we transfer all of ourdata.
 # Lambda labs seems to be having isssues with ssh not coming up quickly so retry.
-(scp ${target} $1:~/ || (sleep 120 && scp ${target} $1:~/ ))
+(scp ./firstrun.sh $1:~/ || (sleep 120 && scp ./firstrun.sh $1:~/ ))
+ssh $1 "./firstrun.sh" &
+scp ${target} $1:~/
 # Put the passwordless https config there
 scp ~/.ssh/authorized_keys  $1:~/.ssh/
 # ssh -t $1 "sudo apt-get update && sudo apt-get upgrade -y" &
 ssh $1 "tar -C ./ -xjf ${filename}"
+wait
 scp remote_git $1:~/.git/config
 ssh -t $1 "QLORA=\"${QLORA}\" INPUT_MODEL=\"${INPUT_MODEL}\" screen ./run.sh"
 
