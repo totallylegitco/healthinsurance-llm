@@ -21,7 +21,7 @@ tpid=$!
 # Copy over firstrun.sh so we can get the system setup a bit while we transfer all of ourdata.
 # Lambda labs seems to be having isssues with ssh not coming up quickly so retry.
 (scp ./firstrun.sh $1:~/ || (sleep 120 && scp ./firstrun.sh $1:~/ ))
-scp ./requirements.t $1:~/
+scp ./requirements.txt $1:~/
 ssh $1 "./firstrun.sh" &
 scp ${target} $1:~/
 # Put the passwordless https config there
