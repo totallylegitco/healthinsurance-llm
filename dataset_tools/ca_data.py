@@ -81,7 +81,7 @@ def get_treatment_from_imr(imr):
     for r in treatment_regexes:
         matches = r.search(findings)
         if matches is not None:
-            return matches[0].group("treatment")
+            return matchesgroup("treatment")
     return imr["TreatmentSubCategory"] or imr["TreatmentCategory"]
 
 
@@ -90,7 +90,7 @@ def get_diagnosis_from_imr(imr):
     for r in diagnosis_regexes:
         matches = r.search(findings)
         if matches is not None:
-            return matches[0].group("diagnosis")
+            return matches.group("diagnosis")
     return imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
 
 def extract_text(result):
