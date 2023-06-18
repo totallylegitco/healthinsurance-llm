@@ -63,7 +63,6 @@ treatment_regexes = [
     treatment_regex,
     alt_treatment_regex,
     more_alt_treatment_regex,
-    even_more_alt_result_regex,
     perscribed_regex,
     wishes_to_regex,
     health_plan_not_necessary_regex,
