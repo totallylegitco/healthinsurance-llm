@@ -195,8 +195,8 @@ def work_with_generative():
         ]
 
         return (index,
-                list(flatten(map(append_context, rejection_prompts))),
-                list(flatten(map(append_context, appeal_prompts))))
+                list(map(append_context, rejection_prompts)),
+                list(map(append_context, appeal_prompts)))
 
     def training_cleanup_appeal(text):
         if text is None:
@@ -225,7 +225,6 @@ def work_with_generative():
 
 
     print("Generating prompts...")
-    prompt_batch_size = 10
     l = imrs.apply(generate_prompts, axis=1).tolist()
 
     batch_size = 10
