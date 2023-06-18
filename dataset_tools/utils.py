@@ -58,7 +58,10 @@ def cleanup_denial(data):
 
 def cleanup_appeal(data):
     swap = [
-        ("Therefore, the reviewer concludes that", "That"),
+        ("\W+ of \W+ reviewers (determined|found) that", "It is believed that "),
+        ("\W+ of \W+ reviewers (determined|found)", "It is believed "),
+        ("the reviewer", " "),
+        ("Therefore, the reviewer concludes that", "That should "),
         ("coverage has been approved.", "coverage should be approved."),
         ("Sincerely, Doctor", "Sincerely, [YOURNAME]"),
         ("The final determination was that ", ""),
@@ -69,6 +72,7 @@ def cleanup_appeal(data):
         ("< / ABSTRACT >", ""),
         ("  ", " "),
         ("\.\.", "."),
+        ("was overturned", "should be overturned"),
         ("is not medically necessary", "is medically necessary"),
         ("this surgery is not necessary", "this surgery is necessary"),
         ("and is solely based on appeasing an overly-sufiisticated view of what women look like.",

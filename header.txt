@@ -1,1 +1,1 @@
-Generate an appeal to the following health insurance denial:
+Write a health insurance appeal given the provided context.

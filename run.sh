@@ -163,6 +163,7 @@ else
     python generate/base.py --prompt "Hello, my name is" --checkpoint_dir checkpoints/${INPUT_MODEL}
     pip install -U deepspeed
     echo "You may need to edit adapter_v2 to change the hard coded number of devices."
+    echo "Training part 1"
     time python finetune/adapter_v2.py --checkpoint_dir checkpoints/${INPUT_MODEL} --out_dir adv2_ft --data_dir data/alpaca/ --precision bf16-mixed
   else
     # We can run our own sketchy script too! But the result does not seem to produce a fully functioning model out of the box
