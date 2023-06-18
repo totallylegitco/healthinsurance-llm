@@ -192,8 +192,8 @@ def work_with_generative():
         ]
 
         return (index,
-                list(flatten(pool.map(append_context, rejection_prompts))),
-                list(flatten(pool.map(append_context, appeal_prompts))))
+                list(flatten(map(append_context, rejection_prompts))),
+                list(flatten(map(append_context, appeal_prompts))))
 
     def training_cleanup_appeal(text):
         if text is None:
@@ -262,7 +262,7 @@ def work_with_generative():
                 results[start + len(rejection_prompts):
                         start + len(rejection_prompts) + len(appeal_prompts)])
             i = 0
-            def handle_rejection(r):
+            for r in rejections:
                 if r is None:
                     return
                 i = i + 1
@@ -273,7 +273,7 @@ def work_with_generative():
                 else:
                     print(f"Skipping, found bad data in {r}")
             i = 0
-            def handle_appeal(a):
+            for a in appeals:
                 if a is None:
                     return
                 i = i + 1
@@ -282,8 +282,6 @@ def work_with_generative():
                         f.write(a)
                 else:
                     print(f"Skipping, found bad data in {a}")
-            pool.map(handle_appeal, appeals)
-            pool.map(handle_rejection, rejections)
 
 
 
