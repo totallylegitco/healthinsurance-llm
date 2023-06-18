@@ -236,7 +236,7 @@ def work_with_generative():
     print("Generating prompts...")
     l = imrs.apply(generate_prompts, axis=1).tolist()
 
-    batch_size = 5
+    batch_size = 2
 
     for b in range(0, len(l), batch_size):
         print(f"Running batch {b}")
