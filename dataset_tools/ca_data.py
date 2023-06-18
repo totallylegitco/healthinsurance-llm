@@ -50,9 +50,9 @@ wishes_to_regex = re.compile(r"""(wishes|desires|like) to (undergo|take)\s+(?P<t
 
 health_plan_not_necessary_regex = re.compile(r"""The (Health Plan|Plan|Insurance Company) (determined the|determined|indicates) (?P<treatment>.+?) (is|was|were) not""", re.IGNORECASE)
 
-almost_sketchy_regex = re.compile(r"""treatment[^.]*with\s+(?<treatment>[^.]+?) (is|were|was)""", re.IGNORECASE)
+almost_sketchy_regex = re.compile(r"""treatment[^.]*with\s+(?P<treatment>[^.]+?) (is|were|was)""", re.IGNORECASE)
 
-sketchy_regex = re.compile(r"""(requested|required|asked|requires|reimbursement|coverage|request|requesting)\s*[^.]*(for|medication|reimbursement|coverage|of)\s+(?<treatment>\d*\w+.+?)\.""",
+sketchy_regex = re.compile(r"""(requested|required|asked|requires|reimbursement|coverage|request|requesting)\s*[^.]*(for|medication|reimbursement|coverage|of)\s+(?P<treatment>\d*\w+.+?)\.""",
     re.IGNORECASE)
 
 seeking_regex = re.compile(r"""is seeking (?P<treatement>) for (?P<diagnosis>[^.]+)""", re.IGNORECASE)
