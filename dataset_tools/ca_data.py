@@ -211,7 +211,7 @@ def work_with_generative():
             less_sketchy = f"Dear [INSURANCECOMPANY];\n{less_sketchy}"
         return cleanup_appeal(less_sketchy)
 
-    was_rejected = re.compile("(deneied|no additional treatment|not covered|not reimbursed|not eligible"), re.IGNORECASE)
+    was_rejected = re.compile("(deneied|no additional treatment|not covered|not reimbursed|not eligible)", re.IGNORECASE)
     
     def training_cleanup_rejection(text):
         if text is None:
