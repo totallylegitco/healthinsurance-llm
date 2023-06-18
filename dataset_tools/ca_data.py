@@ -117,6 +117,34 @@ def load_data(path):
 
 imrs = load_data("./data_sources/ca-independent-medical-review-imr-determinations-trends-utf8.csv")
 
+def training_cleanup_appeal(text):
+    if text is None:
+        return None
+    sentences = text.split(".")
+    less_sketchy = ".".join(filter(sketchy_sentence_filter, sentences))
+    if len(less_sketchy) < 30:
+        return None
+    if (not "Dear" in less_sketchy) and not ("To Whom" in less_sketchy):
+        less_sketchy = f"Dear [INSURANCECOMPANY];\n{less_sketchy}"
+    return cleanup_appeal(less_sketchy)
+
+was_rejected = re.compile("(deneied|no additional treatment|not covered|not reimbursed|not eligible)", re.IGNORECASE)
+    
+def training_cleanup_rejection(text):
+    if text is None:
+        return None
+    if re.search(was_rejected, text) is None:
+        text = f"{text}. Your request is denied."
+    if not "[MEMBER]" in text:
+        text = f"Dear [MEMBER]; {text}."
+    
+    def mark_unnecessary(match):
+        return f"{match.group(1)} not medically {match.group(2)}"
+
+    text = re.sub(r"(is|are|were|be)\s*medically\s*(necessary|required)", mark_unnecessary, text)
+    return cleanup_rejection(text)
+
+
 def work_with_generative():
     # Load the model to do our magic
 
@@ -202,33 +230,6 @@ def work_with_generative():
         return (index,
                 list(filter(not_none, map(append_context, rejection_prompts))),
                 list(filter(not_none, map(append_context, appeal_prompts))))
-
-    def training_cleanup_appeal(text):
-        if text is None:
-            return None
-        sentences = text.split(".")
-        less_sketchy = ".".join(filter(sketchy_sentence_filter, sentences))
-        if len(less_sketchy) < 30:
-            return None
-        if (not "Dear" in less_sketchy) and not ("To Whom" in less_sketchy):
-            less_sketchy = f"Dear [INSURANCECOMPANY];\n{less_sketchy}"
-        return cleanup_appeal(less_sketchy)
-
-    was_rejected = re.compile("(deneied|no additional treatment|not covered|not reimbursed|not eligible)", re.IGNORECASE)
-    
-    def training_cleanup_rejection(text):
-        if text is None:
-            return None
-        if re.search(was_rejected, text) is None:
-            text = f"{text}. Your request is denied."
-        if not "[MEMBER]" in text:
-            text = f"Dear [MEMBER]; {text}."
-    
-        def mark_unnecessary(match):
-            return f"{match.group(1)} not medically {match.group(2)}"
-        text = re.sub(r"(is|are|were|be)\s*medically\s*(necessary|required)", mark_unnecessary, text)
-        return cleanup_rejection(text)
-
 
 
     print("Generating prompts...")
