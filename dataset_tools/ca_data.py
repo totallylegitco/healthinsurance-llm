@@ -187,7 +187,7 @@ def work_with_generative():
                 return None
             return ("Below is an instruction that describes a task, paired with an input that provides further context. "
                     "Write a response that appropriately completes the request.\n\n"
-                    f"### Instruction:\n{prompt}\n\n### Input:\n{determination}\n\n### Response:")
+                    f"### Instruction:\n{prompt}\n\n### Input:\n{findings}\n\n### Response:")
 
 
         rejection_prompts = [
