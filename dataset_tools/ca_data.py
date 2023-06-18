@@ -9,6 +9,7 @@ import torch
 import argparse
 import re
 import itertools
+from .utils import *
 
 flatten = itertools.chain.from_iterable
 
@@ -170,57 +171,24 @@ def work_with_generative():
         index = imr["ReferenceID"]
 
         def append_context(prompt):
-            if "dolly" in m:
-                return append_context_dolly(prompt)
-            else:
-                return append_context_alpasta(prompt)
+            return [{"instruction": prompt, "input": determination}]
 
-        def append_context_dolly(prompt):
-#            return [
-#                f"""{prompt}
-#
-#Input:
-#On review the following was found {findings[0:1000]}""",
-#                prompt
-#            ]
-            return [prompt]
-
-        def append_context_alpasta(prompt):
-            return [
-                f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
-
-### Instruction:
-{prompt}
-
-### Input:
-{findings}
-
-### Response:
-""",
-                f"""Below is an instruction that describes a task, Write a response that appropriately completes the request.
-### Instruction:
-{prompt}
-
-### Response:
-"""]
         rejection_prompts = [
-            f"What was the reason that {treatment} was originally denied in {findings}.",
-            f"Write a health insurance denial for {treatment} for diagnosis {diagnosis} on the grounds of {grounds}.",
-            f"Deny coverage for {treatment} for {diagnosis}",
-            f"Write a denial for {treatment}.",
-            f"Expand on \"{treatment} is not medically necessary for {diagnosis}.\"",
+            f"What was the reason that {treatment} was originally denied in the provided determination.",
+            f"Write a health insurance denial for {treatment} for diagnosis {diagnosis} on the grounds of {grounds} that could have resulted in the provided determination.",
+            f"Deny coverage for {treatment} for {diagnosis} that could have resulted in the provided determination.",
+            f"Write a denial for {treatment} that could have resulted in the provided determination.",
         ]
         appeal_prompts = [
-            f"The denial of {treatment} procedure was overturned in {findings}. Write an appeal for {treatment}.",
-            f"The denial of {treatment} procedure was overturned in {findings}. Write an appeal for {treatment} for {diagnosis}.",
-            f"Refute \"{treatment} is not medically necessary for {diagnosis}.\"",
+            f"Write an appeal for {treatment} that could have resulted in the provided determination.",
+            f"Write an appeal for {treatment} for {diagnosis} that could have resulted in the provided determination.",
         ]
 
         return (index,
                 list(flatten(map(append_context, rejection_prompts))),
                 list(flatten(map(append_context, appeal_prompts))))
 
-    def cleanup_appeal(text):
+    def training_cleanup_appeal(text):
         if text is None:
             return None
         sentences = text.split(".")
@@ -229,22 +197,20 @@ def work_with_generative():
             return None
         if (not "Dear" in less_sketchy) and not ("To Whom" in less_sketchy):
             less_sketchy = f"Dear [INSURANCECOMPANY];\n{less_sketchy}"
-        return less_sketchy
+        return cleanup_appeal(less_sketchy)
 
-    def cleanup_rejection(text):
+    def training_cleanup_rejection(text):
         if text is None:
             return None
-        if not "denied" in text:
+        if not "denied" in text and not "no additional treatment" in text:
             text = f"{text}. Your request is denied."
         if not "[MEMBER]" in text:
             text = f"Dear [MEMBER]; {text}."
-        if not "appeal" in text:
-            text = f"{text}. You have the right to appeal this decision."
-
+    
         def mark_unnecessary(match):
             return f"{match.group(1)} not medically {match.group(2)}"
         text = re.sub(r"(is|are|were|be)\s*medically\s*(necessary|required)", mark_unnecessary, text)
-        return text
+        return cleanup_rejection(text)
 
 
 
@@ -279,11 +245,11 @@ def work_with_generative():
             start = start_idxs[ci]
             ci = ci + 1
             rejections = map(
-                cleanup_rejection,
+                training_cleanup_rejection,
                 results[start:
                         start + len(rejection_prompts)])
             appeals = map(
-                cleanup_appeal,
+                training_cleanup_appeal,
                 results[start + len(rejection_prompts):
                         start + len(rejection_prompts) + len(appeal_prompts)])
             i = 0
@@ -291,16 +257,22 @@ def work_with_generative():
                 if r is None:
                     continue
                 i = i + 1
-                print(f"Writing out to {idx}MAGIC{i}_rejection.txt")
-                with open(join(gen_loc, f"{idx}MAGIC{i}_rejection.txt"), "w") as f:
-                    f.write(r)
+                if not check_for_bad_rejection(r):
+                    print(f"Writing out to {idx}MAGIC{i}_rejection.txt")
+                    with open(join(gen_loc, f"{idx}MAGIC{i}_rejection.txt"), "w") as f:
+                        f.write(r)
+                else:
+                    print(f"Skipping, found bad data in {r}")
             i = 0
             for a in appeals:
                 if a is None:
                     continue
                 i = i + 1
-                with open(join(gen_loc, f"{idx}MAGIC{i}_appeal.txt"), "w") as f:
-                    f.write(a)
+                if not check_for_bad_rejection(r):
+                    with open(join(gen_loc, f"{idx}MAGIC{i}_appeal.txt"), "w") as f:
+                        f.write(a)
+                else:
+                    print(f"Skipping, found bad data in {a}")
 
 
 
