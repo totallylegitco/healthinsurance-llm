@@ -131,12 +131,10 @@ def work_with_generative():
 
     instruct_pipeline = None
 
-    m = None
-
     for model in candidate_models:
         try:
             tokenizer = AutoTokenizer.from_pretrained(model)
-            print(f"Loading {m}\n")
+            print(f"Loading {model}\n")
             if args.small_gpu:
                 instruct_pipeline = pipeline(
                     model=model,

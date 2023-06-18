@@ -4,6 +4,7 @@ accelerate>=0.16.0,<1
 numexpr>=2.7.3
 protobuf<3.20
 transformers[torch]
+sentencepiece
 nltk
 langchain>=0.0.139
 einops
