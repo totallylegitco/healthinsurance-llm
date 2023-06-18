@@ -10,6 +10,9 @@ import argparse
 import re
 import itertools
 from .utils import *
+import multiprocessing
+
+pool = multiprocessing.Pool()
 
 flatten = itertools.chain.from_iterable
 
@@ -27,64 +30,69 @@ parser.add_argument(
 args = parser.parse_args()
 
 treatment_regex = re.compile(
-    r"""\s*(The|An|A)?\s*(parent|father|mother|patient|enrollee|member|provider)\s*[^.]*(requested|required|asked|requires|reimbursement|coverage|requesting|has)\s*[^.]*(of|for|medication|reimbursement|coverage|services)\s+(\d*\w+.+?)\.""",
+    r"""\s*(The|An|A)?\s*(parent|father|mother|patient|enrollee|member|provider)\s*[^.]*(requested|required|asked|requires|reimbursement|coverage|requesting|has)\s*[^.]*(of|for|medication|reimbursement|coverage|services)\s+(?P<treatment>\d*\w+.+?)\.""",
     re.IGNORECASE)
 alt_treatment_regex = re.compile(
-    r"""At issue\s*(in this case|)\s*(is|)\s*(whether|if)\s+(\d*\w+.+?) (is|were|was) medically (necessary|indicated)""",
+    r"""At issue\s*(in this case|)\s*(is|)\s*(whether|if)\s+(?P<treatment>\d*\w+.+?) (is|were|was) medically (necessary|indicated)""",
     re.IGNORECASE)
 more_alt_treatment_regex = re.compile(
-    r"""the requested (medication|treatment|service|procedure)\s+(\d*\w+.+?) (is|were|was) (likely to be|medically necessary|medically indicated)""",
+    r"""the requested (medication|treatment|service|procedure)\s+(?P<treatment>\d*\w+.+?) (is|were|was) (likely to be|medically necessary|medically indicated)""",
     re.IGNORECASE)
 
 even_more_alt_treatment_regex = re.compile(
-    r"""(Therefore|Thus|As such),[^.]*?\s+(an|a|the|that) (\w+[^.]+?) (is|were|was|should be) (medically necessary|medically indicated|likely to be|authorized)""",
+    r"""(Therefore|Thus|As such),[^.]*?\s+(an|a|the|that) (?P<treatment>\w+[^.]+?) (is|were|was|should be) (medically necessary|medically indicated|likely to be|authorized)""",
     re.IGNORECASE)
 
 perscribed_regex = re.compile(
-    r"""patients provider has prescribed the medication\s+([^.]+?).""", re.IGNORECASE)
+    r"""patients provider has prescribed the medication\s+(?P<treatment>[^.]+?).""", re.IGNORECASE)
 
-wishes_to_regex = re.compile(r"""(wishes|desires|like) to (undergo|take)\s+([^.]+?).""", re.IGNORECASE)
+wishes_to_regex = re.compile(r"""(wishes|desires|like) to (undergo|take)\s+(?P<treatment>[^.]+?).""", re.IGNORECASE)
 
-health_plan_not_necessary_regex = re.compile(r"""The (Health Plan|Plan|Insurance Company) (determined the|determined|indicates) (.+?) (is|was|were) not""", re.IGNORECASE)
+health_plan_not_necessary_regex = re.compile(r"""The (Health Plan|Plan|Insurance Company) (determined the|determined|indicates) (?P<treatment>.+?) (is|was|were) not""", re.IGNORECASE)
 
-almost_sketchy_regex = re.compile(r"""treatment[^.]*with\s+([^.]+?) (is|were|was)""", re.IGNORECASE)
+almost_sketchy_regex = re.compile(r"""treatment[^.]*with\s+(?<treatment>[^.]+?) (is|were|was)""", re.IGNORECASE)
 
-sketchy_regex = re.compile(r"""(requested|required|asked|requires|reimbursement|coverage|request|requesting)\s*[^.]*(for|medication|reimbursement|coverage|of)\s+(\d*\w+.+?)\.""",
+sketchy_regex = re.compile(r"""(requested|required|asked|requires|reimbursement|coverage|request|requesting)\s*[^.]*(for|medication|reimbursement|coverage|of)\s+(?<treatment>\d*\w+.+?)\.""",
     re.IGNORECASE)
+
+seeking_regex = re.compile(r"""is seeking (?P<treatement>) for (?P<diagnosis>[^.]+)""", re.IGNORECASE)
+admitted_regex = re.compile(r"""admitted to the hospital for (?P<diagnosis>[^.]+)""", re.IGNORECASE)
+recommended_regex = re.compile(r"""physicians recommended (?P<treatment>[^.]+)""", re.IGNORECASE)
+
+treatment_regexes = [
+    treatment_regex,
+    alt_treatment_regex,
+    more_alt_treatment_regex,
+    even_more_alt_result_regex,
+    perscribed_regex,
+    wishes_to_regex,
+    health_plan_not_necessary_regex,
+    almost_sketchy_regex,
+    sketchy_regex,
+    seeking_regex,
+    recommended_regex]
+
+diagnosis_regex = [
+    seeking_regex,
+    admitted_regex,
+    ]
 
 def get_treatment_from_imr(imr):
     findings = imr["Findings"]
-    result = treatment_regex.search(findings)
-    alt_result = alt_treatment_regex.search(findings)
-    more_alt_result = more_alt_treatment_regex.search(findings)
-    even_more_alt_result = even_more_alt_treatment_regex.search(findings)
-    perscribed_result = perscribed_regex.search(findings)
-    wishes_to_result = wishes_to_regex.search(findings)
-    almost_sketchy_result = almost_sketchy_regex.search(findings)
-    health_plan_not_necessary_result = health_plan_not_necessary_regex.search(findings)
-    sketchy_result = sketchy_regex.search(findings)
-    if result is not None:
-        return result.group(5)
-    elif alt_result is not None:
-        return alt_result.group(4)
-    elif more_alt_result is not None:
-        return more_alt_result.group(2)
-    elif even_more_alt_result is not None:
-        return even_more_alt_result.group(3)
-    elif perscribed_result is not None:
-        return perscribed_result.group(1)
-    elif wishes_to_result is not None:
-        return wishes_to_result.group(3)
-    elif health_plan_not_necessary_result is not None:
-        return health_plan_not_necessary_result.group(3)
-    elif almost_sketchy_result is not None:
-        return almost_sketchy_result.group(1)
-    elif sketchy_result is not None:
-        return sketchy_result.group(3)
-    else:
-        print(f"No match in {findings}")
+    for r in treatment_regexes:
+        matches = r.search(findings)
+        if matches is not None:
+            return matches[0].group("treatment")
     return imr["TreatmentSubCategory"] or imr["TreatmentCategory"]
 
+
+def get_diagnosis_from_imr(imr):
+    findings = imr["Findings"]
+    for r in diagnosis_regexes:
+        matches = r.search(findings)
+        if matches is not None:
+            return matches[0].group("diagnosis")
+    return imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
 
 def extract_text(result):
     if result is None:
@@ -165,7 +173,7 @@ def work_with_generative():
     def generate_prompts(imr):
         determination = imr["Determination"]
         treatment = get_treatment_from_imr(imr)
-        diagnosis = imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
+        diagnosis = get_diagnosis_from_imr(imr)
         findings = imr["Findings"].strip("\n")
         grounds = imr["Type"]
         index = imr["ReferenceID"]
@@ -185,8 +193,8 @@ def work_with_generative():
         ]
 
         return (index,
-                list(flatten(map(append_context, rejection_prompts))),
-                list(flatten(map(append_context, appeal_prompts))))
+                list(flatten(pool.map(append_context, rejection_prompts))),
+                list(flatten(pool.map(append_context, appeal_prompts))))
 
     def training_cleanup_appeal(text):
         if text is None:
@@ -214,9 +222,11 @@ def work_with_generative():
 
 
 
+    print("Generating prompts...")
+    prompt_batch_size = 10
     l = imrs.apply(generate_prompts, axis=1).tolist()
 
-    batch_size = 5
+    batch_size = 10
 
     for b in range(0, len(l), batch_size):
         print(f"Running batch {b}")
@@ -244,16 +254,16 @@ def work_with_generative():
         for (idx, rejection_prompts, appeal_prompts) in batch:
             start = start_idxs[ci]
             ci = ci + 1
-            rejections = map(
+            rejections = pool.map(
                 training_cleanup_rejection,
                 results[start:
                         start + len(rejection_prompts)])
-            appeals = map(
+            appeals = pool.map(
                 training_cleanup_appeal,
                 results[start + len(rejection_prompts):
                         start + len(rejection_prompts) + len(appeal_prompts)])
             i = 0
-            for r in rejections:
+            def handle_rejection(r):
                 if r is None:
                     continue
                 i = i + 1
@@ -264,7 +274,7 @@ def work_with_generative():
                 else:
                     print(f"Skipping, found bad data in {r}")
             i = 0
-            for a in appeals:
+            def handle_appeal(a):
                 if a is None:
                     continue
                 i = i + 1
@@ -273,6 +283,8 @@ def work_with_generative():
                         f.write(a)
                 else:
                     print(f"Skipping, found bad data in {a}")
+            pool.map(handle_appeal, appeals)
+            pool.map(handle_rejection, rejections)
 
 
 
