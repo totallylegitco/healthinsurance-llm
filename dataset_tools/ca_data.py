@@ -178,7 +178,10 @@ def work_with_generative():
         index = imr["ReferenceID"]
 
         def append_context(prompt):
-            return [{"instruction": prompt, "input": determination}]
+            return ("Below is an instruction that describes a task, paired with an input that provides further context. "
+                    "Write a response that appropriately completes the request.\n\n"
+                    f"### Instruction:\n{prompt}\n\n### Input:\n{determination}\n\n### Response:")
+
 
         rejection_prompts = [
             f"What was the reason that {treatment} was originally denied in the provided determination.",
