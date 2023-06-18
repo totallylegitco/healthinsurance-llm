@@ -265,7 +265,7 @@ def work_with_generative():
             i = 0
             def handle_rejection(r):
                 if r is None:
-                    continue
+                    return
                 i = i + 1
                 if not check_for_bad_rejection(r):
                     print(f"Writing out to {idx}MAGIC{i}_rejection.txt")
@@ -276,7 +276,7 @@ def work_with_generative():
             i = 0
             def handle_appeal(a):
                 if a is None:
-                    continue
+                    return
                 i = i + 1
                 if not check_for_bad_rejection(r):
                     with open(join(gen_loc, f"{idx}MAGIC{i}_appeal.txt"), "w") as f:
