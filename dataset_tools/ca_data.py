@@ -247,7 +247,7 @@ def work_with_generative():
             prompts += combined
 
         try:
-            print(f"Computing {len(prompts)} prompts :)")
+            print(f"Computing {len(prompts)} prompts :) {prompts}")
             results = list(map(extract_text, instruct_pipeline(prompts)))
         except Exception as e:
             print(f"Error with {e}")
@@ -270,7 +270,7 @@ def work_with_generative():
             i = 0
             for r in rejections:
                 if r is None:
-                    return
+                    continue
                 i = i + 1
                 if not check_for_bad_rejection(r):
                     print(f"Writing out to {idx}MAGIC{i}_rejection.txt")
@@ -281,7 +281,7 @@ def work_with_generative():
             i = 0
             for a in appeals:
                 if a is None:
-                    return
+                    continue
                 i = i + 1
                 if not check_for_bad_rejection(r):
                     with open(join(gen_loc, f"{idx}MAGIC{i}_appeal.txt"), "w") as f:
