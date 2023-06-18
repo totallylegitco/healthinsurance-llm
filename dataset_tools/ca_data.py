@@ -128,8 +128,9 @@ def training_cleanup_appeal(text):
         less_sketchy = f"Dear [INSURANCECOMPANY];\n{less_sketchy}"
     return cleanup_appeal(less_sketchy)
 
-was_rejected = re.compile("(deneied|no additional treatment|not covered|not reimbursed|not eligible)", re.IGNORECASE)
-    
+was_rejected = re.compile(r"(deneied|no additional treatment|not covered|not reimbursed|not eligible)", re.IGNORECASE)
+invert_regex = re.compile(r"(is|are|were|be)\s*medically\s*(necessary|required)", re.IGNORECASE)
+
 def training_cleanup_rejection(text):
     if text is None:
         return None
@@ -141,7 +142,7 @@ def training_cleanup_rejection(text):
     def mark_unnecessary(match):
         return f"{match.group(1)} not medically {match.group(2)}"
 
-    text = re.sub(r"(is|are|were|be)\s*medically\s*(necessary|required)", mark_unnecessary, text)
+    text = re.sub(invert_regex, mark_unnecessary, text)
     return cleanup_rejection(text)
 
 
