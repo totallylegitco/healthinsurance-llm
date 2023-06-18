@@ -46,7 +46,7 @@ def load_record(filename):
 def cleanup_denial(data):
     swap = [
         ("The Health Plans denial was overturned due to the reviewers determining that the requested services were likely to be more beneficial for treatment of the enrollees medical condition than any available standard therapy.", ""),
-        ("We always say no to surgeries.", "")
+        ("We always say no to surgeries.", ""),
         ("The reason was originally denied was", "Your request is denied because"),
         ("Therefore, the Health Plans denial should be overturned.", ""),
         ("We thank the reviewer for their assessment of this case.", ""),
