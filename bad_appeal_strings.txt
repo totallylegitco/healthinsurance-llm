@@ -1,3 +1,5 @@
+None is medically necessary
+is medically necessary for None
 I would like to speak with a manager to discuss this decision.
 This does not constitute a medical necessity.
 Dear [Customer];

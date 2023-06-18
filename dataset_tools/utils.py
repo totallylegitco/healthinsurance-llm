@@ -117,3 +117,7 @@ def check_for_bad_rejection(data):
         if b != "" and b in data:
             return True
     return False
+
+
+def not_none(i):
+    return i is not None
