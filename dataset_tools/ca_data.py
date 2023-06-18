@@ -190,7 +190,6 @@ def work_with_generative():
 
 
         rejection_prompts = [
-            f"What was the reason that {treatment} was originally denied in the provided determination.",
             f"Write a health insurance denial for {treatment} for diagnosis {diagnosis} on the grounds of {grounds} that could have resulted in the provided determination.",
             f"Deny coverage for {treatment} for {diagnosis} that could have resulted in the provided determination.",
             f"Write a denial for {treatment} that could have resulted in the provided determination.",
@@ -297,7 +296,7 @@ def work_with_generative():
 
 
 def work_with_biogpt():
-    instruct_pipeline = pipeline(model="microsoft/BioGPT-Large-PubMedQA", max_new_tokens=100)
+    instruct_pipeline = pipeline(model="microsoft/BioGPT-Large-PubMedQA", max_new_tokens=200)
 
 
     def generate_biogpt_hacks(imr):
