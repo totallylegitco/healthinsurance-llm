@@ -71,7 +71,7 @@ treatment_regexes = [
     seeking_regex,
     recommended_regex]
 
-diagnosis_regex = [
+diagnosis_regexes = [
     seeking_regex,
     admitted_regex,
     ]
