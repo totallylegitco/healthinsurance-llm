@@ -23,7 +23,7 @@ tpid=$!
 (scp ./firstrun.sh $1:~/ || (sleep 120 && scp ./firstrun.sh $1:~/ ))
 scp ./requirements.txt $1:~/
 ssh $1 "./firstrun.sh" &
-scp ${target} $1:~/
+frpid=$!
 # Put the passwordless https config there
 scp ~/.ssh/authorized_keys  $1:~/.ssh/
 # ssh -t $1 "sudo apt-get update && sudo apt-get upgrade -y" &
@@ -31,7 +31,8 @@ wait ${tpid}
 # Race condition with tbz2 file not being written all the way
 sync
 sleep 1
-ssh $1 "tar -C ./ -xjf ${filename}"
+scp ${target} $1:~/
+ssh $1 "tar -C ./ -xjf ${filename}" &
 wait
 scp remote_git $1:~/.git/config
 ssh -t $1 "QLORA=\"${QLORA}\" INPUT_MODEL=\"${INPUT_MODEL}\" screen ./run.sh"
