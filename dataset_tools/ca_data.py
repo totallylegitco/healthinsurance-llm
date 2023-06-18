@@ -134,11 +134,13 @@ def work_with_generative():
 
     for model in candidate_models:
         try:
-            m = model
+            tokenizer = AutoTokenizer.from_pretrained(model)
             print(f"Loading {m}\n")
             if args.small_gpu:
                 instruct_pipeline = pipeline(
                     model=model,
+                    tokenizer=tokenizer,
+                    eos_token_id=tokenizer.eos_token_id,
                     torch_dtype=torch.bfloat16,
                     trust_remote_code=True,
                     model_kwargs={'load_in_8bit': True},
@@ -148,6 +150,9 @@ def work_with_generative():
             else:
                 instruct_pipeline = pipeline(
                     model=model,
+                    tokenizer=tokenizer,
+                    eos_token_id=tokenizer.eos_token_id,
+                    top_k = 10,
                     torch_dtype=torch.bfloat16,
                     trust_remote_code=True,
                     device_map="auto",
