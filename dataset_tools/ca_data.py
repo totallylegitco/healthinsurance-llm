@@ -118,16 +118,20 @@ imrs = load_data("./data_sources/ca-independent-medical-review-imr-determination
 def training_cleanup_appeal(text):
     if text is None:
         return None
-    sentences = text.split(".")
-    less_sketchy = ".".join(filter(sketchy_sentence_filter, sentences))
-    if len(less_sketchy) < 30:
-        return None
-    if (not "Dear" in less_sketchy) and not ("To Whom" in less_sketchy):
-        less_sketchy = f"Dear [INSURANCECOMPANY];\n{less_sketchy}"
-    return cleanup_appeal(less_sketchy)
+    return cleanup_appeal(text)
 
 was_rejected = re.compile(r"(deneied|no additional treatment|not covered|not reimbursed|not eligible)", re.IGNORECASE)
 invert_regex = re.compile(r"(is|are|were|be)\s*medically\s*(necessary|required)", re.IGNORECASE)
+
+def sketchy_sentence_filter(sentence):
+    if "I am a" in sentence:
+        return False
+    if "agrees with the reviewer's findings" in sentence:
+        return False
+    if "The reviewer " in sentence:
+        return False
+    return True
+
 
 def training_cleanup_rejection(text):
     if text is None:
@@ -188,15 +192,6 @@ def work_with_generative():
     if instruct_pipeline is None:
         raise Exception("Could not load any model")
 
-
-    def sketchy_sentence_filter(sentence):
-        if "I am a" in sentence:
-            return False
-        if "agrees with the reviewer's findings" in sentence:
-            return False
-        if "The reviewer " in sentence:
-            return False
-        return True
 
     def generate_prompts(imr):
         determination = imr["Determination"]
