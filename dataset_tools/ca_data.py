@@ -318,12 +318,12 @@ I am writing you to appeal claim [CLAIMNUMBER]. I believe that it is medically n
             o.write("\n")
             o.write("Sincerely,\n[YOURNAME]")
 
-    l = imrs.apply(generate_biogpt_hacks, axis=1).tolist()
-
     batch_size = 200
 
-    for i in range(0, len(l), batch_size):
-        batch = l[i: i + batch_size]
+    for i in range(0, len(imrs), batch_size):
+        print(f"looping on batch {i}")
+        batch = imrs[i: i + batch_size]
+        batch_prompts = batch.apply(generate_biogpt_hacks, axis=1).tolist()
         idxs = map(lambda r: r[0], batch)
         qs = map(lambda r: r[1], batch)
         transformed = instruct_pipeline(list(qs))
