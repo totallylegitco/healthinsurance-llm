@@ -19,8 +19,8 @@ cd lit-parrot
 if [ ! -f ".firstrun" ]; then
   pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url "${extra_url}"
   pip3 install -U --index-url "${extra_url}" --pre 'torch>=2.1.0dev'
+  python scripts/download.py --repo_id ${MODEL}
   touch .firstrun
 fi
 
-python scripts/download.py --repo_id ${MODEL}
-python generate/adapter_v2.py 
+python generate/adapter_v2.py --prompt "Generate a health insurance appeal for a babies cancer treatment." --adapter_path ./checkpoints/TotallyLegitCo/appeal-alpaca/adv2_ft/lit_model_adapter_finetuned.pth --checkpoint_dir ./checkpoints/TotallyLegitCo/appeal-alpaca/checkpoints/tiiuae/falcon-7b
