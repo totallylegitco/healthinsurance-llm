@@ -2,6 +2,8 @@
 
 set -ex
 
+source setup.sh
+
 export PATH=$PATH:~/.local/bin:/usr/lib/x86_64-linux-gnu
 MODEL=${MODEL:-"TotallyLegitCo/appeal-alpaca"}
 
@@ -21,6 +23,4 @@ if [ ! -f ".firstrun" ]; then
 fi
 
 python scripts/download.py --repo_id ${MODEL}
-
-
-
+python generate/adapter_v2.py 
