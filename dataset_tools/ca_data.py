@@ -138,10 +138,8 @@ def training_cleanup_rejection(text):
         text = f"{text}. Your request is denied."
     if not "[MEMBER]" in text:
         text = f"Dear [MEMBER]; {text}."
-    
     def mark_unnecessary(match):
         return f"{match.group(1)} not medically {match.group(2)}"
-
     text = re.sub(invert_regex, mark_unnecessary, text)
     return cleanup_rejection(text)
 
@@ -264,11 +262,11 @@ def work_with_generative():
         for (idx, rejection_prompts, appeal_prompts) in batch:
             start = start_idxs[ci]
             ci = ci + 1
-            rejections = pool.map(
+            rejections = map(
                 training_cleanup_rejection,
                 results[start:
                         start + len(rejection_prompts)])
-            appeals = pool.map(
+            appeals = map(
                 training_cleanup_appeal,
                 results[start + len(rejection_prompts):
                         start + len(rejection_prompts) + len(appeal_prompts)])
