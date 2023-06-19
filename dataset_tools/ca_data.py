@@ -139,7 +139,7 @@ def training_cleanup_rejection(text):
     def mark_unnecessary(match):
         return f"{match.group(1)} not medically {match.group(2)}"
     text = re.sub(invert_regex, mark_unnecessary, text)
-    return cleanup_rejection(text)
+    return cleanup_denial(text)
 
 
 def work_with_generative():
