@@ -12,8 +12,6 @@ import itertools
 from .utils import *
 import multiprocessing
 
-pool = multiprocessing.Pool()
-
 flatten = itertools.chain.from_iterable
 
 gen_loc = "generated-llm-data"
