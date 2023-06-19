@@ -23,4 +23,4 @@ if [ ! -f ".firstrun" ]; then
   touch .firstrun
 fi
 
-python generate/adapter_v2.py --prompt "Generate a health insurance appeal for a babies cancer treatment." --adapter_path ./checkpoints/TotallyLegitCo/appeal-alpaca/adv2_ft/lit_model_adapter_finetuned.pth --checkpoint_dir ./checkpoints/TotallyLegitCo/appeal-alpaca/checkpoints/tiiuae/falcon-7b
+python generate/adapter_v2.py --prompt "Generate a health insurance appeal for a babies cancer treatment." --adapter_path ./checkpoints/TotallyLegitCo/appeal-alpaca/adv2_ft/lit_model_adapter_finetuned.pth --checkpoint_dir ./checkpoints/TotallyLegitCo/appeal-alpaca/checkpoints/tiiuae/falcon-7b --max_new_tokens 300

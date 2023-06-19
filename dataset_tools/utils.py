@@ -51,7 +51,7 @@ def cleanup_denial(data):
         ("Therefore, the Health Plans denial should be overturned.", ""),
         ("We thank the reviewer for their assessment of this case.", ""),
         ("The reviewers determined that", "We do not believe that"),
-        ("should be overturned", "should stand.")
+        ("should be overturned", "should stand."),
         ("that denying coverage for this treatment would be inappropriate", "we have chosen to deny coverage")
         ("it is not possible to deny or approve", "we must deny"),
         ("should be granted coverage", "will not be granted coverage"),
