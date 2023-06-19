@@ -1,7 +1,9 @@
 #!/bin/bash
 
+set -ex
+
 export PATH=$PATH:~/.local/bin:/usr/lib/x86_64-linux-gnu
-INPUT_MODEL=${INPUT_MODEL:-"databricks/dolly-v2-7b"}
+MODEL=${MODEL:-"TotallyLegitCo/appeal-alpaca"}
 
 
 pip install huggingface_hub
@@ -12,5 +14,13 @@ fi
 
 cd lit-parrot
 
-python scripts/download.py --repo_id TotallyLegitCo/appeal-alpaca
+if [ ! -f ".firstrun" ]; then
+  pip3 install -U --pre -r ../requirements.txt -r requirements.txt  --extra-index-url "${extra_url}"
+  pip3 install -U --index-url "${extra_url}" --pre 'torch>=2.1.0dev'
+  touch .firstrun
+fi
+
+python scripts/download.py --repo_id ${MODEL}
+
+
 
