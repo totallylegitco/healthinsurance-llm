@@ -201,7 +201,8 @@ def work_with_generative():
         grounds = imr["Type"]
         index = imr["ReferenceID"]
 
-        def append_context(prompt):
+
+        def append_context_full(prompt):
             if prompt is None:
                 return None
             return ("Below is an instruction that describes a task, paired with an input that provides further context. "
@@ -220,8 +221,8 @@ def work_with_generative():
         ]
 
         return (index,
-                list(filter(not_none, map(append_context, rejection_prompts))),
-                list(filter(not_none, map(append_context, appeal_prompts))))
+                list(filter(not_none, map(append_context_full, rejection_prompts))),
+                list(filter(not_none, map(append_context_full, appeal_prompts))))
 
 
     print("Generating prompts...")

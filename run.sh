@@ -14,9 +14,12 @@ if [ -z "${LD_LIBRARY_PATH}" ]; then
 fi
 
 
-
 if [ ! -d data_sources ]; then
   mkdir -p data_sources
+  if [ ! -f "drugs.csv" ]; then
+    wget https://seer.cancer.gov/seertools/seerrx/download-rx/?type=drug -O \
+	 drugs.csv
+  fi
   if [ ! -f "./data_sources/wpath_soc7.pdf"]; then
     wget https://www.wpath.org/media/cms/Documents/SOC%20v7/SOC%20V7_English2012.pdf?_t=1613669341 -O \
 	 ./data_sources/wpath_soc7.pdf
