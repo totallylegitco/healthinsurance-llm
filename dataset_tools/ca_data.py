@@ -213,12 +213,9 @@ def work_with_generative():
         for (idx, batch_prompts) in batch:
             start = start_idxs[ci]
             ci = ci + 1
-            results = map(
-                training_cleanup_rejection,
-                results[start:
-                        start + len(batch_prompts)])
             i = 0
-            for r in results:
+            local_results = results[start: start + len(batch_prompts)]
+            for r in local_results:
                 if r is None:
                     continue
                 i = i + 1
