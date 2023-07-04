@@ -120,8 +120,8 @@ def work_with_generative():
 
     candidate_models = [
 #        "ausboss/llama-30b-supercot",
-        "CalderaAI/30B-Lazarus",
-        "tiiuae/falcon-40b-instruct",
+#        "CalderaAI/30B-Lazarus",
+#        "tiiuae/falcon-40b-instruct",
         "databricks/dolly-v2-12b",
         "databricks/dolly-v2-7b",
         "databricks/dolly-v2-3b",
@@ -275,5 +275,7 @@ I am writing you to appeal claim [CLAIMNUMBER]. I believe that it is medically n
             write_result(res)
 
 
+print("Generative:")
 work_with_generative()
+print("biogpt:")
 work_with_biogpt()
