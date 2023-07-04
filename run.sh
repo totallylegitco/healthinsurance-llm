@@ -16,9 +16,13 @@ fi
 
 if [ ! -d data_sources ]; then
   mkdir -p data_sources
-  if [ ! -f "drugs.csv" ]; then
+  if [ ! -f "./data_sources/drugs.csv" ]; then
     wget https://seer.cancer.gov/seertools/seerrx/download-rx/?type=drug -O \
-	 drugs.csv
+	 ./data_sources/drugs.csv
+  fi
+  if [ ! -f "./data_sources/mtsamples2.csv" ]; then
+    wget "https://raw.githubusercontent.com/mcoplan11/service_denial/master/dataset/mtsamples%202.csv" -O \
+	 ./data_sources/mtsamples2.csv
   fi
   if [ ! -f "./data_sources/wpath_soc7.pdf"]; then
     wget https://www.wpath.org/media/cms/Documents/SOC%20v7/SOC%20V7_English2012.pdf?_t=1613669341 -O \

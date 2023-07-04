@@ -1,8 +1,43 @@
 import re
 
+def training_cleanup_appeal(text):
+    if text is None:
+        return None
+    return cleanup_appeal(text)
+
+was_rejected = re.compile(r"(deneied|no additional treatment|not covered|not reimbursed|not eligible)", re.IGNORECASE)
+invert_regex = re.compile(r"(is|are|were|be)\s*medically\s*(necessary|required)", re.IGNORECASE)
+
+def sketchy_sentence_filter(sentence):
+    if "I am a" in sentence:
+        return False
+    if "agrees with the reviewer's findings" in sentence:
+        return False
+    if "The reviewer " in sentence:
+        return False
+    return True
+
+
+def training_cleanup_rejection(text):
+    if text is None:
+        return None
+    if re.search(was_rejected, text) is None:
+        text = f"{text}. Your request is denied."
+    if not "[MEMBER]" in text:
+        text = f"Dear [MEMBER]; {text}."
+    def mark_unnecessary(match):
+        return f"{match.group(1)} not medically {match.group(2)}"
+    text = re.sub(invert_regex, mark_unnecessary, text)
+    return cleanup_denial(text)
+
+
+
+
 def letter_type(filename):
     if filename.endswith("_rejection.txt"):
         return "rejection"
+    elif filename.endswith("json.txt"):
+        return "json"
     else:
         return "appeal"
 
@@ -39,8 +74,12 @@ def load_record(filename):
     with open(filename, encoding="utf-8") as f: data = f.read()
     if letter_type(filename) == "appeal":
         return cleanup_appeal(data)
-    else:
+    elif letter_type(filename) == "rejection":
         return cleanup_denial(data)
+    elif letter_type(filename) == "json":
+        return cleanup_json(data)
+    else:
+        return data
 
 
 def cleanup_denial(data):

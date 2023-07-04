@@ -1,3 +1,4 @@
+import pandas as pd
 import nltk
 from nltk.corpus import stopwords
 import json
@@ -7,9 +8,11 @@ import re
 from .utils import *
 from PyPDF2 import PdfReader
 
-magic_re = re.compile(r".*/(.*?)(MAGIC[0-9B]*|FARTS[0-9]*|)_?(appeal|rejection).txt")
+magic_re = re.compile(r".*/(.*?)(MAGIC[0-9B]*|FARTS[0-9]*|)_?(appeal|rejection|json).txt")
 
 with open('header.txt') as x: header = x.read()
+with open('alt_header.txt') as x: alt_header = x.read()
+with open('mt_header.txt') as x: mt_header = x.read()
 
 category = "creative_writing"
 
@@ -41,7 +44,7 @@ def insert_into_case_dict(filename):
     if case is not None:
         lt = letter_type(filename)
         if case not in cases:
-            cases[case] = {"appeal": [], "rejection": []}
+            cases[case] = {"appeal": [], "rejection": [], "json": []}
         cases[case][lt] += [filename]
 
 for f in filter(check_record, data_files):
@@ -137,8 +140,28 @@ def process_pdf(pdf):
 for pdf in pdfs:
     process_pdf(pdf)
 
+
+def write_chemo_drug_records():
+    parsed_chemo = pd.read_csv("./data_sources/parsed_chemo_drugs.csv")
+    pcl = parsed_chemo.tolist()
+
+    for r in pcl:
+        write_dolly(r["question"], result=r["answer"], context="")
+        write_alpaca(r["question"], result=r["answer"], context="")
+
+
+def write_mt_sample_contexts():
+    mt = pd.read_csv("./data_sources/mtsamples2.csv")
+    mtl = mt.tolist()
+
+    for r in mtl:
+        write_dolly(mt_header, r["description"], r["transcription"])
+
+
 for (case_key, case) in cases.items():
     try:
+        for j in case["json"]:
+            
         for r in case["rejection"]:
             rejection = load_record(r)
             if r is None or r == "null":

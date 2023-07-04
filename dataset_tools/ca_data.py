@@ -115,37 +115,6 @@ def load_data(path):
 
 imrs = load_data("./data_sources/ca-independent-medical-review-imr-determinations-trends-utf8.csv")
 
-def training_cleanup_appeal(text):
-    if text is None:
-        return None
-    return cleanup_appeal(text)
-
-was_rejected = re.compile(r"(deneied|no additional treatment|not covered|not reimbursed|not eligible)", re.IGNORECASE)
-invert_regex = re.compile(r"(is|are|were|be)\s*medically\s*(necessary|required)", re.IGNORECASE)
-
-def sketchy_sentence_filter(sentence):
-    if "I am a" in sentence:
-        return False
-    if "agrees with the reviewer's findings" in sentence:
-        return False
-    if "The reviewer " in sentence:
-        return False
-    return True
-
-
-def training_cleanup_rejection(text):
-    if text is None:
-        return None
-    if re.search(was_rejected, text) is None:
-        text = f"{text}. Your request is denied."
-    if not "[MEMBER]" in text:
-        text = f"Dear [MEMBER]; {text}."
-    def mark_unnecessary(match):
-        return f"{match.group(1)} not medically {match.group(2)}"
-    text = re.sub(invert_regex, mark_unnecessary, text)
-    return cleanup_denial(text)
-
-
 def work_with_generative():
     # Load the model to do our magic
 
@@ -209,26 +178,15 @@ def work_with_generative():
                     "Write a response that appropriately completes the request.\n\n"
                     f"### Instruction:\n{prompt}\n\n### Input:\n{findings}\n\n### Response:")
 
+        prompt = f"""Using the provided independent medical review information write a response JSON format. With the keys condition, treatment, approval_reason, initial_denial_reason. The value for condition should be the condition being treated, treatment being the treatment, approval_reason being why the reviewers approved it (without directly mentioning the reviwers), and initial_denial_reason being why it was denied. If the initial_denial_reason is not specified make up a reason why it might not be medically necessary."""
 
-        rejection_prompts = [
-            f"Write a health insurance denial for {treatment} for diagnosis {diagnosis} on the grounds of {grounds} that could have resulted in the provided determination.",
-            f"Deny coverage for {treatment} for {diagnosis} that could have resulted in the provided determination.",
-            f"Write a denial for {treatment} that could have resulted in the provided determination.",
-        ]
-        appeal_prompts = [
-            f"Write an appeal for {treatment} that could have resulted in the provided determination.",
-            f"Write an appeal for {treatment} for {diagnosis} that could have resulted in the provided determination.",
-        ]
-
-        return (index,
-                list(filter(not_none, map(append_context_full, rejection_prompts))),
-                list(filter(not_none, map(append_context_full, appeal_prompts))))
+        return [append_context_full(prompt)]
 
 
     print("Generating prompts...")
     l = imrs.apply(generate_prompts, axis=1).tolist()
 
-    batch_size = 2
+    batch_size = 20
 
     for b in range(0, len(l), batch_size):
         print(f"Running batch {b}")
@@ -237,11 +195,10 @@ def work_with_generative():
         c = 0
         start_idxs = []
         prompts = []
-        for (idx, rejection_prompts, appeal_prompts) in batch:
-            combined = rejection_prompts + appeal_prompts
+        for (idx, batch_prompts) in batch:
             start_idxs += [c]
-            c = c + len(combined)
-            prompts += combined
+            c = c + len(batch_prompts)
+            prompts += batch_prompts
 
         try:
             print(f"Computing {len(prompts)} prompts :) {prompts}")
@@ -253,39 +210,24 @@ def work_with_generative():
         print(f"Got back {len(results)}")
         ci = 0
 
-        for (idx, rejection_prompts, appeal_prompts) in batch:
+        for (idx, batch_prompts) in batch:
             start = start_idxs[ci]
             ci = ci + 1
-            rejections = map(
+            results = map(
                 training_cleanup_rejection,
                 results[start:
-                        start + len(rejection_prompts)])
-            appeals = map(
-                training_cleanup_appeal,
-                results[start + len(rejection_prompts):
-                        start + len(rejection_prompts) + len(appeal_prompts)])
+                        start + len(batch_prompts)])
             i = 0
-            for r in rejections:
+            for r in results:
                 if r is None:
                     continue
                 i = i + 1
                 if not check_for_bad_rejection(r):
-                    print(f"Writing out to {idx}MAGIC{i}_rejection.txt")
-                    with open(join(gen_loc, f"{idx}MAGIC{i}_rejection.txt"), "w") as f:
+                    print(f"Writing out to {idx}MAGIC{i}_json.txt")
+                    with open(join(gen_loc, f"{idx}MAGIC{i}_json.txt"), "w") as f:
                         f.write(r)
                 else:
                     print(f"Skipping, found bad data in {r}")
-            i = 0
-            for a in appeals:
-                if a is None:
-                    continue
-                i = i + 1
-                if not check_for_bad_rejection(r):
-                    with open(join(gen_loc, f"{idx}MAGIC{i}_appeal.txt"), "w") as f:
-                        f.write(a)
-                else:
-                    print(f"Skipping, found bad data in {a}")
-
 
 
 
@@ -298,7 +240,12 @@ def work_with_biogpt():
         diagnosis = imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
         findings = imr["Findings"]
         index = imr["ReferenceID"]
-        return (index, f"{treatment} is medically necessary for {diagnosis} because")
+        if treatment is None:
+            return None
+        if diagnosis is not None:
+            return [(index, f"{treatment} is medically necessary for {diagnosis} because")]
+        else:
+            return [(index, f"{treatment} is medically necessary because")]
 
     def write_result(res):
         idx = res[0]
@@ -317,7 +264,9 @@ I am writing you to appeal claim [CLAIMNUMBER]. I believe that it is medically n
     for i in range(0, len(imrs), batch_size):
         print(f"looping on batch {i}")
         batch = imrs[i: i + batch_size]
-        batch_prompts = batch.apply(generate_biogpt_hacks, axis=1).tolist()
+        batch_prompts = list(filter(
+            not_none,
+            batch.apply(generate_biogpt_hacks, axis=1).tolist()))
         idxs = map(lambda r: r[0], batch)
         qs = map(lambda r: r[1], batch)
         transformed = instruct_pipeline(list(qs))
