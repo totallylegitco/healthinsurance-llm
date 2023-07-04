@@ -180,7 +180,7 @@ def work_with_generative():
 
         prompt = f"""Using the provided independent medical review information write a response JSON format. With the keys condition, treatment, approval_reason, initial_denial_reason. The value for condition should be the condition being treated, treatment being the treatment, approval_reason being why the reviewers approved it (without directly mentioning the reviwers), and initial_denial_reason being why it was denied. If the initial_denial_reason is not specified make up a reason why it might not be medically necessary."""
 
-        return [append_context_full(prompt)]
+        return (index, append_context_full(prompt))
 
 
     print("Generating prompts...")
