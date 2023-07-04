@@ -7,7 +7,7 @@ if [ ! -f ".firstrun" ]; then
   python3 -m pip install --upgrade pip
   pip3 install -U -r requirements.txt
   # Setup bits and bytes if we are likely to need it.
-  if [ "${gpu_memory}" -lt 49564 ]; then
+  if [ ${gpu_memory} -lt 49564 ]; then
     if [ $(uname -m) == "aarch64" ]; then
       # On ARM for bits and bytes we need neon
       if [ ! -d sse2neon ]; then
