@@ -15,6 +15,10 @@ if [ ! -d bitsandbytes ]; then
 fi
 cd bitsandbytes
 BUILD_COMMAND=$(python -m bitsandbytes 2>&1 |grep "make" |grep "CUDA_VERSION" |grep -v rm |grep -v "for example" |tail -n 1)
-bash -c "${BUILD_COMMAND}"
+if [ -z "${BUILD_COMMAND}" ]; then
+  sudo make CUDA_VERSION=116
+else
+  bash -c "${BUILD_COMMAND}"
+fi
 sudo python setup.py install
 cd ..

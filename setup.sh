@@ -1,4 +1,8 @@
 export PATH=$PATH:~/.local/bin:/usr/lib/x86_64-linux-gnu
+if [ -z "$LD_LIBRARY_PATH" ]; then
+  export LD_LIBRARY_PATH=$PATH
+fi
+
 INPUT_MODEL=${INPUT_MODEL:-"databricks/dolly-v2-7b"}
 TR_DATA=${TR_DATA:-"out"}
 OUTDIR=${OUTDIR:-"new_model"}

@@ -9,9 +9,6 @@ gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut 
 if [ ! -f ".firstrun" ]; then
   ./firstrun.sh
 fi
-if [ -z "${LD_LIBRARY_PATH}" ]; then
-  export LD_LIBRARY_PATH=$PATH
-fi
 
 
 if [ ! -d data_sources ]; then
