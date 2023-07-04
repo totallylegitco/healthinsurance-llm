@@ -73,6 +73,14 @@ def format_dolly(instruction, result, context):
         "category": "open_qa"})
     record.replace("\n", " ")
     return record + "\n"
+
+def write(instruction, result, context=""):
+    write_dolly(instruction, result, context=context)
+    write_alpaca(instruction, result, context=context)
+
+def write_small(instruction, result, context=""):
+    write_dolly_small(instruction, result, context=context)
+    write_alpaca_small(instruction, result, context=context)
     
 def write_dolly_small(instruction, result, context=""):
     so.write(format_dolly(instruction, result, context))
@@ -131,10 +139,8 @@ def process_pdf(pdf):
 
     prompt = f"What are the recommendations in {pdf}"
     expect = "-\n".join(recs)
-    write_alpaca(prompt, expect)
-    write_alpaca_small(prompt, expect)
-    write_dolly(prompt, expect)
-    write_dolly_small(prompt, expect)
+    write(prompt, expect)
+    write_small(prompt, expect)
 
 
 for pdf in pdfs:
@@ -146,8 +152,7 @@ def write_chemo_drug_records():
     pcl = parsed_chemo.tolist()
 
     for r in pcl:
-        write_dolly(r["question"], result=r["answer"], context="")
-        write_alpaca(r["question"], result=r["answer"], context="")
+        write(r["question"], result=r["answer"], context="")
 
 
 def write_mt_sample_contexts():
@@ -155,13 +160,27 @@ def write_mt_sample_contexts():
     mtl = mt.tolist()
 
     for r in mtl:
-        write_dolly(mt_header, r["description"], r["transcription"])
+        write(mt_header, r["transcription"], context=r["description"])
 
 
+def write_10k():
+    ic = pd.read_csv("./data_sources/ic10k.csv")
+    icl = ic.tolist()
+
+    for r in icl:
+        write(r["input"], r["answer_icliniq"])
+        
 for (case_key, case) in cases.items():
     try:
         for j in case["json"]:
-            
+            write(
+                "Why should the the provided treatment be covered.",
+                j["approval_reason"],
+                j["treatment"])
+            write(
+                "Why should the provided denial be overturned?",
+                j["approval_reason"],
+                j["initial_denial_reason"])
         for r in case["rejection"]:
             rejection = load_record(r)
             if r is None or r == "null":
@@ -171,11 +190,9 @@ for (case_key, case) in cases.items():
                 if (a is None or a == "null" or a == "" or
                     len(a) < 10):
                     continue
-                write_dolly(header, appeal, rejection)
-                write_alpaca(header, appeal, rejection)
+                write(header, appeal, rejection)
                 if "MAGIC" not in r:
-                    write_dolly_small(header, appeal, rejection)
-                    write_alpaca_small(header, appeal, rejection)
+                    write_small(header, appeal, rejection)
 
     except Exception as e:
         print(f"Exception {e} while processing case {case}")

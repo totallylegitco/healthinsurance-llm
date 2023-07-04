@@ -28,6 +28,11 @@ if [ ! -d data_sources ]; then
     wget https://www.wpath.org/media/cms/Documents/SOC%20v7/SOC%20V7_English2012.pdf?_t=1613669341 -O \
 	 ./data_sources/wpath_soc7.pdf
   fi
+  # TBD: Should we include this?
+  if [ ! -f "./data_sources/ic10k.csv"] ; then
+    wget https://drive.google.com/u/0/uc?id=1ZKbqgYqWc7DJHs3N9TQYQVPdDQmZaClA&export=download -O \
+	./data_sources/ic10k.csv						    
+  fi
   if [ ! -f "./data_sources/wpath_soc8.pdf"]; then
     wget https://www.tandfonline.com/doi/pdf/10.1080/26895269.2022.2100644 -O \
 	 ./data_sources/wpath_soc8.pdf
