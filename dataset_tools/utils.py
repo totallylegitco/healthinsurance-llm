@@ -71,7 +71,8 @@ def check_for_invalid_urls(data):
 
 
 def load_record(filename):
-    with open(filename, encoding="utf-8") as f: data = f.read()
+    with open(filename, encoding="utf-8") as f: raw_data = f.read()
+    data = parse_record(raw_data)
     if letter_type(filename) == "appeal":
         return cleanup_appeal(data)
     elif letter_type(filename) == "rejection":
@@ -80,6 +81,22 @@ def load_record(filename):
         return cleanup_json(data)
     else:
         return data
+
+
+def parse_record(data):
+    if "### Response:" in data:
+        return data.split("### Response:")[1]
+    else:
+        return data
+
+def cleanup_json(data):
+    try:
+        return json.loads(data)
+    except:
+        try:
+            return json.loads(data +"\"}")
+        except:
+            return None
 
 
 def cleanup_denial(data):
