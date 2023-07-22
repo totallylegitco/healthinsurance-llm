@@ -35,6 +35,8 @@ scp ${target} $1:~/
 ssh $1 "tar -C ./ -xjf ${filename}" &
 wait
 scp remote_git $1:~/.git/config
+# Copy git credentials for huggingface access.
+scp ~/.gitconfig $1:~/.gitconfig
+scp ~/.config/git/credentials $1:~/.config/git/credentials
 ssh -t $1 "QLORA=\"${QLORA}\" INPUT_MODEL=\"${INPUT_MODEL}\" screen ./run.sh"
-
 rm -rf ${temp_dir}

@@ -125,9 +125,6 @@ def get_tokenizer(
     tokenizer.pad_token = tokenizer.eos_token
     return tokenizer
 
-with open(CONFIG_PATH) as config_json:
-  ds_config_dict = json.load(config_json)
-
 def train(
   *,
   input_model: str,
@@ -147,7 +144,15 @@ def train(
   save_total_limit: int,
   warmup_steps: int,
   training_dataset: str = DEFAULT_TRAINING_DATASET,
+  disable_deepspeed: bool = False,
 ):
+
+  with open(CONFIG_PATH) as config_json:
+    ds_config_dict = json.load(config_json)
+
+  if disable_deepspeed:
+      ds_config_dict = None
+
   set_seed(seed)
   os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
   # Enable tf32 for better performance
@@ -229,6 +234,7 @@ def train(
 @click.option("--lr", type=float, default=1e-5, help="Learning rate to use for training.")
 @click.option("--seed", type=int, default=DEFAULT_SEED, help="Seed to use for training.")
 @click.option("--training-dataset", type=str, default=DEFAULT_TRAINING_DATASET, help="Path to dataset for training")
+@click.option("--disable-deepspeed", type=bool, default=False, help="Run without deepspeed (e.g. non-MPI hosts etc.)")
 @click.option(
     "--gradient-checkpointing/--no-gradient-checkpointing",
     is_flag=True,
