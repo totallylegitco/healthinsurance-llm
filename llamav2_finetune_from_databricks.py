@@ -161,10 +161,12 @@ def train(
   model, model_hidden_size = load_model(pretrained_model_name_or_path=input_model)
   tokenizer = get_tokenizer()
   train_dataset, val_dataset = load_training_dataset(tokenizer, seed=seed)
-  ds_config_dict["hidden_size"] = model_hidden_size
-  ds_config_dict["zero_optimization"]["reduce_bucket_size"] = model_hidden_size*model_hidden_size
-  ds_config_dict["zero_optimization"]["stage3_prefetch_bucket_size"] = 0.9 * model_hidden_size * model_hidden_size
-  ds_config_dict["zero_optimization"]["stage3_param_persistence_threshold"] = 10 * model_hidden_size
+
+  if ds_config_dict is not None:
+      ds_config_dict["hidden_size"] = model_hidden_size
+      ds_config_dict["zero_optimization"]["reduce_bucket_size"] = model_hidden_size*model_hidden_size
+      ds_config_dict["zero_optimization"]["stage3_prefetch_bucket_size"] = 0.9 * model_hidden_size * model_hidden_size
+      ds_config_dict["zero_optimization"]["stage3_param_persistence_threshold"] = 10 * model_hidden_size
 
   # enable fp16 if not bf16
   fp16 = not bf16

@@ -4,8 +4,23 @@ set -ex
 
 if [ ! -f ".firstrun" ]; then
   touch .firstrun
+  sudo apt-get update
+  sudo apt-get install -y libaio-dev
+
   python3 -m pip install --upgrade pip
+  if [ ! -d apex ]; then
+    git clone https://github.com/NVIDIA/apex
+  fi
+  cd apex
+  pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --config-settings "--build-option=--cpp_ext" --config-settings "--build-option=--cuda_ext" --config-settings "--build-option=--deprecated_fused_adam" ./
+  cd ..
+
+  # deepspeed
+  CU_MINOR=$(nvcc --version |grep "cuda_" |cut -d "_" -f 2 |cut -d "." -f 2)
+  pip install "torch" --index-url https://download.pytorch.org/whl/cu11${CU_MINOR} || pip install torch
+  DS_BUILD_CPU_ADAM=1 DS_BUILD_SPARSE_ATTN=0 DS_BUILD_FUSED_ADAM=1 pip install "git+https://github.com/microsoft/deepspeed.git#" --global-option="build_ext" --global-option="-j16"
   pip3 install -U -r requirements.txt
+  ds_report
   # Setup bits and bytes if we are likely to need it.
   if [ ${gpu_memory} -lt 49564 ]; then
     if [ $(uname -m) == "aarch64" ]; then

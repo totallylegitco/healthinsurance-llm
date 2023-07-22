@@ -136,7 +136,7 @@ elif [ "${INPUT_MODEL}" == "NOPEtiiuae/falcon-7b-instruct" ];  then
     --do_sample \
     --instruction "Generate a health insurance appeal"
 elif [ "${INPUT_MODEL}" == "meta-llama/Llama-2-7b-hf" ]; then
-     python llamav2_finetune_from_databricks.py --local-output-dir ./llamav2-updated
+  deepspeed python llamav2_finetune_from_databricks.py --local-output-dir ./llamav2-updated
 else
   # lit-parrot seems the happiest
   # falcon

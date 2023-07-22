@@ -37,6 +37,8 @@ wait
 scp remote_git $1:~/.git/config
 # Copy git credentials for huggingface access.
 scp ~/.gitconfig $1:~/.gitconfig
-scp ~/.config/git/credentials $1:~/.config/git/credentials
+scp ~/.config/git/credentials $1:~/.config/git/credentials || scp ~/.git-credentials $1:~/
+scch $1 mkdir -p ~/.cache/huggingface
+scp ~/.cache/huggingface/token $1:~/.cache/huggingface/token
 ssh -t $1 "QLORA=\"${QLORA}\" INPUT_MODEL=\"${INPUT_MODEL}\" screen ./run.sh"
 rm -rf ${temp_dir}

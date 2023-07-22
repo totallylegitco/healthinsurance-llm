@@ -3,6 +3,8 @@ jsonargparse[signatures]
 accelerate>=0.16.0,<1
 numexpr>=2.7.3
 protobuf<3.20
+# See https://github.com/huggingface/transformers/pull/24942
+git+https://github.com/huggingface/transformers.git#[torch]
 transformers[torch]
 sentencepiece
 nltk
@@ -14,3 +16,7 @@ sacremoses
 Xformers
 trl
 peft
+fsspec>=2023.6.0
+deepspeed>=0.9.3
+pybind11
+asyncio
