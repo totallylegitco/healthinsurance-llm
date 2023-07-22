@@ -64,7 +64,7 @@ ROOT_PATH = Path(__file__).parent.parent
 MODEL_PATH = 'meta-llama/Llama-2-7b-hf'
 TOKENIZER_PATH = 'meta-llama/Llama-2-7b-hf'
 DEFAULT_TRAINING_DATASET = "databricks/databricks-dolly-15k"
-CONFIG_PATH = "../../config/a100_config.json"
+CONFIG_PATH = "./config/llamav2_a100_config.json"
 LOCAL_OUTPUT_DIR = "/dbfs/llama-2-fine-tune/output"
 DEFAULT_SEED = 68
 
@@ -110,7 +110,8 @@ def load_model(
     model = transformers.AutoModelForCausalLM.from_pretrained(
       pretrained_model_name_or_path,
       torch_dtype=torch.bfloat16,
-      trust_remote_code=True
+      trust_remote_code=True,
+      use_auth_token=True,
     )
     config = AutoConfig.from_pretrained(pretrained_model_name_or_path)
     model_hidden_size = config.hidden_size
