@@ -16,6 +16,7 @@ if [ ! -d data_sources ]; then
   if [ ! -f "./data_sources/drugs.csv" ]; then
     wget https://seer.cancer.gov/seertools/seerrx/download-rx/?type=drug -O \
 	 ./data_sources/drugs.csv
+    python -m dataset_tools.chemo_drugs
   fi
   if [ ! -f "./data_sources/mtsamples2.csv" ]; then
     wget "https://raw.githubusercontent.com/mcoplan11/service_denial/master/dataset/mtsamples%202.csv" -O \

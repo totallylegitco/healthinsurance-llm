@@ -98,7 +98,7 @@ def remove_control_characters(s):
 
 
 def parse_record(data):
-    data = re.sub('<\s*/?\s*(PARAGRAPH|FREETEXT\s*>', '', data)
+    data = re.sub('<\s*/?\s*(PARAGRAPH|FREETEXT)\s*>', '', data)
     if "### Response:" in data:
         return data.split("### Response:")[1]
     else:

@@ -164,7 +164,7 @@ for pdf in pdfs:
 
 def write_chemo_drug_records():
     parsed_chemo = pd.read_csv("./data_sources/parsed_chemo_drugs.csv")
-    pcl = parsed_chemo.tolist()
+    pcl = parsed_chemo.iterrows()
 
     for r in pcl:
         write(r["question"], result=r["answer"], context="")
@@ -172,7 +172,7 @@ def write_chemo_drug_records():
 
 def write_mt_sample_contexts():
     mt = pd.read_csv("./data_sources/mtsamples2.csv")
-    mtl = mt.tolist()
+    mtl = mt.iterrows()
 
     for r in mtl:
         write(mt_header, r["transcription"], context=r["description"])
@@ -180,7 +180,7 @@ def write_mt_sample_contexts():
 
 def write_10k():
     ic = pd.read_csv("./data_sources/ic10k.csv")
-    icl = ic.tolist()
+    icl = ic.iterrows()
 
     for r in icl:
         write(r["input"], r["answer_icliniq"])
@@ -199,6 +199,8 @@ for (case_key, case) in cases.items():
                     len(j["treatment"]) < 3):
                 continue
             treatment = j["treatment"]
+            if type(treatment) == type([]):
+                treatment = " ".join(treatment)
             approval_reason = None
             if ("approval_reason" not in j or j["approval_reason"] is None or
                 len(j["approval_reason"]) < 3 or
@@ -207,10 +209,13 @@ for (case_key, case) in cases.items():
             else:
                 approval_reason = j["approval_reason"]
             if "condition" in j and j["condition"] is not None:
+                condition = j["condition"]
+                if type(condition) == type([]):
+                    condition = " ".join(condition)
                 write(
                     "Why should the the provided treatment be covered.",
                     approval_reason,
-                    treatment + " for " + j["condition"])
+                    treatment + " for " + condition)
             else:
                 print(f"No condition in {jf}")
                 write(
@@ -238,6 +243,9 @@ for (case_key, case) in cases.items():
 
     except Exception as e:
         print(f"Exception {e} while processing case {case}")
+        raise e
 
+
+# write_chemo_drug_records()
 alpaca.write("]")
 alpaca_smaller.write("]")
