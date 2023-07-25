@@ -160,7 +160,7 @@ def train(
 
   model, model_hidden_size = load_model(pretrained_model_name_or_path=input_model)
   tokenizer = get_tokenizer()
-  train_dataset, val_dataset = load_training_dataset(tokenizer, seed=seed)
+  train_dataset, val_dataset = load_training_dataset(tokenizer, path_or_dataset=training_dataset, seed=seed)
 
   if ds_config_dict is not None:
       ds_config_dict["hidden_size"] = model_hidden_size
