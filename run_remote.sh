@@ -40,5 +40,6 @@ scp ~/.gitconfig $1:~/.gitconfig
 scp ~/.config/git/credentials $1:~/.config/git/credentials || scp ~/.git-credentials $1:~/
 ssh $1 mkdir -p "~/.cache/huggingface"
 scp ~/.cache/huggingface/token $1:~/.cache/huggingface/token
+wait ${frpid}
 ssh -t $1 "QLORA=\"${QLORA}\" INPUT_MODEL=\"${INPUT_MODEL}\" screen ./run.sh"
 rm -rf ${temp_dir}
