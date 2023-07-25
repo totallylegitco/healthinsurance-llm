@@ -136,7 +136,15 @@ elif [ "${INPUT_MODEL}" == "NOPEtiiuae/falcon-7b-instruct" ];  then
     --do_sample \
     --instruction "Generate a health insurance appeal"
 elif [ "${INPUT_MODEL}" == "meta-llama/Llama-2-7b-hf" ]; then
-  deepspeed python llamav2_finetune_from_databricks.py --local-output-dir ./llamav2-updated
+  mkdir -p llamav2-updated
+  mkdir -p llamav2-updated-nds
+  mkdir -p llama-input
+  cp ./out/train_alpaca.jsonl ./llama-input/
+  pip install -q -U git+https://github.com/huggingface/transformers.git 
+  pip install -q -U git+https://github.com/huggingface/peft.git
+  pip install -q -U git+https://github.com/huggingface/accelerate.git
+  # deepspeed python llamav2_finetune_from_databricks.py --local-output-dir ./llamav2-updated | tee -a ~/train.log ||
+  python llamav2_finetune_from_databricks.py --local-output-dir ./llamav2-updated-nds --disable-deepspeed true --training-dataset llama-input | tee -a ~/train_nods.log
 else
   # lit-parrot seems the happiest
   # falcon

@@ -3,7 +3,6 @@
 set -ex
 
 if [ ! -f ".firstrun" ]; then
-  touch .firstrun
   sudo apt-get update
   sudo apt-get install -y libaio-dev
 
@@ -19,7 +18,7 @@ if [ ! -f ".firstrun" ]; then
   CU_MINOR=$(nvcc --version |grep "cuda_" |cut -d "_" -f 2 |cut -d "." -f 2)
   pip install "torch" --index-url https://download.pytorch.org/whl/cu11${CU_MINOR} || pip install torch
   DS_BUILD_CPU_ADAM=1 DS_BUILD_SPARSE_ATTN=0 DS_BUILD_FUSED_ADAM=1 pip install "git+https://github.com/microsoft/deepspeed.git#" --global-option="build_ext" --global-option="-j16"
-  pip3 install -U -r requirements.txt
+  pip3 install -U -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu11${CU_MINOR}
   ds_report
   # Setup bits and bytes if we are likely to need it.
   if [ ${gpu_memory} -lt 49564 ]; then
@@ -52,4 +51,6 @@ if [ ! -f ".firstrun" ]; then
   if [ ! -d falcontune ]; then
     git clone https://github.com/rmihaylov/falcontune.git
   fi
+
+  touch .firstrun
 fi
