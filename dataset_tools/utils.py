@@ -3,13 +3,18 @@ import requests
 import re
 import unicodedata
 
+
 def training_cleanup_appeal(text):
     if text is None:
         return None
     return cleanup_appeal(text)
 
-was_rejected = re.compile(r"(deneied|no additional treatment|not covered|not reimbursed|not eligible)", re.IGNORECASE)
-invert_regex = re.compile(r"(is|are|were|be)\s*medically\s*(necessary|required)", re.IGNORECASE)
+
+was_rejected = re.compile(
+    r"(deneied|no additional treatment|not covered|not reimbursed|not eligible)", re.IGNORECASE)
+invert_regex = re.compile(
+    r"(is|are|were|be)\s*medically\s*(necessary|required)", re.IGNORECASE)
+
 
 def sketchy_sentence_filter(sentence):
     if "I am a" in sentence:
@@ -28,12 +33,11 @@ def training_cleanup_rejection(text):
         text = f"{text}. Your request is denied."
     if not "[MEMBER]" in text:
         text = f"Dear [MEMBER]; {text}."
+
     def mark_unnecessary(match):
         return f"{match.group(1)} not medically {match.group(2)}"
     text = re.sub(invert_regex, mark_unnecessary, text)
     return cleanup_denial(text)
-
-
 
 
 def letter_type(filename):
@@ -43,6 +47,7 @@ def letter_type(filename):
         return "json"
     else:
         return "appeal"
+
 
 def check_record(filename):
     with open(filename, encoding="utf-8") as f:
@@ -68,13 +73,15 @@ def check_for_invalid_urls(data):
                 else:
                     return True
             except Exception as e2:
-                print(f"Failed to get \"{u}\" (or \"{u2}\") dropping from candidates. {e1} {e2}")
+                print(
+                    f"Failed to get \"{u}\" (or \"{u2}\") dropping from candidates. {e1} {e2}")
                 return True
     return False
 
 
 def load_record(filename):
-    with open(filename, encoding="utf-8") as f: raw_data = f.read()
+    with open(filename, encoding="utf-8") as f:
+        raw_data = f.read()
     data = parse_record(raw_data)
     if letter_type(filename) == "appeal":
         return cleanup_appeal(data)
@@ -87,8 +94,9 @@ def load_record(filename):
 
 
 def remove_control_characters(s):
-    return "".join(ch for ch in s if unicodedata.category(ch)[0]!="C" or ch=='\n')
-    
+    return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C" or ch == '\n')
+
+
 def parse_record(data):
     data = re.sub('<\s*/?\s*(PARAGRAPH|FREETEXT\s*>', '', data)
     if "### Response:" in data:
@@ -108,15 +116,18 @@ def fix_missing_quotes(json_string):
 
     return fixed_json
 
+
 def fix_missing_colons(json_string):
     # Find all places where a colon is missing between keys and values
     pattern = r'([{,])\s*([a-zA-Z_]\w*)\s+([^",}\]]+)'
     fixed_json = re.sub(pattern, r' \1"\2": \3', json_string)
     return fixed_json
 
+
 # Example usage:
 json_string = '{"name": John, "age": 30, country: null, "email": test@example.com}'
 fixed_json = fix_missing_quotes(json_string)
+
 
 def cleanup_json(data):
     """
@@ -145,20 +156,22 @@ def cleanup_json(data):
         return json.loads(data)
     except Exception as e1:
         try:
-            return json.loads(data +"}")
+            return json.loads(data + "}")
         except Exception as e2:
             try:
-                return json.loads(data +"\"}")
+                return json.loads(data + "\"}")
             except Exception as e3:
                 result = {}
                 for line in data.split("\n"):
-                     if ":" in line:
-                         elems = line.split(":")
-                         result[de_json(elems[0])] = de_json(":".join(elems[1:]))
+                    if ":" in line:
+                        elems = line.split(":")
+                        result[de_json(elems[0])] = de_json(
+                            ":".join(elems[1:]))
                 if "condition" in result and "approval_reason" in result:
                     return result
                 else:
                     return None
+
 
 def cleanup_denial(data):
     swap = [
@@ -169,11 +182,12 @@ def cleanup_denial(data):
         ("We thank the reviewer for their assessment of this case.", ""),
         ("The reviewers determined that", "We do not believe that"),
         ("should be overturned", "should stand."),
-        ("that denying coverage for this treatment would be inappropriate", "we have chosen to deny coverage"),
+        ("that denying coverage for this treatment would be inappropriate",
+         "we have chosen to deny coverage"),
         ("it is not possible to deny or approve", "we must deny"),
         ("should be granted coverage", "will not be granted coverage"),
         ("patient's condition warrants", "patient's condition does not warrant"),
-        ("deny the denial", "deny the "), 
+        ("deny the denial", "deny the "),
         ("  ", " "),
         ("As an AI language model", ""),
         ("\.\.\.", "."),
@@ -212,7 +226,8 @@ def cleanup_appeal(data):
         ("The requested procedures are aesthetic procedures to make the patient more attractive in her new gender.",
          ""),
         ("The provided denial was overturned", "The denial should be overturned"),
-        ("Therefore, the provided denial should be upheld.", "Therefore, the denial should be overturned."),
+        ("Therefore, the provided denial should be upheld.",
+         "Therefore, the denial should be overturned."),
         ("denial should be upheld", "denial should be overturned"),
         ("did not have improved mental health outcomes compared to those who had",
          "have improved mental health outcomes compared to those who had"),
@@ -222,11 +237,15 @@ def cleanup_appeal(data):
 
     return data
 
+
 # Load some strings we know the current model puts in appeals that are bad right away
-with open("bad_appeal_strings.txt") as f: bad_appeal_strings = list(map(lambda f: f.lower(), f.read().split("\n")))
+with open("bad_appeal_strings.txt") as f:
+    bad_appeal_strings = list(map(lambda f: f.lower(), f.read().split("\n")))
 
 # Load some strings we know the current model puts in rejections that are bad right away
-with open("bad_rejection_strings.txt") as f: bad_rejection_strings = list(map(lambda f: f.lower(), f.read().split("\n")))
+with open("bad_rejection_strings.txt") as f:
+    bad_rejection_strings = list(
+        map(lambda f: f.lower(), f.read().split("\n")))
 
 
 def check_for_bad_appeal(data):
@@ -234,6 +253,7 @@ def check_for_bad_appeal(data):
         if b != "" and b in data:
             return True
     return False
+
 
 def check_for_bad_rejection(data):
     for b in bad_rejection_strings:

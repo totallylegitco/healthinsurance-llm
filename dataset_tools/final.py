@@ -8,11 +8,15 @@ import re
 from .utils import *
 from PyPDF2 import PdfReader
 
-magic_re = re.compile(r".*/(.*?)(MAGIC[0-9B]*|FARTS[0-9]*|)_?(appeal|rejection|json).txt")
+magic_re = re.compile(
+    r".*/(.*?)(MAGIC[0-9B]*|FARTS[0-9]*|)_?(appeal|rejection|json).txt")
 
-with open('header.txt') as x: header = x.read()
-with open('alt_header.txt') as x: alt_header = x.read()
-with open('mt_header.txt') as x: mt_header = x.read()
+with open('header.txt') as x:
+    header = x.read()
+with open('alt_header.txt') as x:
+    alt_header = x.read()
+with open('mt_header.txt') as x:
+    mt_header = x.read()
 
 category = "creative_writing"
 
@@ -32,12 +36,14 @@ data_files = [f for f in listed if (isfile(f))]
 
 cases = {}
 
+
 def file_name_to_case(filename):
     groups = magic_re.search(filename)
     if groups is not None:
         return groups.group(1)
     else:
         return None
+
 
 def insert_into_case_dict(filename):
     case = file_name_to_case(filename)
@@ -46,6 +52,7 @@ def insert_into_case_dict(filename):
         if case not in cases:
             cases[case] = {"appeal": [], "rejection": [], "json": []}
         cases[case][lt] += [filename]
+
 
 for f in filter(check_record, data_files):
     insert_into_case_dict(f)
@@ -65,6 +72,7 @@ first_alpaca_small = True
 so = open("out/train_smaller.jsonl", "w")
 o = open("out/train.jsonl", "w")
 
+
 def format_dolly(instruction, result, context):
     record = json.dumps({
         "instruction": instruction,
@@ -74,19 +82,24 @@ def format_dolly(instruction, result, context):
     record.replace("\n", " ")
     return record + "\n"
 
+
 def write(instruction, result, context=""):
     write_dolly(instruction, result, context=context)
     write_alpaca(instruction, result, context=context)
 
+
 def write_small(instruction, result, context=""):
     write_dolly_small(instruction, result, context=context)
     write_alpaca_small(instruction, result, context=context)
-    
+
+
 def write_dolly_small(instruction, result, context=""):
     so.write(format_dolly(instruction, result, context))
 
+
 def write_dolly(instruction, result, context=""):
     o.write(format_dolly(instruction, result, context))
+
 
 def format_alpaca(instruction, result, context=""):
     alpaca_record = json.dumps({
@@ -96,6 +109,7 @@ def format_alpaca(instruction, result, context=""):
     alpaca_record.replace("\n", " ")
     return alpaca_record + "\n"
 
+
 def write_alpaca(instruction, result, context=""):
     global first_alpaca
     if first_alpaca:
@@ -104,8 +118,8 @@ def write_alpaca(instruction, result, context=""):
         alpaca.write(",")
     alpaca_record = format_alpaca(instruction, result, context)
     alpaca.write(alpaca_record)
-    
-    
+
+
 def write_alpaca_small(instruction, result, context=""):
     global first_alpaca_small
     if first_alpaca_small:
@@ -113,7 +127,8 @@ def write_alpaca_small(instruction, result, context=""):
     else:
         alpaca_smaller.write(",")
     alpaca_record = format_alpaca(instruction, result, context)
-    alpaca_smaller.write(alpaca_record)    
+    alpaca_smaller.write(alpaca_record)
+
 
 def process_pdf(pdf):
     print(f"Loading {pdf}")
@@ -169,7 +184,8 @@ def write_10k():
 
     for r in icl:
         write(r["input"], r["answer_icliniq"])
-        
+
+
 for (case_key, case) in cases.items():
     try:
         for jf in case["json"]:
@@ -180,13 +196,13 @@ for (case_key, case) in cases.items():
             # Check and make sure we have some of the data we expect.
             if ("treatment" not in j or j["treatment"] is None or
                 j["treatment"] == "The condition and the treatment should not be the same, if either is unknown put in null." or
-                len(j["treatment"]) < 3):
+                    len(j["treatment"]) < 3):
                 continue
             treatment = j["treatment"]
             approval_reason = None
             if ("approval_reason" not in j or j["approval_reason"] is None or
                 len(j["approval_reason"]) < 3 or
-                j["approval_reason"] == "The physician reviewer found that the requested equipment is clinically indicated and the most appropriate equipment for treatment of the patients condition."):
+                    j["approval_reason"] == "The physician reviewer found that the requested equipment is clinically indicated and the most appropriate equipment for treatment of the patients condition."):
                 continue
             else:
                 approval_reason = j["approval_reason"]
@@ -200,9 +216,9 @@ for (case_key, case) in cases.items():
                 write(
                     "Why should the the provided treatment be covered.",
                     approval_reason,
-                    treatment)                
+                    treatment)
             if ("initial_denial_reason" in j and j["initial_denial_reason"] != "N/A" and j["initial_denial_reason"] is not None and
-                len(j["initial_denial_reason"]) > 10):
+                    len(j["initial_denial_reason"]) > 10):
                 write(
                     f"Why should the provided denial of {treatment} be overturned?",
                     j["approval_reason"],
@@ -214,7 +230,7 @@ for (case_key, case) in cases.items():
             for a in case["appeal"]:
                 appeal = load_record(a)
                 if (a is None or a == "null" or a == "" or
-                    len(a) < 10):
+                        len(a) < 10):
                     continue
                 write(header, appeal, rejection)
                 if "MAGIC" not in r:

@@ -44,18 +44,24 @@ even_more_alt_treatment_regex = re.compile(
 perscribed_regex = re.compile(
     r"""patients provider has prescribed the medication\s+(?P<treatment>[^.]+?).""", re.IGNORECASE)
 
-wishes_to_regex = re.compile(r"""(wishes|desires|like) to (undergo|take)\s+(?P<treatment>[^.]+?).""", re.IGNORECASE)
+wishes_to_regex = re.compile(
+    r"""(wishes|desires|like) to (undergo|take)\s+(?P<treatment>[^.]+?).""", re.IGNORECASE)
 
-health_plan_not_necessary_regex = re.compile(r"""The (Health Plan|Plan|Insurance Company) (determined the|determined|indicates) (?P<treatment>.+?) (is|was|were) not""", re.IGNORECASE)
+health_plan_not_necessary_regex = re.compile(
+    r"""The (Health Plan|Plan|Insurance Company) (determined the|determined|indicates) (?P<treatment>.+?) (is|was|were) not""", re.IGNORECASE)
 
-almost_sketchy_regex = re.compile(r"""treatment[^.]*with\s+(?P<treatment>[^.]+?) (is|were|was)""", re.IGNORECASE)
+almost_sketchy_regex = re.compile(
+    r"""treatment[^.]*with\s+(?P<treatment>[^.]+?) (is|were|was)""", re.IGNORECASE)
 
 sketchy_regex = re.compile(r"""(requested|required|asked|requires|reimbursement|coverage|request|requesting)\s*[^.]*(for|medication|reimbursement|coverage|of)\s+(?P<treatment>\d*\w+.+?)\.""",
-    re.IGNORECASE)
+                           re.IGNORECASE)
 
-seeking_regex = re.compile(r"""is seeking (?P<treatement>) for (?P<diagnosis>[^.]+)""", re.IGNORECASE)
-admitted_regex = re.compile(r"""admitted to the hospital for (?P<diagnosis>[^.]+)""", re.IGNORECASE)
-recommended_regex = re.compile(r"""physicians recommended (?P<treatment>[^.]+)""", re.IGNORECASE)
+seeking_regex = re.compile(
+    r"""is seeking (?P<treatement>) for (?P<diagnosis>[^.]+)""", re.IGNORECASE)
+admitted_regex = re.compile(
+    r"""admitted to the hospital for (?P<diagnosis>[^.]+)""", re.IGNORECASE)
+recommended_regex = re.compile(
+    r"""physicians recommended (?P<treatment>[^.]+)""", re.IGNORECASE)
 
 treatment_regexes = [
     treatment_regex,
@@ -72,7 +78,8 @@ treatment_regexes = [
 diagnosis_regexes = [
     seeking_regex,
     admitted_regex,
-    ]
+]
+
 
 def get_treatment_from_imr(imr):
     findings = imr["Findings"]
@@ -91,6 +98,7 @@ def get_diagnosis_from_imr(imr):
             return matches.group("diagnosis")
     return imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
 
+
 def extract_text(result):
     if result is None:
         return None
@@ -98,8 +106,11 @@ def extract_text(result):
         return None
     return result[0]["generated_text"]
 
+
 # Load some strings we know the current model puts in appeals that are bad right away
-with open("bad_appeal_strings.txt") as f: bad_appeal_strings = f.read().split("\n")
+with open("bad_appeal_strings.txt") as f:
+    bad_appeal_strings = f.read().split("\n")
+
 
 def load_data(path):
     imr = pandas.read_csv(
@@ -113,15 +124,18 @@ def load_data(path):
     filtered_imr = imr[imr["Determination"].str.contains("Overturned")]
     return filtered_imr
 
-imrs = load_data("./data_sources/ca-independent-medical-review-imr-determinations-trends-utf8.csv")
+
+imrs = load_data(
+    "./data_sources/ca-independent-medical-review-imr-determinations-trends-utf8.csv")
+
 
 def work_with_generative():
     # Load the model to do our magic
 
     candidate_models = [
-#        "ausboss/llama-30b-supercot",
-#        "CalderaAI/30B-Lazarus",
-#        "tiiuae/falcon-40b-instruct",
+        #        "ausboss/llama-30b-supercot",
+        #        "CalderaAI/30B-Lazarus",
+        #        "tiiuae/falcon-40b-instruct",
         "databricks/dolly-v2-12b",
         "databricks/dolly-v2-7b",
         "databricks/dolly-v2-3b",
@@ -149,7 +163,7 @@ def work_with_generative():
                     model=model,
                     tokenizer=tokenizer,
                     eos_token_id=tokenizer.eos_token_id,
-                    top_k = 10,
+                    top_k=10,
                     torch_dtype=torch.bfloat16,
                     trust_remote_code=True,
                     device_map="auto",
@@ -161,7 +175,6 @@ def work_with_generative():
     if instruct_pipeline is None:
         raise Exception("Could not load any model")
 
-
     def generate_prompts(imr):
         determination = imr["Determination"]
         treatment = get_treatment_from_imr(imr)
@@ -169,7 +182,6 @@ def work_with_generative():
         findings = imr["Findings"].strip("\n")
         grounds = imr["Type"]
         index = imr["ReferenceID"]
-
 
         def append_context_full(prompt):
             if prompt is None:
@@ -181,7 +193,6 @@ def work_with_generative():
         prompt = f"""Using the provided independent medical review information write a response JSON format. With the keys condition, treatment, approval_reason, initial_denial_reason, medical_reason, guidelines, and supporting_studies. The value for condition should be the condition being treated, treatment being the treatment, approval_reason being why the reviewers approved it (not mentioning reviewers), medical_reason being why it is medically necessary, supporting_studies being any studies cited, guidelines being any guidelines or policies referenced, and initial_denial_reason being why it was denied. If the initial_denial_reason is not specified make up a reason why it might not be medically necessary. Do not mention the reviwers just the findings. The condition and the treatment should not be the same, if either is unknown put in None."""
 
         return (index, [append_context_full(prompt)])
-
 
     print("Generating prompts...")
     l = imrs.apply(generate_prompts, axis=1).tolist()
@@ -227,10 +238,9 @@ def work_with_generative():
                     print(f"Skipping, found bad data in {r}")
 
 
-
 def work_with_biogpt():
-    instruct_pipeline = pipeline(model="microsoft/BioGPT-Large-PubMedQA", max_new_tokens=200)
-
+    instruct_pipeline = pipeline(
+        model="microsoft/BioGPT-Large-PubMedQA", max_new_tokens=200)
 
     def generate_biogpt_hacks(imr):
         treatment = get_treatment_from_imr(imr)

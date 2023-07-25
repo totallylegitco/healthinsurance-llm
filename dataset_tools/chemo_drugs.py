@@ -15,26 +15,25 @@ Hand crafted letters
 '''
 
 HCPCS_mapping = {
-'J9035': {'Generic Name': 'Bevacizumab', 'Major Drug Class': 'Monoclonal Antibody'},
-'J9271': {'Generic Name': 'Pembrolizumab', 'Major Drug Class': 'Checkpoint Inhibitor'},
-'J9305': {'Generic Name': 'Pemetrexed', 'Major Drug Class': 'Antimetabolite'},
-'J9299': {'Generic Name': 'Nivolumab', 'Major Drug Class': 'Checkpoint Inhibitor'},
-'J9310': {'Generic Name': 'Rituximab', 'Major Drug Class': 'Monoclonal Antibody'},
-'J9264': {'Generic Name': 'Paclitaxel', 'Major Drug Class': 'Antimitotic Agent'},
-'J9312': {'Generic Name': 'Rituximab', 'Major Drug Class': 'Monoclonal Antibody'},
-'J9228': {'Generic Name': 'Ipilimumab', 'Major Drug Class': 'Checkpoint Inhibitor'},
-'J9355': {'Generic Name': 'Trastuzumab', 'Major Drug Class': 'Monoclonal Antibody'},
-'J9041': {'Generic Name': 'Bortezomib', 'Major Drug Class': 'Proteasome Inhibitor'},
-'J9999': {'Generic Name': 'Chemotherapy - non specific', 'Major Drug Class': 'non specific'},
-'Q2050': {'Generic Name': 'Doxorubicin', 'Major Drug Class': 'Antitumor Antibiotic'},
-'C9492': {'Generic Name': 'Durvalumab', 'Major Drug Class': 'Checkpoint Inhibitor'},
+    'J9035': {'Generic Name': 'Bevacizumab', 'Major Drug Class': 'Monoclonal Antibody'},
+    'J9271': {'Generic Name': 'Pembrolizumab', 'Major Drug Class': 'Checkpoint Inhibitor'},
+    'J9305': {'Generic Name': 'Pemetrexed', 'Major Drug Class': 'Antimetabolite'},
+    'J9299': {'Generic Name': 'Nivolumab', 'Major Drug Class': 'Checkpoint Inhibitor'},
+    'J9310': {'Generic Name': 'Rituximab', 'Major Drug Class': 'Monoclonal Antibody'},
+    'J9264': {'Generic Name': 'Paclitaxel', 'Major Drug Class': 'Antimitotic Agent'},
+    'J9312': {'Generic Name': 'Rituximab', 'Major Drug Class': 'Monoclonal Antibody'},
+    'J9228': {'Generic Name': 'Ipilimumab', 'Major Drug Class': 'Checkpoint Inhibitor'},
+    'J9355': {'Generic Name': 'Trastuzumab', 'Major Drug Class': 'Monoclonal Antibody'},
+    'J9041': {'Generic Name': 'Bortezomib', 'Major Drug Class': 'Proteasome Inhibitor'},
+    'J9999': {'Generic Name': 'Chemotherapy - non specific', 'Major Drug Class': 'non specific'},
+    'Q2050': {'Generic Name': 'Doxorubicin', 'Major Drug Class': 'Antitumor Antibiotic'},
+    'C9492': {'Generic Name': 'Durvalumab', 'Major Drug Class': 'Checkpoint Inhibitor'},
 }
 
 
 file = 'data_sources/drugs.csv'
 chemo_drugs = pd.read_csv(file)
 chemo_drugs = chemo_drugs.dropna(subset=['Primary Site'])
-
 
 
 cases = []
