@@ -132,9 +132,9 @@ def process_pdf(pdf):
             short = result.lower().replace("the", "").replace(" ", "")
             if short not in short_recommendations:
                 short_recommendations.add(short)
-                instruction = f"What is one of the recommendations in {pdf}?"
-                write_alpaca(instruction, result)
-                write_dolly(instruction, result)
+#                instruction = f"What is one of the recommendations in {pdf}?"
+#                write_alpaca(instruction, result)
+#                write_dolly(instruction, result)
                 recs.add(result)
 
     prompt = f"What are the recommendations in {pdf}"
@@ -172,15 +172,41 @@ def write_10k():
         
 for (case_key, case) in cases.items():
     try:
-        for j in case["json"]:
-            write(
-                "Why should the the provided treatment be covered.",
-                j["approval_reason"],
-                j["treatment"])
-            write(
-                "Why should the provided denial be overturned?",
-                j["approval_reason"],
-                j["initial_denial_reason"])
+        for jf in case["json"]:
+            j = load_record(jf)
+            if j is None:
+                print(f"No json found in {jf}?")
+                continue
+            # Check and make sure we have some of the data we expect.
+            if ("treatment" not in j or j["treatment"] is None or
+                j["treatment"] == "The condition and the treatment should not be the same, if either is unknown put in null." or
+                len(j["treatment"]) < 3):
+                continue
+            treatment = j["treatment"]
+            approval_reason = None
+            if ("approval_reason" not in j or j["approval_reason"] is None or
+                len(j["approval_reason"]) < 3 or
+                j["approval_reason"] == "The physician reviewer found that the requested equipment is clinically indicated and the most appropriate equipment for treatment of the patients condition."):
+                continue
+            else:
+                approval_reason = j["approval_reason"]
+            if "condition" in j and j["condition"] is not None:
+                write(
+                    "Why should the the provided treatment be covered.",
+                    approval_reason,
+                    treatment + " for " + j["condition"])
+            else:
+                print(f"No condition in {jf}")
+                write(
+                    "Why should the the provided treatment be covered.",
+                    approval_reason,
+                    treatment)                
+            if ("initial_denial_reason" in j and j["initial_denial_reason"] != "N/A" and j["initial_denial_reason"] is not None and
+                len(j["initial_denial_reason"]) > 10):
+                write(
+                    f"Why should the provided denial of {treatment} be overturned?",
+                    j["approval_reason"],
+                    j["initial_denial_reason"])
         for r in case["rejection"]:
             rejection = load_record(r)
             if r is None or r == "null":

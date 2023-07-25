@@ -1,4 +1,7 @@
+import json
+import requests
 import re
+import unicodedata
 
 def training_cleanup_appeal(text):
     if text is None:
@@ -55,7 +58,7 @@ def check_for_invalid_urls(data):
     for u in urls:
         try:
             response = requests.get(u)
-        except Exception as e:
+        except Exception as e1:
             # For cases where the url is at the end of a sentence
             # Try and see if it exists without the last after . part
             try:
@@ -64,8 +67,8 @@ def check_for_invalid_urls(data):
                     response = requests.get(u2)
                 else:
                     return True
-            except Exception as e:
-                print(f"Failed to get {u} (or {u2}) dropping from candidates.")
+            except Exception as e2:
+                print(f"Failed to get \"{u}\" (or \"{u2}\") dropping from candidates. {e1} {e2}")
                 return True
     return False
 
@@ -83,21 +86,79 @@ def load_record(filename):
         return data
 
 
+def remove_control_characters(s):
+    return "".join(ch for ch in s if unicodedata.category(ch)[0]!="C" or ch=='\n')
+    
 def parse_record(data):
+    data = re.sub('<\s*/?\s*(PARAGRAPH|FREETEXT\s*>', '', data)
     if "### Response:" in data:
         return data.split("### Response:")[1]
     else:
         return data
 
+
+def fix_missing_quotes(json_string):
+    # Find all JSON keys without quotes (no spaces allowed in keys)
+    pattern_keys = r'([{,])\s*([a-zA-Z_]\w*)\s*:'
+    fixed_json = re.sub(pattern_keys, r' \1"\2":', json_string)
+
+    # Find all JSON values without quotes (including null) and spaces allowed in values
+    pattern_values = r'(?<=[{,])\s*([a-zA-Z_]\w*)\s*:\s*([^,"}\]]+|null)'
+    fixed_json = re.sub(pattern_values, r' "\1": \2', fixed_json)
+
+    return fixed_json
+
+def fix_missing_colons(json_string):
+    # Find all places where a colon is missing between keys and values
+    pattern = r'([{,])\s*([a-zA-Z_]\w*)\s+([^",}\]]+)'
+    fixed_json = re.sub(pattern, r' \1"\2": \3', json_string)
+    return fixed_json
+
+# Example usage:
+json_string = '{"name": John, "age": 30, country: null, "email": test@example.com}'
+fixed_json = fix_missing_quotes(json_string)
+
 def cleanup_json(data):
+    """
+    Load a json *ish* record. The LLM seems to not end the JSON records very often (e.g. missing }
+    and trailing ,s instead. This is kind of janky but YOLO.
+    """
+    def de_json(l):
+        try:
+            return json.loads(l)
+        except:
+            return re.sub("^\s*(.*?)\s*$", "\1", l).rstrip('","').lstrip('"')
+
+    data = data.replace("None", "null")
+    data = remove_control_characters(data)
+    if data.endswith(","):
+        data = data.rstrip(",")
+    data = data.replace(",}", "}")
+
+    # Handle some missing quotes if needed.
     try:
         return json.loads(data)
-    except:
-        try:
-            return json.loads(data +"\"}")
-        except:
-            return None
+    except Exception as e:
+        data = fix_missing_quotes(data)
 
+    try:
+        return json.loads(data)
+    except Exception as e1:
+        try:
+            return json.loads(data +"}")
+        except Exception as e2:
+            try:
+                return json.loads(data +"\"}")
+            except Exception as e3:
+                result = {}
+                for line in data.split("\n"):
+                     if ":" in line:
+                         elems = line.split(":")
+                         result[de_json(elems[0])] = de_json(":".join(elems[1:]))
+                if "condition" in result and "approval_reason" in result:
+                    return result
+                else:
+                    return None
 
 def cleanup_denial(data):
     swap = [
