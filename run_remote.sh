@@ -2,9 +2,11 @@
 
 INPUT_MODEL=${INPUT_MODEL:-"databricks/dolly-v2-7b"}
 
+HOST=$1
+
 set -ex
 
-if [ -z "$1" ]; then
+if [ -z "$HOST" ]; then
   echo "Usage: ./run_remote.sh [remotehost] (e.g. ubuntu@farts.com)"
 fi
 
@@ -20,26 +22,26 @@ tpid=$!
 
 # Copy over firstrun.sh so we can get the system setup a bit while we transfer all of ourdata.
 # Lambda labs seems to be having isssues with ssh not coming up quickly so retry.
-(scp ./firstrun.sh $1:~/ || (sleep 120 && scp ./firstrun.sh $1:~/ ))
-scp ./requirements.txt $1:~/
-ssh $1 "./firstrun.sh" &
+(scp ./firstrun.sh $HOST:~/ || (sleep 120 && scp ./firstrun.sh $HOST:~/ ))
+scp ./requirements.txt $HOST:~/
+ssh $HOST "./firstrun.sh | tee -a fr.log" &
 frpid=$!
 # Put the passwordless https config there
-scp ~/.ssh/authorized_keys  $1:~/.ssh/
-# ssh -t $1 "sudo apt-get update && sudo apt-get upgrade -y" &
+scp ~/.ssh/authorized_keys  $HOST:~/.ssh/
+# ssh -t $HOST "sudo apt-get update && sudo apt-get upgrade -y" &
 wait ${tpid}
 # Race condition with tbz2 file not being written all the way
 sync
 sleep 1
-scp ${target} $1:~/
-ssh $1 "tar -C ./ -xjf ${filename}" &
-wait
-scp remote_git $1:~/.git/config
+scp ${target} $HOST:~/
+ssh $HOST "tar -C ./ -xjf ${filename}" &
+wait $!
+scp remote_git $HOST:~/.git/config
 # Copy git credentials for huggingface access.
-scp ~/.gitconfig $1:~/.gitconfig
-scp ~/.config/git/credentials $1:~/.config/git/credentials || scp ~/.git-credentials $1:~/
-ssh $1 mkdir -p "~/.cache/huggingface"
-scp ~/.cache/huggingface/token $1:~/.cache/huggingface/token
+scp ~/.gitconfig $HOST:~/.gitconfig
+scp ~/.config/git/credentials $HOST:~/.config/git/credentials || scp ~/.git-credentials $HOST:~/
+ssh $HOST mkdir -p "~/.cache/huggingface"
+scp ~/.cache/huggingface/token $HOST:~/.cache/huggingface/token
 wait ${frpid}
-ssh -t $1 "QLORA=\"${QLORA}\" INPUT_MODEL=\"${INPUT_MODEL}\" screen ./run.sh"
+ssh -t $HOST "QLORA=\"${QLORA}\" INPUT_MODEL=\"${INPUT_MODEL}\" screen ./run.sh"
 rm -rf ${temp_dir}

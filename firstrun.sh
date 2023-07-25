@@ -3,6 +3,9 @@
 set -ex
 
 if [ ! -f ".firstrun" ]; then
+  # See https://askubuntu.com/questions/272248/processing-triggers-for-man-db
+  echo "set man-db/auto-update false" | debconf-communicate; dpkg-reconfigure man-db
+
   sudo apt-get update
   sudo apt-get install -y libaio-dev python3-pybind11
 
@@ -19,6 +22,7 @@ if [ ! -f ".firstrun" ]; then
   # deepspeed
   CU_MINOR=$(nvcc --version |grep "cuda_" |cut -d "_" -f 2 |cut -d "." -f 2)
   pip install "torch" --index-url https://download.pytorch.org/whl/cu11${CU_MINOR} || pip install torch
+  pip install ninja hjson py-cpuinfo
   DS_BUILD_CPU_ADAM=1 DS_BUILD_SPARSE_ATTN=0 DS_BUILD_FUSED_ADAM=1 pip install "git+https://github.com/microsoft/deepspeed.git#" --global-option="build_ext" --global-option="-j16"
   pip3 install -U -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu11${CU_MINOR}
   ds_report

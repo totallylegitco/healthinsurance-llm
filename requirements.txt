@@ -21,7 +21,6 @@ deepspeed>=0.9.3
 pybind11
 asyncio
 datasets
-torch-dev
 dirtyjson
 hjson
 py-cpuinfo
