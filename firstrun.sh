@@ -4,9 +4,11 @@ set -ex
 
 if [ ! -f ".firstrun" ]; then
   sudo apt-get update
-  sudo apt-get install -y libaio-dev
+  sudo apt-get install -y libaio-dev python3-pybind11
 
   python3 -m pip install --upgrade pip
+  # We need to install pybind11 before deepspeed because it is not listed as a depdency.
+  pip install pybind11[global]
   if [ ! -d apex ]; then
     git clone https://github.com/NVIDIA/apex
   fi
