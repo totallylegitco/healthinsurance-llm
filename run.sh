@@ -140,7 +140,9 @@ elif [ "${INPUT_MODEL}" == "meta-llama/Llama-2-7b-hf" ]; then
   mkdir -p llamav2-updated
   mkdir -p llamav2-updated-nds
   mkdir -p llama-input
-  cp ./out/train_alpaca.jsonl ./llama-input/
+  if [ ! -f ./llama-input/train_alpaca.jsonl ]; then
+    cp ./out/train_alpaca.jsonl ./llama-input/
+  fi
   # deepspeed python llamav2_finetune_from_databricks.py --local-output-dir ./llamav2-updated | tee -a ~/train.log ||
   python llamav2_finetune_from_databricks.py --local-output-dir ./llamav2-updated-nds --disable-deepspeed true --training-dataset llama-input | tee -a ~/train_nods.log
 else

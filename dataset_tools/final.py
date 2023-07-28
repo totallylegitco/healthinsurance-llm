@@ -8,6 +8,8 @@ import re
 from .utils import *
 from PyPDF2 import PdfReader
 
+max_answer_len = 20480
+
 magic_re = re.compile(
     r".*/(.*?)(MAGIC[0-9B]*|FARTS[0-9]*|)_?(appeal|rejection|json).txt")
 
@@ -77,7 +79,7 @@ def format_dolly(instruction, result, context):
     record = json.dumps({
         "instruction": instruction,
         "context": context,
-        "response": result,
+        "response": result[0:max_answer_len],
         "category": "open_qa"})
     record.replace("\n", " ")
     return record + "\n"
@@ -104,8 +106,9 @@ def write_dolly(instruction, result, context=""):
 def format_alpaca(instruction, result, context=""):
     alpaca_record = json.dumps({
         "instruction": instruction,
-        "input": context,
-        "output": result})
+        "context": context,
+        "response": result[0:max_answer_len]
+    })
     alpaca_record.replace("\n", " ")
     return alpaca_record + "\n"
 
@@ -166,7 +169,7 @@ def write_chemo_drug_records():
     parsed_chemo = pd.read_csv("./data_sources/parsed_chemo_drugs.csv")
     pcl = parsed_chemo.iterrows()
 
-    for r in pcl:
+    for i, r in pcl:
         write(r["question"], result=r["answer"], context="")
 
 
@@ -174,7 +177,7 @@ def write_mt_sample_contexts():
     mt = pd.read_csv("./data_sources/mtsamples2.csv")
     mtl = mt.iterrows()
 
-    for r in mtl:
+    for i, r in mtl:
         write(mt_header, r["transcription"], context=r["description"])
 
 
@@ -182,7 +185,7 @@ def write_10k():
     ic = pd.read_csv("./data_sources/ic10k.csv")
     icl = ic.iterrows()
 
-    for r in icl:
+    for i, r in icl:
         write(r["input"], r["answer_icliniq"])
 
 
@@ -246,6 +249,6 @@ for (case_key, case) in cases.items():
         raise e
 
 
-# write_chemo_drug_records()
+write_chemo_drug_records()
 alpaca.write("]")
 alpaca_smaller.write("]")
