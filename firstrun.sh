@@ -4,7 +4,7 @@ set -ex
 
 if [ ! -f ".firstrun" ]; then
   # See https://askubuntu.com/questions/272248/processing-triggers-for-man-db
-  echo "set man-db/auto-update false" | debconf-communicate; dpkg-reconfigure man-db
+  # echo "set man-db/auto-update false" | sudo debconf-communicate; sudo dpkg-reconfigure man-db
 
   sudo apt-get update
   sudo apt-get install -y libaio-dev python3-pybind11
@@ -16,6 +16,7 @@ if [ ! -f ".firstrun" ]; then
     git clone https://github.com/NVIDIA/apex
   fi
   cd apex
+  sudo pip install -U pip
   pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --config-settings "--build-option=--cpp_ext" --config-settings "--build-option=--cuda_ext" --config-settings "--build-option=--deprecated_fused_adam" ./
   cd ..
 
@@ -36,7 +37,7 @@ if [ ! -f ".firstrun" ]; then
 	sudo cp sse2neon.h /usr/include/
       fi
     else
-      pip3 install -U bitsandbytes
+      python -m bitsandbytes || pip3 install -U bitsandbytes
       python -m bitsandbytes || ./setup_bits_and_bytes.sh
       python -m bitsandbytes | grep "The installed version of bitsandbytes was compiled without GPU support." || ./setup_bits_and_bytes.sh
     fi

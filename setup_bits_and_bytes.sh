@@ -4,14 +4,12 @@ set -ex
 sudo apt-get install locate
 sudo updatedb
 
-# On Jetson AGX we need to add /usr/local/cuda/bin to our path
-if [ -f /usr/local/cuda/bin/nvcc ]; then
-  export PATH=$PATH:/usr/local/cuda/bin
-fi
-
-
 if [ ! -d bitsandbytes ]; then
-  git clone https://github.com/TimDettmers/bitsandbytes.git
+  if [ $(uname -m) == "x86_64" ]; then
+    git clone https://github.com/TimDettmers/bitsandbytes.git
+  else
+    git clone https://github.com/g588928812/bitsandbytes_jetsonX.git
+  fi
 fi
 cd bitsandbytes
 BUILD_COMMAND=$(python -m bitsandbytes 2>&1 |grep "make" |grep "CUDA_VERSION" |grep -v rm |grep -v "for example" |tail -n 1)

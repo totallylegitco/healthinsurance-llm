@@ -3,6 +3,11 @@ if [ -z "$LD_LIBRARY_PATH" ]; then
   export LD_LIBRARY_PATH=$PATH
 fi
 
+# On Jetson AGX we need to add /usr/local/cuda/bin to our path
+if [ -f /usr/local/cuda/bin/nvcc ]; then
+  export PATH=$PATH:/usr/local/cuda/bin
+fi
+
 INPUT_MODEL=${INPUT_MODEL:-"databricks/dolly-v2-7b"}
 TR_DATA=${TR_DATA:-"out"}
 OUTDIR=${OUTDIR:-"new_model"}
