@@ -29,7 +29,7 @@ if [ ! -d data_sources ]; then
   # TBD: Should we include this?
   if [ ! -f "./data_sources/ic10k.csv"] ; then
     wget https://drive.google.com/u/0/uc?id=1ZKbqgYqWc7DJHs3N9TQYQVPdDQmZaClA&export=download -O \
-	./data_sources/ic10k.csv						    
+	./data_sources/ic10k.csv
   fi
   if [ ! -f "./data_sources/wpath_soc8.pdf"]; then
     wget https://www.tandfonline.com/doi/pdf/10.1080/26895269.2022.2100644 -O \
@@ -138,17 +138,18 @@ elif [ "${INPUT_MODEL}" == "NOPEtiiuae/falcon-7b-instruct" ];  then
     --instruction "Generate a health insurance appeal"
 elif [ "${INPUT_MODEL}" == "meta-llama/Llama-2-7b-hf" ]; then
   mkdir -p llamav2-updated
-  mkdir -p llamav2-updated-nds
   mkdir -p llama-input
   if [ ! -f ./llama-input/train_alpaca.jsonl ]; then
     cp ./out/train_alpaca.jsonl ./llama-input/
   fi
+  pip install -r ./llama-recipes/requirements.txt
   # deepspeed python llamav2_finetune_from_databricks.py --local-output-dir ./llamav2-updated | tee -a ~/train.log ||
-  python llamav2_finetune_from_databricks.py --local-output-dir ./llamav2-updated-nds --disable-deepspeed true --training-dataset llama-input | tee -a ~/train_nods.log
+  # python llamav2_finetune_from_databricks.py --local-output-dir ./llamav2-updated --disable-deepspeed true --training-dataset llama-input | tee -a ~/train_nods.log
+  python llama-recipes/llama_finetuning.py --use_peft --peft_method lora --quantization --model_name ${INPUT_MODEL} --output_dir llamav2-updated | tee -a ~/train_fb.log
 else
   # lit-parrot seems the happiest
   # falcon
-  if [ -z "$QLORA" ]; then 
+  if [ -z "$QLORA" ]; then
     mkdir -p lit-parrot/data/alpaca
     cp ${TR_DATA}/*_alpaca.jsonl lit-parrot/data/alpaca/
     cd lit-parrot
@@ -171,7 +172,7 @@ else
     # We can run our own sketchy script too! But the result does not seem to produce a fully functioning model out of the box
     # We might be able to copy some stuff from the src model and magic it but idk.
     pip install -q -U bitsandbytes
-    pip install -q -U git+https://github.com/huggingface/transformers.git 
+    pip install -q -U git+https://github.com/huggingface/transformers.git
     pip install -q -U git+https://github.com/huggingface/peft.git
     pip install -q -U git+https://github.com/huggingface/accelerate.git
     pip install -q datasets

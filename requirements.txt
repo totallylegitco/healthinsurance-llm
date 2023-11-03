@@ -25,3 +25,5 @@ dirtyjson
 hjson
 py-cpuinfo
 numexpr>=2.7.3
+fire
+py7zr

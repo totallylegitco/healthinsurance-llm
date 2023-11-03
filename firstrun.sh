@@ -28,7 +28,7 @@ if [ ! -f ".firstrun" ]; then
   pip3 install -U -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu11${CU_MINOR}
   ds_report
   # Setup bits and bytes if we are likely to need it.
-  if [ ${gpu_memory} -lt 49564 ]; then
+  if [ ${gpu_memory} -lt 495640 ]; then
     if [ $(uname -m) == "aarch64" ]; then
       # On ARM for bits and bytes we need neon
       if [ ! -d sse2neon ]; then
@@ -46,7 +46,7 @@ if [ ! -f ".firstrun" ]; then
   if [ ! -d dolly ]; then
     git clone https://github.com/databrickslabs/dolly.git
   fi
-  
+
   if [ ! -d "appeals-llm-data" ]; then
     git clone https://github.com/totallylegitco/appeals-llm-data.git
   fi
@@ -57,6 +57,10 @@ if [ ! -f ".firstrun" ]; then
 
   if [ ! -d falcontune ]; then
     git clone https://github.com/rmihaylov/falcontune.git
+  fi
+
+  if [ ! -d llama-recipes ]; then
+    git clone https://github.com/facebookresearch/llama-recipes.git
   fi
 
   touch .firstrun
