@@ -253,7 +253,11 @@ def cleanup_appeal(data):
             "have improved mental health outcomes compared to those who had",
         ),
         ("I am writing this appeal on behalf of [patient's full name]", "I"),
+        ("I am writing this appeal on behalf of [patient's name]", "I"),
+        ("I am writing on behalf of [patient's name]", "I")
+        ("I am writing on behalf of [patient's full name]", "I")
         ("[patient's full name]", "I"),
+        ("[patient's name]", "I"),
         ("The records provided for review document that this patient", "I"),
         ("patient", "I"),
         
@@ -274,6 +278,10 @@ with open("bad_rejection_strings.txt") as f:
 
 bad_strings_dict = {"appeal": bad_appeal_strings, "rejection": bad_rejection_strings}
 
+def check_for_bad_file(response_type, target):
+    with open(target, 'r') as file:
+        data = file.read().replace('\n', '')
+        return not check_for_bad(response_type, data)
 
 def check_for_bad(response_type, data):
     ld = data.lower()
@@ -289,14 +297,14 @@ def check_for_bad(response_type, data):
 
 def check_for_bad_appeal(data):
     for b in bad_appeal_strings:
-        if b != "" and b in data:
+        if b != "" and b.lower() in data:
             return True
     return False
 
 
 def check_for_bad_rejection(data):
     for b in bad_rejection_strings:
-        if b != "" and b in data:
+        if b != "" and b.lower() in data:
             return True
     return False
 
