@@ -255,8 +255,8 @@ bad_strings_dict = {
 
 def check_for_bad(response_type, data):
     ld = data.lower()
-    if response_type in bad_strings.keys():
-        bad_strings = bad_string_dict[response_type]
+    if response_type in bad_strings_dict.keys():
+        bad_strings = bad_strings_dict[response_type]
         for b in bad_strings:
             if b != "" and b in data:
                 return True
