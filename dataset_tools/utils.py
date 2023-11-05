@@ -11,9 +11,12 @@ def training_cleanup_appeal(text):
 
 
 was_rejected = re.compile(
-    r"(deneied|no additional treatment|not covered|not reimbursed|not eligible)", re.IGNORECASE)
+    r"(deneied|no additional treatment|not covered|not reimbursed|not eligible)",
+    re.IGNORECASE,
+)
 invert_regex = re.compile(
-    r"(is|are|were|be)\s*medically\s*(necessary|required)", re.IGNORECASE)
+    r"(is|are|were|be)\s*medically\s*(necessary|required)", re.IGNORECASE
+)
 
 
 def sketchy_sentence_filter(sentence):
@@ -36,6 +39,7 @@ def training_cleanup_rejection(text):
 
     def mark_unnecessary(match):
         return f"{match.group(1)} not medically {match.group(2)}"
+
     text = re.sub(invert_regex, mark_unnecessary, text)
     return cleanup_denial(text)
 
@@ -59,7 +63,7 @@ def check_record(filename):
 
 
 def check_for_invalid_urls(data):
-    urls = re.findall(r'(https?://\S+)', data)
+    urls = re.findall(r"(https?://\S+)", data)
     for u in urls:
         try:
             response = requests.get(u)
@@ -68,13 +72,14 @@ def check_for_invalid_urls(data):
             # Try and see if it exists without the last after . part
             try:
                 u2 = re.sub(r"(.*)\..*?$", r"\1", u)
-                if (u2 != u):
+                if u2 != u:
                     response = requests.get(u2)
                 else:
                     return True
             except Exception as e2:
                 print(
-                    f"Failed to get \"{u}\" (or \"{u2}\") dropping from candidates. {e1} {e2}")
+                    f'Failed to get "{u}" (or "{u2}") dropping from candidates. {e1} {e2}'
+                )
                 return True
     return False
 
@@ -94,11 +99,11 @@ def load_record(filename):
 
 
 def remove_control_characters(s):
-    return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C" or ch == '\n')
+    return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C" or ch == "\n")
 
 
 def parse_record(data):
-    data = re.sub('<\s*/?\s*(PARAGRAPH|FREETEXT)\s*>', '', data)
+    data = re.sub("<\s*/?\s*(PARAGRAPH|FREETEXT)\s*>", "", data)
     if "### Response:" in data:
         return data.split("### Response:")[1]
     else:
@@ -107,7 +112,7 @@ def parse_record(data):
 
 def fix_missing_quotes(json_string):
     # Find all JSON keys without quotes (no spaces allowed in keys)
-    pattern_keys = r'([{,])\s*([a-zA-Z_]\w*)\s*:'
+    pattern_keys = r"([{,])\s*([a-zA-Z_]\w*)\s*:"
     fixed_json = re.sub(pattern_keys, r' \1"\2":', json_string)
 
     # Find all JSON values without quotes (including null) and spaces allowed in values
@@ -134,6 +139,7 @@ def cleanup_json(data):
     Load a json *ish* record. The LLM seems to not end the JSON records very often (e.g. missing }
     and trailing ,s instead. This is kind of janky but YOLO.
     """
+
     def de_json(l):
         try:
             return json.loads(l)
@@ -159,14 +165,13 @@ def cleanup_json(data):
             return json.loads(data + "}")
         except Exception as e2:
             try:
-                return json.loads(data + "\"}")
+                return json.loads(data + '"}')
             except Exception as e3:
                 result = {}
                 for line in data.split("\n"):
                     if ":" in line:
                         elems = line.split(":")
-                        result[de_json(elems[0])] = de_json(
-                            ":".join(elems[1:]))
+                        result[de_json(elems[0])] = de_json(":".join(elems[1:]))
                 if "condition" in result and "approval_reason" in result:
                     return result
                 else:
@@ -175,15 +180,20 @@ def cleanup_json(data):
 
 def cleanup_denial(data):
     swap = [
-        ("The Health Plans denial was overturned due to the reviewers determining that the requested services were likely to be more beneficial for treatment of the enrollees medical condition than any available standard therapy.", ""),
+        (
+            "The Health Plans denial was overturned due to the reviewers determining that the requested services were likely to be more beneficial for treatment of the enrollees medical condition than any available standard therapy.",
+            "",
+        ),
         ("We always say no to surgeries.", ""),
         ("The reason was originally denied was", "Your request is denied because"),
         ("Therefore, the Health Plans denial should be overturned.", ""),
         ("We thank the reviewer for their assessment of this case.", ""),
         ("The reviewers determined that", "We do not believe that"),
         ("should be overturned", "should stand."),
-        ("that denying coverage for this treatment would be inappropriate",
-         "we have chosen to deny coverage"),
+        (
+            "that denying coverage for this treatment would be inappropriate",
+            "we have chosen to deny coverage",
+        ),
         ("it is not possible to deny or approve", "we must deny"),
         ("should be granted coverage", "will not be granted coverage"),
         ("patient's condition warrants", "patient's condition does not warrant"),
@@ -219,18 +229,28 @@ def cleanup_appeal(data):
         ("was overturned", "should be overturned"),
         ("is not medically necessary", "is medically necessary"),
         ("this surgery is not necessary", "this surgery is necessary"),
-        ("and is solely based on appeasing an overly-sufiisticated view of what women look like.",
-         ""),
-        ("trans men have well-developed jawlines",
-         "trans women have well-developed jawlines"),
-        ("The requested procedures are aesthetic procedures to make the patient more attractive in her new gender.",
-         ""),
+        (
+            "and is solely based on appeasing an overly-sufiisticated view of what women look like.",
+            "",
+        ),
+        (
+            "trans men have well-developed jawlines",
+            "trans women have well-developed jawlines",
+        ),
+        (
+            "The requested procedures are aesthetic procedures to make the patient more attractive in her new gender.",
+            "",
+        ),
         ("The provided denial was overturned", "The denial should be overturned"),
-        ("Therefore, the provided denial should be upheld.",
-         "Therefore, the denial should be overturned."),
+        (
+            "Therefore, the provided denial should be upheld.",
+            "Therefore, the denial should be overturned.",
+        ),
         ("denial should be upheld", "denial should be overturned"),
-        ("did not have improved mental health outcomes compared to those who had",
-         "have improved mental health outcomes compared to those who had"),
+        (
+            "did not have improved mental health outcomes compared to those who had",
+            "have improved mental health outcomes compared to those who had",
+        ),
         ("by our independent medical representative", "by us"),
     ]
     for o, r in swap:
@@ -245,13 +265,10 @@ with open("bad_appeal_strings.txt") as f:
 
 # Load some strings we know the current model puts in rejections that are bad right away
 with open("bad_rejection_strings.txt") as f:
-    bad_rejection_strings = list(
-        map(lambda f: f.lower(), f.read().split("\n")))
+    bad_rejection_strings = list(map(lambda f: f.lower(), f.read().split("\n")))
 
-bad_strings_dict = {
-    "appeal": bad_appeal_strings,
-    "rejection": bad_rejection_strings
-    }
+bad_strings_dict = {"appeal": bad_appeal_strings, "rejection": bad_rejection_strings}
+
 
 def check_for_bad(response_type, data):
     ld = data.lower()
@@ -263,6 +280,7 @@ def check_for_bad(response_type, data):
             return False
     else:
         return False
+
 
 def check_for_bad_appeal(data):
     for b in bad_appeal_strings:
