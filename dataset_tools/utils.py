@@ -231,6 +231,7 @@ def cleanup_appeal(data):
         ("denial should be upheld", "denial should be overturned"),
         ("did not have improved mental health outcomes compared to those who had",
          "have improved mental health outcomes compared to those who had"),
+        ("by our independent medical representative", "by us"),
     ]
     for o, r in swap:
         data = re.sub(o, r, data)
@@ -247,6 +248,21 @@ with open("bad_rejection_strings.txt") as f:
     bad_rejection_strings = list(
         map(lambda f: f.lower(), f.read().split("\n")))
 
+bad_strings_dict = {
+    "appeal": bad_appeal_strings,
+    "rejection": bad_rejection_strings
+    }
+
+def check_for_bad(response_type, data):
+    ld = data.lower()
+    if response_type in bad_strings.keys():
+        bad_strings = bad_string_dict[response_type]
+        for b in bad_strings:
+            if b != "" and b in data:
+                return True
+            return False
+    else:
+        return False
 
 def check_for_bad_appeal(data):
     for b in bad_appeal_strings:
