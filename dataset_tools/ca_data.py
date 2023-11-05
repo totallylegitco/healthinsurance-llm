@@ -223,7 +223,7 @@ def work_with_generative_remote():
                     idx = r[0]
                     target_file = join(gen_loc, f"{idx}MAGIC{i}{response_type}.txt")
                     i = i + 1
-                    if not os.path.exists(target_file) and not check_for_bad_file(response_type, target_file):
+                    if not os.path.exists(target_file) or not check_for_bad_file(response_type, target_file):
                         response = make_request(m, v)
                         if not check_for_bad(response_type, response):
                             if not check_for_bad(response_type, response):
