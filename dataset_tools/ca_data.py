@@ -167,6 +167,9 @@ def generate_prompts(imr):
         "appeal": [
             f"""The independent medical review findings were {findings} and grounds were {grounds}. In your response You are writing on your on behalf (not that of a doctors office) and you do not have any credentials. Use this information to write the original appeal by the patient."""
         ],
+        "medically_necessary": [
+            f"""The independent medical review findings were {findings} and grounds were {grounds}. Why was the treatment considered medically necessary?"""
+        ],
     }
 
     return (index, prompts)
@@ -204,6 +207,8 @@ def work_with_generative_remote():
         print(f"Promxspt: {prompt}\nResponse text: {response_text}")
         return response_text
 
+    # Note: when adding models make sure to add to the end of the list so that
+    # we apply the new model to the old records.
     models = ["mistral-7b-instruct", "openhermes-2-mistral-7b"]
 
     print("Generating prompts...")

@@ -256,6 +256,7 @@ def cleanup_appeal(data):
         ("[patient's full name]", "I"),
         ("The records provided for review document that this patient", "I"),
         ("patient", "I"),
+        
     ]
     for o, r in swap:
         data = re.sub(o, r, data)
