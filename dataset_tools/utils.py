@@ -202,6 +202,7 @@ def cleanup_denial(data):
         ("As an AI language model", ""),
         ("\.\.\.", "."),
         ("\.\.", "."),
+        ("by our independent medical representative", "by us"),
     ]
     for o, r in swap:
         data = re.sub(o, r, data)
@@ -251,7 +252,10 @@ def cleanup_appeal(data):
             "did not have improved mental health outcomes compared to those who had",
             "have improved mental health outcomes compared to those who had",
         ),
-        ("by our independent medical representative", "by us"),
+        ("I am writing this appeal on behalf of [patient's full name]", "I"),
+        ("[patient's full name]", "I"),
+        ("The records provided for review document that this patient", "I"),
+        ("patient", "I"),
     ]
     for o, r in swap:
         data = re.sub(o, r, data)

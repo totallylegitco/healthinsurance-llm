@@ -162,10 +162,10 @@ def generate_prompts(imr):
 
     prompts = {
         "denial": [
-            f"""The independent medical review findings were {findings} and grounds were {grounds}. Use this information to write the original insurance denial."""
+            f"""The independent medical review findings were {findings} and grounds were {grounds}. In your response instead of independent say internal in reference to any review or reviewers. Use this information to write the original insurance denial."""
         ],
         "appeal": [
-            f"""The independent medical review findings were {findings} and grounds were {grounds}. Use this information to write the original appeal by the patient."""
+            f"""The independent medical review findings were {findings} and grounds were {grounds}. In your response You are writing on your on behalf (not that of a doctors office) and you do not have any credentials. Use this information to write the original appeal by the patient."""
         ],
     }
 
@@ -215,15 +215,16 @@ def work_with_generative_remote():
             for response_type in r[1].keys():
                 i = 0
                 for v in r[1][response_type]:
-                    target_file = "{idx}MAGIC{i}{response_type}.txt"
+                    idx = r[0]
+                    target_file = f"{idx}MAGIC{i}{response_type}.txt"
                     i = i + 1
                     if not os.path.exists(target_file):
                         response = make_request(m, v)
                         if not check_for_bad(response_type, response):
-                            if not check_for_bad(response_type, r):
+                            if not check_for_bad(response_type, response):
                                 print(f"Writing out to {target_file}")
                                 with open(join(gen_loc, target_file), "w") as f:
-                                    f.write(r)
+                                    f.write(response)
                             else:
                                 print(
                                     f"Skipping, found bad data in {r} for rt {response_type}"
