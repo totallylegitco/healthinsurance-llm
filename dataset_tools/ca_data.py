@@ -162,13 +162,17 @@ def generate_prompts(imr):
 
     prompts = {
         "denial": [
-            f"""The independent medical review findings were {findings} and grounds were {grounds}. In your response instead of independent say internal in reference to any review or reviewers. Use this information to write the original insurance denial."""
+            f"""The independent medical review findings were {findings} and grounds were {grounds}. In your response instead of independent say internal in reference to any review or reviewers. Use this information to write the original insurance denial.""",
+            f"""The independent medical review findings were {findings} and grounds were {grounds}. In your response instead of independent say internal in reference to any review or reviewers. Use this information to write the original insurance denial as if you were working at an incompetent insurance company.""",
+            f"""The independent medical review findings were {findings} and grounds were {grounds}. In your response instead of independent say internal in reference to any review or reviewers. Use this information to write the original insurance denial as if you were a non-practicing doctor responding on behalf of an insurance company.""",
         ],
         "appeal": [
-            f"""The independent medical review findings were {findings} and grounds were {grounds}. In your response You are writing on your on behalf (not that of a doctors office) and you do not have any credentials. Use this information to write the original appeal by the patient."""
+            f"""The independent medical review findings were {findings} and grounds were {grounds}. In your response You are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Use this information to write the original appeal by the patient.""",
+            f"""The independent medical review findings were {findings} and grounds were {grounds}. In your response You are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Use this information to write the original appeal by the patient for {treatment}."""
         ],
         "medically_necessary": [
             f"""The independent medical review findings were {findings} and grounds were {grounds}. Why was the treatment considered medically necessary?"""
+            f"""The independent medical review findings were {findings}, treatment was {treatment}, and grounds were {grounds}. Why was the treatment considered medically necessary?""",
         ],
     }
 
@@ -216,12 +220,17 @@ def work_with_generative_remote():
 
     for r in l:
         print(r[1])
+        model_index = 0
         for m in models:
+            # For the first model we don't add an idex but subsequent ones we do.
+            mistr = ""
+            if model_index > 0:
+                mistr = f"{mistr}-"
             for response_type in r[1].keys():
                 i = 0
                 for v in r[1][response_type]:
                     idx = r[0]
-                    target_file = join(gen_loc, f"{idx}MAGIC{i}{response_type}.txt")
+                    target_file = join(gen_loc, f"{idx}MAGIC{mistr}{i}{response_type}.txt")
                     i = i + 1
                     if not os.path.exists(target_file) or not check_for_bad_file(response_type, target_file):
                         response = make_request(m, v)
@@ -234,6 +243,7 @@ def work_with_generative_remote():
                                 print(
                                     f"Skipping, found bad data in {r} for rt {response_type}"
                                 )
+            model_index = model_index + 1
 
 
 def work_with_generative_local():

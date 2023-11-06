@@ -24,3 +24,4 @@ MediaTek processor
 fast charger included
 Please note that the reviewer is
 the reviewer is board certified
+The reviewer has expertise in
