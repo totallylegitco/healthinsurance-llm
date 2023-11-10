@@ -124,8 +124,8 @@ def write_alpaca(instruction, result, context=""):
     global first_alpaca
     if first_alpaca:
         first_alpaca = False
-    else:
-        alpaca.write(",")
+#    else:
+#        alpaca.write(",")
     alpaca_record = format_alpaca(instruction, result, context)
     alpaca.write(alpaca_record)
 
