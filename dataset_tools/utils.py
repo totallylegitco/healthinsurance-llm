@@ -254,7 +254,7 @@ def cleanup_appeal(data):
         ),
         ("I am writing this appeal on behalf of [patient's full name]", "I"),
         ("I am writing this appeal on behalf of [patient's name]", "I"),
-        ("I am writing on behalf of [patient's name]", "I")
+        ("I am writing on behalf of [patient's name]", "I"),
         ("I am writing on behalf of [patient's full name]", "I")
         ("[patient's full name]", "I"),
         ("[patient's name]", "I"),

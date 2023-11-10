@@ -12,6 +12,14 @@ if [ ! -f ".firstrun" ]; then
   python3 -m pip install --upgrade pip
   # We need to install pybind11 before deepspeed because it is not listed as a depdency.
   pip install pybind11[global]
+  pip install packaging
+  if [ ! -d axolotl ]; then
+    git clone https://github.com/OpenAccess-AI-Collective/axolotl
+  fi
+  cd axolotl
+  pip install -e '.[flash-attn,deepspeed]'
+  pip install -U git+https://github.com/huggingface/peft.git
+  cd ..
   if [ ! -d apex ]; then
     git clone https://github.com/NVIDIA/apex
   fi

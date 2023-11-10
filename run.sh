@@ -83,7 +83,9 @@ fi
 
 
 # Different models need different love for fine tuning.
-if [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
+if [ "$INPUT_MODEL" == "mistral" ]; then
+  accelerate launch -m axolotl.cli.train mistral_config.yml
+elif [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
 # dolly
   cd dolly
   mkdir -p ${TR_DATA}
