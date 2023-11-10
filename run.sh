@@ -89,7 +89,7 @@ if [ "$INPUT_MODEL" == "mistral" ]; then
   if [ "${TR_DATA}" != "out" ]; then
     cp ./${TR_DATA}/train_alpaca.jsonl ./out/
   fi
-  if [ ${gpu_memory} > 40000 ]; then
+  if [ ${gpu_memory} -gt 40000 ]; then
     accelerate launch -m axolotl.cli.train mistral_config.yml
   else
     accelerate launch -m axolotl.cli.train mistral_config_qlora.yml
