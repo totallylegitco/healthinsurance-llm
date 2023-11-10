@@ -64,9 +64,9 @@ for f in filter(check_record, data_files):
 recommend_regex = re.compile(r"recommends* ([^.]+)\.", re.IGNORECASE)
 short_recommendations = set()
 alpaca = open("out/train_alpaca.jsonl", "w")
-alpaca.write("[")
+# alpaca.write("[")
 alpaca_smaller = open("out/train_alpaca_smaller.jsonl", "w")
-alpaca_smaller.write("[")
+# alpaca_smaller.write("[")
 
 
 first_alpaca = True
@@ -134,8 +134,8 @@ def write_alpaca_small(instruction, result, context=""):
     global first_alpaca_small
     if first_alpaca_small:
         first_alpaca_small = False
-    else:
-        alpaca_smaller.write(",")
+    #else:
+    #    alpaca_smaller.write(",")
     alpaca_record = format_alpaca(instruction, result, context)
     alpaca_smaller.write(alpaca_record)
 
@@ -276,5 +276,5 @@ for case_key, case in cases.items():
 
 
 write_chemo_drug_records()
-alpaca.write("]")
-alpaca_smaller.write("]")
+#alpaca.write("]")
+#alpaca_smaller.write("]")
