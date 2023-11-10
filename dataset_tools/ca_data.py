@@ -225,7 +225,7 @@ def work_with_generative_remote():
             # For the first model we don't add an idex but subsequent ones we do.
             mistr = ""
             if model_index > 0:
-                mistr = f"{mistr}-"
+                mistr = f"{model_index}-"
             for response_type in r[1].keys():
                 i = 0
                 for v in r[1][response_type]:
