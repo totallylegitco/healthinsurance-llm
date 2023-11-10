@@ -86,7 +86,9 @@ fi
 if [ "$INPUT_MODEL" == "mistral" ]; then
   mkdir -p out
   mkdir -p mistral_fine_out
-  cp ./${TR_DATA}/train_alpaca.jsonl ./out/
+  if [ "${TR_DATA}" != "out" ]; then
+    cp ./${TR_DATA}/train_alpaca.jsonl ./out/
+  fi
   accelerate launch -m axolotl.cli.train mistral_config.yml
 elif [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
 # dolly
