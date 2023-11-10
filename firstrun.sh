@@ -15,7 +15,7 @@ if [ ! -f ".firstrun" ]; then
   pip install packaging
   # We need good pytorch v soon
   CU_MINOR=$(nvcc --version |grep "cuda_" |cut -d "_" -f 2 |cut -d "." -f 2)
-  pip install "torch" --index-url https://download.pytorch.org/whl/cu11${CU_MINOR} || pip install torch
+  pip install "torch==2.0.1" --index-url https://download.pytorch.org/whl/cu11${CU_MINOR} || pip install torch
 
   if [ ! -d axolotl ]; then
     git clone https://github.com/OpenAccess-AI-Collective/axolotl

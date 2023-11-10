@@ -11,7 +11,7 @@ from PyPDF2 import PdfReader
 max_answer_len = 20480
 
 magic_re = re.compile(
-    r".*/(.*?)(MAGIC[0-9B]*|FARTS[0-9]*|)_?(appeal|rejection|json).txt"
+    r".*/(.*?)(MAGIC[0-9B\-]*|FARTS[0-9]*|)_?(appeal|rejection|json).txt"
 )
 
 with open("header.txt") as x:
