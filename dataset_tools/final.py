@@ -113,6 +113,7 @@ def format_alpaca(instruction, result, context=""):
             "instruction": instruction,
             "context": context,
             "response": result[0:max_answer_len],
+            "output": result[0:max_answer_len],
         }
     )
     alpaca_record.replace("\n", " ")
