@@ -89,7 +89,11 @@ if [ "$INPUT_MODEL" == "mistral" ]; then
   if [ "${TR_DATA}" != "out" ]; then
     cp ./${TR_DATA}/train_alpaca.jsonl ./out/
   fi
-  accelerate launch -m axolotl.cli.train mistral_config.yml
+  if [ ${gpu_memory} > 40000 ]; then
+    accelerate launch -m axolotl.cli.train mistral_config.yml
+  else
+    accelerate launch -m axolotl.cli.train mistral_config_qlora.yml
+  fi
 elif [ "${INPUT_MODEL}" == "databricks/dolly-v2-7b" ]; then
 # dolly
   cd dolly
