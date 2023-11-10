@@ -2,6 +2,8 @@
 
 set -ex
 
+gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut -f 1 -d " ")
+
 if [ ! -f ".firstrun" ]; then
   # See https://askubuntu.com/questions/272248/processing-triggers-for-man-db
   # echo "set man-db/auto-update false" | sudo debconf-communicate; sudo dpkg-reconfigure man-db
