@@ -38,7 +38,6 @@ if [ ! -f ".firstrun" ]; then
   # deepspeed
   pip install ninja hjson py-cpuinfo
   DS_BUILD_CPU_ADAM=1 DS_BUILD_SPARSE_ATTN=0 DS_BUILD_FUSED_ADAM=1 pip install "git+https://github.com/microsoft/deepspeed.git#" --global-option="build_ext" --global-option="-j16"
-  pip3 install -U -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu11${CU_MINOR}
   ds_report
   # Setup bits and bytes if we are likely to need it.
   if [ ${gpu_memory} -lt 495640 ]; then
