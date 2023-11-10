@@ -13,6 +13,7 @@ if [ ! -f ".firstrun" ]; then
   # We need to install pybind11 before deepspeed because it is not listed as a depdency.
   pip install pybind11[global]
   pip install packaging
+  pip install ninja
   # We need good pytorch v soon
   CU_MINOR=$(nvcc --version |grep "cuda_" |cut -d "_" -f 2 |cut -d "." -f 2)
   pip install "torch==2.0.1" --index-url https://download.pytorch.org/whl/cu11${CU_MINOR} || pip install torch
@@ -29,7 +30,7 @@ if [ ! -f ".firstrun" ]; then
   fi
   cd apex
   sudo pip install -U pip
-  pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --config-settings "--build-option=--cpp_ext" --config-settings "--build-option=--cuda_ext" --config-settings "--build-option=--deprecated_fused_adam" ./
+  pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --config-settings "--build-option=--cpp_ext" --config-settings "--build-option=--cuda_ext" --config-settings "--build-option=--deprecated_fused_adam" ./ || pip install apex
   cd ..
 
   # deepspeed
