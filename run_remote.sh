@@ -3,7 +3,7 @@
 INPUT_MODEL=${INPUT_MODEL:-"databricks/dolly-v2-7b"}
 
 HOST=$1
-PORT={$2:-22}
+PORT=${2:-22}
 
 set -ex
 
