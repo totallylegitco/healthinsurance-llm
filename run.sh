@@ -6,7 +6,7 @@ source setup.sh
 
 cd "$(dirname "$0")"
 
-gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut -f 1 -d " ")
+gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut -f 1 -d " " |  awk '{s+=$1} END {print s}')
 
 if [ ! -f ".firstrun" ]; then
   ./firstrun.sh
