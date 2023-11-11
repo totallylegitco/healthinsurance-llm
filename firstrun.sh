@@ -57,7 +57,7 @@ if [ ! -f ".firstrun" ]; then
     else
       python -m bitsandbytes || pip3 install -U bitsandbytes
       python -m bitsandbytes || ./setup_bits_and_bytes.sh
-      python -m bitsandbytes | grep "The installed version of bitsandbytes was compiled without GPU support." || ./setup_bits_and_bytes.sh
+      python -m bitsandbytes | grep "The installed version of bitsandbytes was compiled without GPU support." || ./setup_bits_and_bytes.sh || echo "No b and b for you."
     fi
   fi
 
