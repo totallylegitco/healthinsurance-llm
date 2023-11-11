@@ -1,4 +1,9 @@
 export PATH=$PATH:~/.local/bin:/usr/lib/x86_64-linux-gnu
+
+if test -d /usr/local/cuda-1*.*/bin/; then
+  export PATH=$PATH:/usr/local/cuda-1*.*/bin/
+fi
+
 if [ -z "$LD_LIBRARY_PATH" ]; then
   export LD_LIBRARY_PATH=$PATH
 fi
