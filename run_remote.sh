@@ -6,7 +6,7 @@ HOST=${1:-${HOST}}
 PORT=${2:-${PORT:-22}}
 TARGET_DIR=${3:-${TARGET_DIR:-~/}}
 
-TARGET=$(echo $TARGET | sed 's![^/]$!&/!')
+TARGET_DIR=$(echo $TARGET_DIR | sed 's![^/]$!&/!')
 
 set -ex
 
@@ -41,6 +41,7 @@ scp -P $PORT ${target} $HOST:${TARGET_DIR}
 echo "Preparing to decompress ${TARGET_DIR}${filename}"
 ssh -p $PORT $HOST "tar -C ${TARGET_DIR} -xjf ${TARGET_DIR}${filename}" &
 wait $!
+ssh -p $PORT $HOST "mkdir -p ~/.git"
 scp -P $PORT remote_git $HOST:~/.git/config
 # Copy git credentials for huggingface access.
 scp -P $PORT ~/.gitconfig $HOST:~/.gitconfig
