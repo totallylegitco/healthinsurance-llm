@@ -26,7 +26,7 @@ tpid=$!
 # Lambda labs seems to be having isssues with ssh not coming up quickly so retry.
 (scp -P $PORT ./firstrun.sh $HOST:${TARGET} || (sleep 120 && scp -P $PORT ./firstrun.sh $HOST:${TARGET} ))
 scp -P $PORT ./requirements.txt $HOST:${TARGET}
-ssh -p $PORT $HOST "./firstrun.sh | tee -a fr.log" &
+ssh -p $PORT $HOST "${TARGET}/firstrun.sh | tee -a fr.log" &
 frpid=$!
 # Put the passwordless https config there
 # scp -P $PORT ~/.ssh/authorized_keys  $HOST:~/.ssh/

@@ -4,6 +4,8 @@ set -ex
 
 source setup.sh
 
+cd "$(dirname "$0")"
+
 gpu_memory=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 | cut -f 1 -d " ")
 
 if [ ! -f ".firstrun" ]; then
