@@ -56,6 +56,7 @@ tf32: false
 
 gradient_checkpointing: true
 early_stopping_patience:
+auto_resume_from_checkpoint: true
 resume_from_checkpoint:
 local_rank:
 logging_steps: 1
