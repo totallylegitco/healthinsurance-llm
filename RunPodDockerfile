@@ -1,0 +1,18 @@
+# Include Python
+from python:3.11.1-buster
+
+# Define your working directory
+WORKDIR /
+
+# Install runpod
+RUN pip install runpod
+
+ADD requirements.txt .
+RUN pip install -r requirements.txt
+
+# Add your file
+COPY fighthealthinsurance_model_v0.2 /fighthealthinsurance_model_v0.2
+ADD infer.py .
+
+# Call your file when your container starts
+CMD [ "python", "-u", "/infer.py" ]

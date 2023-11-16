@@ -1,0 +1,5 @@
+{
+    "input": {
+        "prompt": "Write a health insurance appeal given the provided context. Your request for an MRI is denied because we don't think it is medically necessary for screening for breast cancer."
+    }
+}
