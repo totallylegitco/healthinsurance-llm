@@ -42,7 +42,7 @@ class AppealGenerator:
 
         if not isinstance(prompt, str) or prompt == "":
             return {"error": "Prompt must not be none"}
-        return self.generate_appeal(prompt)
+        return self.generate_appeal_str(prompt)
 
     def generate_appeal_str(self, prompt):
         attempt = 0

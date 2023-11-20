@@ -13,6 +13,7 @@ RUN pip install -r requirements.txt
 # Add your file
 COPY fighthealthinsurance_model_v0.2 /fighthealthinsurance_model_v0.2
 ADD infer.py .
+ADD generate_appeal.py .
 
 # Call your file when your container starts
 CMD [ "python", "-u", "/infer.py" ]
