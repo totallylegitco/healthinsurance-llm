@@ -1,0 +1,12 @@
+service: "service:svc"  # Same as the argument passed to `bentoml serve`
+labels:
+    owner: holden
+    stage: dev
+include:
+- "service.py"  # A pattern for matching which files to include in the bento
+python:
+    packages:  # Additional pip packages required by the service
+    - scikit-learn
+    - pandas
+models: # The model to be used for building the Bento.
+-  fighthealthinsurance_model_v0.2:latest
