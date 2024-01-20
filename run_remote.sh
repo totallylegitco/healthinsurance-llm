@@ -26,7 +26,7 @@ tpid=$!
 
 # Copy over firstrun.sh so we can get the system setup a bit while we transfer all of ourdata.
 # Lambda labs seems to be having isssues with ssh not coming up quickly so retry.
-(scp -P $PORT ./firstrun.sh $HOST:${TARGET_DIR} || (sleep 120 && scp -P $PORT ./firstrun.sh $HOST:${TARGET_DIR} )) || (sleep 120 && scp -P $PORT ./firstrun.sh $HOST:${TARGET_DIR} ))
+(scp -P $PORT ./firstrun.sh $HOST:${TARGET_DIR} || (sleep 120 && scp -P $PORT ./firstrun.sh $HOST:${TARGET_DIR} ) || (sleep 120 && scp -P $PORT ./firstrun.sh $HOST:${TARGET_DIR} ))
 scp -P $PORT ./setup.sh $HOST:${TARGET_DIR}
 scp -P $PORT ./requirements.txt $HOST:${TARGET_DIR}
 ssh -p $PORT $HOST "${TARGET_DIR}/firstrun.sh | tee -a fr.log" &
