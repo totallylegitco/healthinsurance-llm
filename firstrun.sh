@@ -19,6 +19,7 @@ if [ ! -f ".firstrun" ]; then
 
   sudo apt-get update
   sudo apt-get install -y libaio-dev python3-pybind11 screen nano emacs
+  nvcc --version || sudo apt install nvidia-cuda-toolkit
 
   python3 -m pip install --upgrade pip
   # We need to install pybind11 before deepspeed because it is not listed as a depdency.
