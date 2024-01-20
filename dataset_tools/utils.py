@@ -47,6 +47,8 @@ def training_cleanup_rejection(text):
 def letter_type(filename):
     if filename.endswith("_rejection.txt"):
         return "rejection"
+    elif filename.endswith("denial.txt"):
+        return "rejection"
     elif filename.endswith("json.txt"):
         return "json"
     else:
@@ -58,8 +60,10 @@ def check_record(filename):
         data = f.read().lower()
         if letter_type(filename) == "appeal":
             return not (check_for_bad_appeal(data) or check_for_invalid_urls(data))
-        else:
+        elif letter_type(filename) == "rejection":
             return not check_for_bad_rejection(data)
+        else:
+            return False
 
 
 def check_for_invalid_urls(data):
@@ -305,6 +309,7 @@ def check_for_bad_appeal(data):
 def check_for_bad_rejection(data):
     for b in bad_rejection_strings:
         if b != "" and b.lower() in data:
+            print(f"Rejecting {data} because it contains {b}")
             return True
     return False
 

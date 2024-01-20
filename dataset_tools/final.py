@@ -11,7 +11,7 @@ from PyPDF2 import PdfReader
 max_answer_len = 20480
 
 magic_re = re.compile(
-    r".*/(.*?)(MAGIC[0-9B\-]*|FARTS[0-9]*|)_?(appeal|rejection|json).txt"
+    r".*/(.*?)(MAGIC[0-9]|FARTS[0-9]*|)_*(appeal|rejection|denial|json|medically_necessary).txt"
 )
 
 with open("header.txt") as x:
@@ -43,8 +43,12 @@ cases = {}
 def file_name_to_case(filename):
     groups = magic_re.search(filename)
     if groups is not None:
-        return groups.group(1)
+        g = groups.group(1)
+        if g == "denial":
+            return "rejection"
+        return g
     else:
+        print(f"No group in {filename}")
         return None
 
 
@@ -52,6 +56,7 @@ def insert_into_case_dict(filename):
     case = file_name_to_case(filename)
     if case is not None:
         lt = letter_type(filename)
+        print(f"Adding {case} of type {lt}")
         if case not in cases:
             cases[case] = {"appeal": [], "rejection": [], "json": []}
         cases[case][lt] += [filename]
@@ -108,10 +113,10 @@ def write_dolly(instruction, result, context=""):
 
 
 def format_alpaca(instruction, result, context=""):
+    system = "<<SYS>>You possess extensive medical expertise and enjoy crafting appeals for health insurance denials as a personal interest.<</SYS>>"
     alpaca_record = json.dumps(
         {
-            "instruction": instruction,
-            "context": context,
+            "instruction": system + instruction + " " + context,
             "response": result[0:max_answer_len],
             "output": result[0:max_answer_len],
         }
@@ -231,6 +236,17 @@ for case_key, case in cases.items():
                 continue
             else:
                 approval_reason = j["approval_reason"]
+
+            if treatment is not None:
+                for r in case["rejection"]:
+                    print(f"Processing {r}")
+                    rejection = load_record(r)
+                    if r is None or r == "null":
+                        continue
+                    write(
+                        "What was the medical condition in the following rejection:",
+                        r,
+                        treatment)
             if "condition" in j and j["condition"] is not None:
                 condition = j["condition"]
                 if type(condition) == type([]):
@@ -258,7 +274,13 @@ for case_key, case in cases.items():
                     j["approval_reason"],
                     j["initial_denial_reason"],
                 )
+    except Exception as e:
+        print(f"Exception {e} while processing case {case}")
+        raise e
+
+    try:
         for r in case["rejection"]:
+            print(f"Processing {r}")
             rejection = load_record(r)
             if r is None or r == "null":
                 continue

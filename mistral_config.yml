@@ -9,7 +9,8 @@ strict: false
 
 datasets:
   - path: out/train_alpaca.jsonl
-    type: alpaca
+    type:
+      alpaca
 dataset_prepared_path:
 val_set_size: 0.05
 output_dir: ./mistral_fine_out
