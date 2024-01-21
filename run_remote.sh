@@ -4,7 +4,7 @@ INPUT_MODEL=${INPUT_MODEL:-"databricks/dolly-v2-7b"}
 
 HOST=${1:-${HOST}}
 PORT=${2:-${PORT:-22}}
-TARGET_DIR=${3:-${TARGET_DIR:-~/}}
+TARGET_DIR=${3:-${TARGET_DIR:-"~/"}}
 
 TARGET_DIR=$(echo $TARGET_DIR | sed 's![^/]$!&/!')
 
@@ -21,7 +21,7 @@ temp_dir=$(mktemp -d -t "fartsXXXXXXXXXXX")
 filename=upload.tbz2
 target="${temp_dir}/${filename}"
 
-tar --exclude apex --exclude axolotl --exclude lit-parrot --exclude falcontune --exclude "*.tbz2" --exclude wandb --exclude "results" --exclude="dolly" --exclude "combined-llm-data*" --exclude "generated-llm-data*" --exclude "*_out" -cjf "${target}" . &
+tar --exclude apex --exclude axolotl --exclude lit-parrot --exclude falcontune --exclude "*.tbz2" --exclude wandb --exclude "results" --exclude="dolly" --exclude "combined-llm-data*" --exclude "generated-llm-data*" --exclude "*_out" --exclude "falcon-7b-instruct-alpaca" -cjf "${target}" . &
 tpid=$!
 
 # Copy over firstrun.sh so we can get the system setup a bit while we transfer all of ourdata.
