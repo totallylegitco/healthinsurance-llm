@@ -116,7 +116,7 @@ def format_alpaca(instruction, result, context=""):
     system = "<<SYS>>You possess extensive medical expertise and enjoy crafting appeals for health insurance denials as a personal interest.<</SYS>>"
     alpaca_record = json.dumps(
         {
-            "instruction": system + instruction + " " + context,
+            "instruction": "[INST] " + system + instruction + " " + context + "[/INST]",
             "response": result[0:max_answer_len],
             "output": result[0:max_answer_len],
         }
