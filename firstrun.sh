@@ -34,7 +34,9 @@ if [ ! -f ".firstrun" ]; then
     git clone https://github.com/OpenAccess-AI-Collective/axolotl
   fi
   cd axolotl
-  pip install -e '.[flash-attn,deepspeed]'
+  pip install packaging
+  # flash-attn hack version magic
+  pip install -e '.[deepspeed]' "flash-attn==2.3.6"
   pip install -U git+https://github.com/huggingface/peft.git
   cd ..
   if [ ! -d apex ]; then
