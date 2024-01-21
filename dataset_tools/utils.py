@@ -189,7 +189,7 @@ def cleanup_denial(data):
             "The Health Plans denial was overturned due to the reviewers determining that the requested services were likely to be more beneficial for treatment of the enrollees medical condition than any available standard therapy.",
             "",
         ),
-        ("independent medical review findings were nature of statutory criteria/case summary:", "")
+        ("independent medical review findings were nature of statutory criteria/case summary:", ""),
         ("We always say no to surgeries.", ""),
         ("The reason was originally denied was", "Your request is denied because"),
         ("Therefore, the Health Plans denial should be overturned.", ""),
