@@ -92,11 +92,12 @@ def load_record(filename):
     with open(filename, encoding="utf-8") as f:
         raw_data = f.read()
     data = parse_record(raw_data)
-    if letter_type(filename) == "appeal":
+    lt = letter_type(filename)
+    if lt == "appeal":
         return cleanup_appeal(data)
-    elif letter_type(filename) == "rejection":
+    elif lt == "rejection":
         return cleanup_denial(data)
-    elif letter_type(filename) == "json":
+    elif lt == "json":
         return cleanup_json(data)
     else:
         return data
@@ -207,6 +208,13 @@ def cleanup_denial(data):
         ("\.\.\.", "."),
         ("\.\.", "."),
         ("by our independent medical representative", "by us"),
+        ("is medically necessary", "is not medically necessary"),
+        ("Review findings: The", ""),
+        ("Review findings:", ""),
+        ("The physician reviewer found that", "We determined that"),
+        ("independent medical review has determined", "we have determined"),
+        ("was indicated for this patient", "was not indicated for this patient")
+        ("the requested .* is appropriate for this patient", "the request has been denied for this patient"),
     ]
     for o, r in swap:
         data = re.sub(o, r, data)
@@ -260,8 +268,8 @@ def cleanup_appeal(data):
         ("I am writing this appeal on behalf of [patient's name]", "I"),
         ("I am writing on behalf of [patient's name]", "I"),
         ("I am writing on behalf of [patient's full name]", "I"),
-        ("[patient's full name]", "I"),
-        ("[patient's name]", "I"),
+        ("\[patient's full name\]", "I"),
+        ("\[patient's name\]", "I"),
         ("The records provided for review document that this patient", "I"),
         ("patient", "I"),
         
