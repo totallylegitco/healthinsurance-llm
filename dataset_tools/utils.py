@@ -189,6 +189,7 @@ def cleanup_denial(data):
             "The Health Plans denial was overturned due to the reviewers determining that the requested services were likely to be more beneficial for treatment of the enrollees medical condition than any available standard therapy.",
             "",
         ),
+        ("independent medical review findings were nature of statutory criteria/case summary:", "")
         ("We always say no to surgeries.", ""),
         ("The reason was originally denied was", "Your request is denied because"),
         ("Therefore, the Health Plans denial should be overturned.", ""),
@@ -215,6 +216,11 @@ def cleanup_denial(data):
         ("independent medical review has determined", "we have determined"),
         ("was indicated for this patient", "was not indicated for this patient")
         ("the requested .* is appropriate for this patient", "the request has been denied for this patient"),
+        ("Final Result: The reviewers determined that.*", ""),
+        ("reviewers determined that.*", ""),
+        ("findings: .* physician reviewers.*", "")
+        ("Consequently, the Health Plan's denial should be overturned." , "")
+        ("According to recent medical literature, [^\.]*.", "")
     ]
     for o, r in swap:
         data = re.sub(o, r, data)
