@@ -190,6 +190,9 @@ def cleanup_denial(data):
             "",
         ),
         ("independent medical review findings were nature of statutory criteria/case summary:", ""),
+        ("will be overturned.*", ""),
+        ("the independent medical reviewer", "we"),
+        ("The physician reviewer", "we"),
         ("We always say no to surgeries.", ""),
         ("The reason was originally denied was", "Your request is denied because"),
         ("Therefore, the Health Plans denial should be overturned.", ""),
@@ -219,17 +222,22 @@ def cleanup_denial(data):
         ("Final Result: The reviewers determined that.*", ""),
         ("reviewers determined that.*", ""),
         ("findings: .* physician reviewers.*", ""),
+        ("Thank you for providing me with this information.", ""),
         ("Consequently, the Health Plan's denial should be overturned." , ""),
         ("According to recent medical literature, [^\.]*.", ""),
     ]
-    for o, r in swap:
-        data = re.sub(o, r, data)
+    old_data = ""
+    while old_data != data:
+        old_data = data
+        for o, r in swap:
+            data = re.sub(o, r, data)
 
     return data
 
 
 def cleanup_appeal(data):
     swap = [
+        ("was considered medically necessary", "is considered medically necessary"),
         ("As an AI language model", ""),
         ("\W+ of \W+ reviewers (determined|found) that", "It is believed that "),
         ("\W+ of \W+ reviewers (determined|found)", "It is believed "),
@@ -277,11 +285,23 @@ def cleanup_appeal(data):
         ("\[patient's full name\]", "I"),
         ("\[patient's name\]", "I"),
         ("The records provided for review document that this patient", "I"),
+        ("The patient's", "My"),
+        ("the patient's", "my"),
+        ("this patient's", "my"),
+        ("Therefore, it may not be covered by insurance", "Regardless, it should be covered"),
+        ("The patient ", "I"),
+        ("Dear [Medical Necessity]", "Dear [Insurance Company],"),
+        ("to the independent medical review findings", "to your decision"),
+        ("Thank you for providing me with this information." , ""),
         ("patient", "I"),
-        
+        ("The independent medical review findings of.*?:", ""),
+        ("Hence,  concluded", ""),
     ]
-    for o, r in swap:
-        data = re.sub(o, r, data)
+    old_data = ""
+    while old_data != data:
+        old_data = data
+        for o, r in swap:
+            data = re.sub(o, r, data)
 
     return data
 
