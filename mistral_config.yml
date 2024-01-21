@@ -1,4 +1,4 @@
-base_model: mistralai/Mistral-7B-v0.1
+base_model: mistralai/Mistral-7B-Instruct-v0.2
 model_type: MistralForCausalLM
 tokenizer_type: LlamaTokenizer
 is_mistral_derived_model: true
@@ -61,3 +61,5 @@ special_tokens:
   bos_token: "<s>"
   eos_token: "</s>"
   unk_token: "<unk>"
+model_config:
+  sliding_window: 4096
