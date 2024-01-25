@@ -171,16 +171,22 @@ def generate_prompts(imr, format_for_model = lambda x: x):
     prompts = {
         "denial": [
             format_for_model(
-                f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. Use this information to write the original insurance denial as if you were a non-practicing doctor responding on behalf of an insurance company. Do not include any reference to the reviewers or their findings, instead focus on what the insurance company would have written denying the patients first claim. Feel free to be verbose and start your denial with \"Dear [Member];\""""),
+                f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. Use this information to write the original insurance denial as if you were a non-practicing doctor responding on behalf of an insurance company. Do not include any reference to the reviewers or their findings, instead focus on what the insurance company would have written denying the patients first claim. Keep in mind the denial would have been written before the independent review. Feel free to be verbose. You may wish to start your denial as a letter with \"Dear [Member];\""""),
         ],
         "appeal": [
             format_for_model(
-                f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. In your response you are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Do not include any reference to the reviewers or their findings. Use this information to write the original appeal by the patient. Feel free to be verbose and start your appeal with Dear [Insurance Company];"""),
+                f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. In your response you are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Do not include any reference to the reviewers or their findings. Use this information to write the original appeal by the patient. Keep in mind the appeal would be written before the appeal. Feel free to be verbose and start your appeal with Dear [Insurance Company];"""),
         ],
         "medically_necessary": [
             format_for_model(
                 f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. Why was the treatment considered medically necessary? Don't refer to the reviewers findings directly instead write in a general fashion."""),
         ],
+        "reason_for_denial": [
+            format_for_model(f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. What excuse did the insurance company use to deny the treatment?""")
+        ],
+        "treatment": [
+            format_for_model(f"""The independent medical review findings were {findings}. What was the treatment, procedure, therapy, or surgery denied?""")
+        ]
     }
 
     return (index, prompts)
@@ -336,7 +342,7 @@ def work_with_generative_local():
             for idx, batch_prompts in mybatch:
                 start = start_idxs[ci]
                 ci = ci + 1
-                i = 0
+                i = 3
                 local_results = results[start : start + len(batch_prompts)]
                 for r in local_results:
                     if r is None:

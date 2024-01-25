@@ -40,18 +40,6 @@ data_files = [f for f in listed if (isfile(f))]
 cases = {}
 
 
-def file_name_to_case(filename):
-    groups = magic_re.search(filename)
-    if groups is not None:
-        g = groups.group(1)
-        if g == "denial":
-            return "rejection"
-        return g
-    else:
-        print(f"No group in {filename}")
-        return None
-
-
 def insert_into_case_dict(filename):
     case = file_name_to_case(filename)
     if case is not None:

@@ -237,6 +237,11 @@ def cleanup_denial(data):
 
 def cleanup_appeal(data):
     swap = [
+        ("On behalf of the patient, we are requesting", "I am requesting"),
+        ("we are appealing the", "I am appealing the"),
+        ("An appeal has been filed regarding", "I am appealing"),
+        ("I am writing this appeal on behalf of [^\.]* who has", "I have"),
+        ("We would like to request ", "I am requesting "),
         ("I am writing this appeal on behalf of [^\.]*\.", ""),
         ("was considered medically necessary", "is considered medically necessary"),
         ("As an AI language model", ""),
@@ -283,9 +288,12 @@ def cleanup_appeal(data):
         ("I am writing this appeal on behalf of \[patient's name\]", "I"),
         ("I am writing on behalf of \[patient's name\]", "I"),
         ("I am writing on behalf of \[patient's full name\]", "I"),
+        ("\[Patient's Name\] has", "I have"),
+        ("who is seeking authorization and coverage of", "I am seeking authorization and coverage of"),
         ("\[patient's full name\]", "I"),
         ("\[patient's name\]", "I"),
         ("The records provided for review document that this patient", "I"),
+        ("The patient has", "I have"),
         ("The patient's", "My"),
         ("the patient's", "my"),
         ("this patient's", "my"),
@@ -295,8 +303,8 @@ def cleanup_appeal(data):
         ("Dear \[Medical Necessity\]", "Dear \[Insurance Company\],"),
         ("to the independent medical review findings", "to your decision"),
         ("Thank you for providing me with this information." , ""),
-        ("patient", "I"),
         ("The independent medical review findings of.*?:", ""),
+        ("According to the independent medical review, ", ""),
         ("Hence,  concluded", ""),
         ("After reviewing the independently reviewed findings, we found that", "")
         ("this letter on behalf of \[Patient Name\]", "")
@@ -354,3 +362,15 @@ def check_for_bad_rejection(data):
 
 def not_none(i):
     return i is not None
+
+
+def file_name_to_case(filename):
+    groups = magic_re.search(filename)
+    if groups is not None:
+        g = groups.group(1)
+        if g == "denial":
+            return "rejection"
+        return g
+    else:
+        print(f"No group in {filename}")
+        return None
