@@ -151,8 +151,13 @@ imrs = load_data(
     "./data_sources/ca-independent-medical-review-imr-determinations-trends-utf8.csv"
 )
 
+def generate_prompts_instruct(imr):
+    def format_for_model(x):
+        return f"<s>[INST]{x}[/INST]"
 
-def generate_prompts(imr):
+    return generate_prompts(imr, format_for_model=format_for_model)
+
+def generate_prompts(imr, format_for_model = lambda x: x):
     determination = imr["Determination"]
     treatment = get_treatment_from_imr(imr)
     diagnosis = get_diagnosis_from_imr(imr)
@@ -165,13 +170,16 @@ def generate_prompts(imr):
 
     prompts = {
         "denial": [
-            f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. Use this information to write the original insurance denial as if you were a non-practicing doctor responding on behalf of an insurance company. Do not include any reference to the reviewers or their findings, instead focus on what the insurance company would have written denying the patients first claim. Feel free to be verbose and start your denial with \"Dear [Member];\"""",
+            format_for_model(
+                f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. Use this information to write the original insurance denial as if you were a non-practicing doctor responding on behalf of an insurance company. Do not include any reference to the reviewers or their findings, instead focus on what the insurance company would have written denying the patients first claim. Feel free to be verbose and start your denial with \"Dear [Member];\""""),
         ],
         "appeal": [
-            f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. In your response you are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Do not include any reference to the reviewers or their findings. Use this information to write the original appeal by the patient. Feel free to be verbose and start your appeal with Dear [Insurance Company];""",
+            format_for_model(
+                f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. In your response you are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Do not include any reference to the reviewers or their findings. Use this information to write the original appeal by the patient. Feel free to be verbose and start your appeal with Dear [Insurance Company];"""),
         ],
         "medically_necessary": [
-            f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. Why was the treatment considered medically necessary? Don't refer to the reviewers findings directly instead write in a general fashion."""
+            format_for_model(
+                f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. Why was the treatment considered medically necessary? Don't refer to the reviewers findings directly instead write in a general fashion."""),
         ],
     }
 
@@ -252,6 +260,7 @@ def work_with_generative_local():
         #        "ausboss/llama-30b-supercot",
         #        "CalderaAI/30B-Lazarus",
         #        "tiiuae/falcon-40b-instruct",
+        "mistralai/Mixtral-8x7B-Instruct-v0.1",
         "teknium/OpenHermes-2-Mistral-7B",
         "TheBloke/OpenHermes-2-Mistral-7B-GPTQ",
         "mistralai/Mistral-7B-v0.1",
@@ -297,7 +306,7 @@ def work_with_generative_local():
         raise Exception("Could not load any model")
 
     print("Generating prompts...")
-    l = imrs.apply(generate_prompts, axis=1).tolist()
+    l = imrs.apply(generate_prompts_instruct, axis=1).tolist()
     batch_size = 20
 
     for b in range(0, len(l), batch_size):
@@ -393,6 +402,7 @@ I am writing you to appeal claim [CLAIMNUMBER]. I believe that it is medically n
 
 
 print("Generative:")
-work_with_generative_remote()
+#work_with_generative_remote()
+work_with_generative_local()
 print("biogpt:")
 work_with_biogpt()
