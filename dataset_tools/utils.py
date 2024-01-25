@@ -230,7 +230,7 @@ def cleanup_denial(data):
     while old_data != data:
         old_data = data
         for o, r in swap:
-            data = re.sub(o, r, data)
+            data = re.sub(o, r, data, flags=re.IGNORECASE)
 
     return data
 
@@ -279,10 +279,10 @@ def cleanup_appeal(data):
             "did not have improved mental health outcomes compared to those who had",
             "have improved mental health outcomes compared to those who had",
         ),
-        ("I am writing this appeal on behalf of [patient's full name]", "I"),
-        ("I am writing this appeal on behalf of [patient's name]", "I"),
-        ("I am writing on behalf of [patient's name]", "I"),
-        ("I am writing on behalf of [patient's full name]", "I"),
+        ("I am writing this appeal on behalf of \[patient's full name\]", "I"),
+        ("I am writing this appeal on behalf of \[patient's name\]", "I"),
+        ("I am writing on behalf of \[patient's name\]", "I"),
+        ("I am writing on behalf of \[patient's full name\]", "I"),
         ("\[patient's full name\]", "I"),
         ("\[patient's name\]", "I"),
         ("The records provided for review document that this patient", "I"),
@@ -291,18 +291,21 @@ def cleanup_appeal(data):
         ("this patient's", "my"),
         ("Therefore, it may not be covered by insurance", "Regardless, it should be covered"),
         ("The patient ", "I"),
-        ("Dear [Medical Necessity]", "Dear [Insurance Company],"),
+        ("the patient", "I"),
+        ("Dear \[Medical Necessity\]", "Dear \[Insurance Company\],"),
         ("to the independent medical review findings", "to your decision"),
         ("Thank you for providing me with this information." , ""),
         ("patient", "I"),
         ("The independent medical review findings of.*?:", ""),
         ("Hence,  concluded", ""),
+        ("After reviewing the independently reviewed findings, we found that", "")
+        ("this letter on behalf of \[Patient Name\]", "")
     ]
     old_data = ""
     while old_data != data:
         old_data = data
         for o, r in swap:
-            data = re.sub(o, r, data)
+            data = re.sub(o, r, data, flags=re.IGNORECASE)
 
     return data
 
@@ -327,7 +330,7 @@ def check_for_bad(response_type, data):
     if response_type in bad_strings_dict.keys():
         bad_strings = bad_strings_dict[response_type]
         for b in bad_strings:
-            if b != "" and b in data:
+            if b != "" and b.lower() in data:
                 return True
             return False
     else:

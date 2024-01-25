@@ -31,3 +31,4 @@ Thus, only part of the requested medications is medically indicated
 The reviewer, who is board certified in
 As a board certified internal medicine physician
 the independent medical review findings
+As an AI language model

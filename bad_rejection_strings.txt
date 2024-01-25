@@ -19,3 +19,5 @@ in this clinical setting, the requested service is medically indicated.
 the use was determined to be a Medical Necessity
 has been approved as a medical necessity.
 Therefore, the requested surgery is appropriate for this patient, who is under the care of a skilled provider.
+reviewers concluded the therapy is likely to be more beneficial
+As an AI language model
