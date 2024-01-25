@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-health
+  namespace: totallylegitco
+  labels:
+    app: vllm-health
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm-health
+  template:
+    metadata:
+      labels:
+        app: vllm-health
+    spec:
+      nodeSelector:
+        node.kubernetes.io/gpu: gpu
+        kubernetes.io/arch: amd64
+      runtimeClassName: nvidia
+      containers:
+      - name: vllm-container
+        # "latest" retrieved on Jan 21 2024
+#        image: ghcr.io/mistralai/mistral-src/vllm:latest
+#        image: ghcr.io/mistralai/mistral-src/vllm:288c7c
+        image: vllm/vllm-openai:latest
+        imagePullPolicy: Always
+        args: ["--model=TotallyLegitCo/fighthealthinsurance_model_v0.3", "--host", "0.0.0.0", "--gpu-memory-utilization=0.9", "--max-model-len=26280", "--enforce-eager"]
+        # Extra args for running on vllm/vllm-openai
+        resources:
+          requests:
+            nvidia.com/gpu: 1
+            ephemeral-storage: "60Gi"
+          limits:
+            nvidia.com/gpu: 1
+            ephemeral-storage: "60Gi"
+        ports:
+          - containerPort: 8000
+            name: http
+        livenessProbe:
+          httpGet:
+            path: /v1/models
+            port: http
+          initialDelaySeconds: 60
+          periodSeconds: 60
+        readinessProbe:
+          httpGet:
+            path: /v1/models
+            port: http
+          initialDelaySeconds: 60
+          periodSeconds: 60
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-health-svc
+  namespace: totallylegitco
+spec:
+  selector:
+    app: vllm-health
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: http
