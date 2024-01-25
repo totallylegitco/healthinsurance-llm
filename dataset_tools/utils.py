@@ -237,6 +237,7 @@ def cleanup_denial(data):
 
 def cleanup_appeal(data):
     swap = [
+        ("I am writing this appeal on behalf of [^\.]*\.", ""),
         ("was considered medically necessary", "is considered medically necessary"),
         ("As an AI language model", ""),
         ("\W+ of \W+ reviewers (determined|found) that", "It is believed that "),
