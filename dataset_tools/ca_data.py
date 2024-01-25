@@ -159,20 +159,19 @@ def generate_prompts(imr):
     findings = imr["Findings"].strip("\n")
     grounds = imr["Type"]
     index = imr["ReferenceID"]
+    treatment_extra = ""
+    if treatment is not None:
+        treatment_extra = " and treatment {treatment}"
 
     prompts = {
         "denial": [
-            f"""The independent medical review findings were {findings} and grounds were {grounds}. In your response instead of independent say internal in reference to any review or reviewers. Use this information to write the original insurance denial.""",
-            f"""The independent medical review findings were {findings} and grounds were {grounds}. In your response instead of independent say internal in reference to any review or reviewers. Use this information to write the original insurance denial as if you were working at an incompetent insurance company.""",
-            f"""The independent medical review findings were {findings} and grounds were {grounds}. In your response instead of independent say internal in reference to any review or reviewers. Use this information to write the original insurance denial as if you were a non-practicing doctor responding on behalf of an insurance company.""",
+            f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. Use this information to write the original insurance denial as if you were a non-practicing doctor responding on behalf of an insurance company. Do not include any reference to the reviewers or their findings, instead focus on what the insurance company would have written denying the patients first claim. Feel free to be verbose and start your denial with \"Dear [Member];\"""",
         ],
         "appeal": [
-            f"""The independent medical review findings were {findings} and grounds were {grounds}. In your response You are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Use this information to write the original appeal by the patient.""",
-            f"""The independent medical review findings were {findings} and grounds were {grounds}. In your response You are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Use this information to write the original appeal by the patient for {treatment}."""
+            f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. In your response You are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Do not include any reference to the reviewers or their findings. Use this information to write the original appeal by the patient. Feel free to be verbose and start your appeal with Dear [Insurance Company];""",
         ],
         "medically_necessary": [
-            f"""The independent medical review findings were {findings} and grounds were {grounds}. Why was the treatment considered medically necessary?"""
-            f"""The independent medical review findings were {findings}, treatment was {treatment}, and grounds were {grounds}. Why was the treatment considered medically necessary?""",
+            f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. Why was the treatment considered medically necessary? Don't refer to the reviewers findings directly instead write in a general fashion."""
         ],
     }
 
