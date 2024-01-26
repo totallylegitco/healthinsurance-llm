@@ -51,6 +51,10 @@ def letter_type(filename):
         return "rejection"
     elif filename.endswith("json.txt"):
         return "json"
+    elif filename.endswith("medically_necessary.txt"):
+        return "medically_necessary.txt"
+    elif filename.endswith("treatment.txt"):
+        return "treatment"
     else:
         return "appeal"
 
@@ -241,6 +245,7 @@ def cleanup_appeal(data):
         ("we are appealing the", "I am appealing the"),
         ("An appeal has been filed regarding", "I am appealing"),
         ("I am writing this appeal on behalf of [^\.]* who has", "I have"),
+        ("I am writing on behalf of \[.*?\]", "I am writing to appeal"),
         ("We would like to request ", "I am requesting "),
         ("I am writing this appeal on behalf of [^\.]*\.", ""),
         ("was considered medically necessary", "is considered medically necessary"),
@@ -249,6 +254,8 @@ def cleanup_appeal(data):
         ("\W+ of \W+ reviewers (determined|found)", "It is believed "),
         ("the reviewer", " "),
         ("Therefore, the reviewer concludes that", "That should "),
+        ("As an expert in the treatment of my medical condition and knowledgeable about the proposed treatment through recent or current actual clinical experience treating those with a similar medical condition,", ""),
+        ("Dear Independent Medical Reviewers", "Dear [Insurance Company];"),
         ("coverage has been approved.", "coverage should be approved."),
         ("Sincerely, Doctor", "Sincerely, [YOURNAME]"),
         ("The final determination was that ", ""),
@@ -288,18 +295,23 @@ def cleanup_appeal(data):
         ("I am writing this appeal on behalf of \[patient's name\]", "I"),
         ("I am writing on behalf of \[patient's name\]", "I"),
         ("I am writing on behalf of \[patient's full name\]", "I"),
+        ("\[patient's name\]'s medical", "my medical"),
         ("\[Patient's Name\] has", "I have"),
         ("who is seeking authorization and coverage of", "I am seeking authorization and coverage of"),
         ("\[patient's full name\]", "I"),
         ("\[patient's name\]", "I"),
+        ("As an advocate on behalf of the patient,", ""),
+        ("As an advocate on behalf of the patient", "I"),
         ("The records provided for review document that this patient", "I"),
         ("The patient has", "I have"),
         ("The patient's", "My"),
         ("the patient's", "my"),
         ("this patient's", "my"),
         ("Therefore, it may not be covered by insurance", "Regardless, it should be covered"),
-        ("The patient ", "I"),
-        ("the patient", "I"),
+        ("for the patient", "for me"),
+        ("The patient ", "I "),
+        ("of his", "my"),
+        ("of her", "my"),
         ("Dear \[Medical Necessity\]", "Dear \[Insurance Company\],"),
         ("to the independent medical review findings", "to your decision"),
         ("Thank you for providing me with this information." , ""),
@@ -308,6 +320,8 @@ def cleanup_appeal(data):
         ("Hence,  concluded", ""),
         ("After reviewing the independently reviewed findings, we found that", "")
         ("this letter on behalf of \[Patient Name\]", "")
+        ("As an advocate on behalf of I,", ""),
+        ("As an advocate on behalf of I", "I"),
     ]
     old_data = ""
     while old_data != data:
@@ -322,11 +336,22 @@ def cleanup_appeal(data):
 with open("bad_appeal_strings.txt") as f:
     bad_appeal_strings = list(map(lambda f: f.lower(), f.read().split("\n")))
 
+with open("bad_medically_necessary_strings.txt") as f:
+    bad_medically_necessary_strings = list(map(lambda f: f.lower(), f.read().split("\n")))
+
+with open("bad_treatment_strings.txt") as f:
+    bad_treatment_strings = list(map(lambda f: f.lower(), f.read().split("\n")))
+
+
 # Load some strings we know the current model puts in rejections that are bad right away
 with open("bad_rejection_strings.txt") as f:
     bad_rejection_strings = list(map(lambda f: f.lower(), f.read().split("\n")))
 
-bad_strings_dict = {"appeal": bad_appeal_strings, "rejection": bad_rejection_strings}
+bad_strings_dict = {
+    "appeal": bad_appeal_strings,
+    "rejection": bad_rejection_strings,
+    "medically_necessary": bad_medically_necessary_strings,
+    "treatment": bad_treatment_strings}
 
 def check_for_bad_file(response_type, target):
     with open(target, 'r') as file:
@@ -346,18 +371,11 @@ def check_for_bad(response_type, data):
 
 
 def check_for_bad_appeal(data):
-    for b in bad_appeal_strings:
-        if b != "" and b.lower() in data:
-            return True
-    return False
+    return check_for_bad("appeal", data)
 
 
 def check_for_bad_rejection(data):
-    for b in bad_rejection_strings:
-        if b != "" and b.lower() in data:
-            print(f"Rejecting {data} because it contains {b}")
-            return True
-    return False
+    return check_for_bad("rejection", data)
 
 
 def not_none(i):

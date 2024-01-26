@@ -171,21 +171,28 @@ def generate_prompts(imr, format_for_model = lambda x: x):
     prompts = {
         "denial": [
             format_for_model(
-                f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. Use this information to write the original insurance denial as if you were a non-practicing doctor responding on behalf of an insurance company. Do not include any reference to the reviewers or their findings, instead focus on what the insurance company would have written denying the patients first claim. Keep in mind the denial would have been written before the independent review. Feel free to be verbose. You may wish to start your denial as a letter with \"Dear [Member];\""""),
+                f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. Use this information to write the original insurance denial from the insurance company. Do not include any reference to the reviewers or their findings, instead focus on what the insurance company would have written denying the patients first claim. Keep in mind the denial would have been written before the independent review. Feel free to be verbose. You may wish to start your denial as a letter with \"Dear [Member];\""""),
+            format_for_model(
+                f"""Given the following medical reviewer findings:
+
+{findings}
+                Compose an initial rejection letter on behalf of the insurance company in response to a patient's request for medical coverage. Include specific details about the patient's case, addressing the reasons for denial without referencing any independent medical review findings. Ensure the letter is concise, professional, and clearly communicates the grounds for the denial. Focus on policy justifications, eligibility criteria, medical necessity, or any other relevant factors that would lead to the initial rejection. Omit any mention of the independent medical reviewers' assessments or findings as those happend later in the process.""")
         ],
         "appeal": [
             format_for_model(
-                f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. In your response you are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Do not include any reference to the reviewers or their findings. Use this information to write the original appeal by the patient. Keep in mind the appeal would be written before the appeal. Feel free to be verbose and start your appeal with Dear [Insurance Company];"""),
+                f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. In your response you are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Do not include any reference to the reviewers or their findings. Use this information to write the original appeal by the patient. Keep in mind the appeal would be written before the appeal. Remember you are writing for yourself, not on behalf of anyone else. If any studies or guidelines support the medical necessity include them. Feel free to be verbose and start your appeal with Dear [Insurance Company];"""),
+            format_for_model(
+                f"""Given the following medical reviewer findings:\n{findings}\n Do not include any information about the reviewers' findings. Instead, consider the patient's personal experience, medical history, and reasons for seeking the requested medical coverage. Craft the appeal to express the patient's perspective and emphasize their need for the requested medical intervention without referencing the independent medical review outcomes. Omit any mention of the independent medical reviewers' assessments or findings as those happend later in the process. Feel free to be verbose and write in the style of patio11 or a bureaucrat like sir humphrey appleby. Remember you are writing for yourself, not on behalf of anyone else. If any studies or guidelines support the medical necessity include them."""),
         ],
         "medically_necessary": [
             format_for_model(
-                f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. Why was the treatment considered medically necessary? Don't refer to the reviewers findings directly instead write in a general fashion."""),
+                f"""Given the following medical review findings: {findings} and grounds were {grounds}{treatment_extra}. Why was the treatment considered medically necessary? Don't refer to the reviewers findings directly instead write in a general fashion. For example if the reviewers found that facial feminization surgery was needed to treat gender dysphoria based on WPATH guidelines you would write something like: Facial feminization surgery is medically necessary for gender dysphoria per the WPATH guidelines. Do not refer to the reviewers qualifications or the reviewers themselves directly. If any studies or guidelines support the medical necessity include them."""),
         ],
         "reason_for_denial": [
-            format_for_model(f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. What excuse did the insurance company use to deny the treatment?""")
+            format_for_model(f"""Given the following medical review findings:  {findings} and grounds were {grounds}{treatment_extra}. What excuse did the insurance company use to deny the treatment? Some common reasons are medical necessary, STEP treatment required, experimental treatments, or a procedure being considered cosmetic. These are just examples though, insurance companies can deny care for many reasons. What was the reason here?""")
         ],
         "treatment": [
-            format_for_model(f"""The independent medical review findings were {findings}. What was the treatment, procedure, therapy, or surgery denied?""")
+            format_for_model(f"""Based on the independent review findings: {findings}. What was the treatment, procedure, therapy, or surgery denied?""")
         ]
     }
 
@@ -197,16 +204,20 @@ def work_with_generative_remote():
         backoff.expo, requests.exceptions.RequestException, max_time=600
     )
     def make_request(model, prompt):
-        url = "https://api.perplexity.ai/chat/completions"
+        # Perplexity is an interesting backend for personal use.
+        # The inference costs are a little high though for full training data
+        # creation so look for whoever is cheapest when running in prod.
+        # deepinfra was cheap when working on this last. Always check TOS
+        # See https://artificialanalysis.ai/
+        url = os.getenv("BACKEND_PROVIDER", "https://api.perplexity.ai/chat/completions")
 
-        token = os.getenv("PERPLEXITY_API")
+        token = os.getenv("SECRET_BACKEND_TOKEN", os.getenv("PERPLEXITY_API"))
         if token is None:
             print("Error no Token provided for perplexity.")
 
         payload = {
             "model": model,
             "messages": [
-                {"role": "system", "content": "Be precise and concise."},
                 {"role": "user", "content": prompt},
             ],
         }
@@ -216,7 +227,8 @@ def work_with_generative_remote():
             "Authorization": f"Bearer {token}",
         }
 
-        time.sleep(random.randint(0, 10))
+        time.sleep(random.randint(0, 15))
+        print(f"Making request for {model} and {prompt}")
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
 
@@ -226,7 +238,13 @@ def work_with_generative_remote():
 
     # Note: when adding models make sure to add to the end of the list so that
     # we apply the new model to the old records.
-    models = ["mistral-7b-instruct", "openhermes-2-mistral-7b"]
+    models = [
+        #"mistral-7b-instruct",
+        #"openhermes-2-mistral-7b",
+        # When we don't want to bother with old models put in None so idxs remain consistent.
+        None,
+        None,
+        "mixtral-8x7b-instruct"]
 
     print("Generating prompts...")
     l = imrs.apply(generate_prompts, axis=1).tolist()
@@ -239,6 +257,10 @@ def work_with_generative_remote():
             mistr = ""
             if model_index > 0:
                 mistr = f"{model_index}-"
+            model_index = model_index + 1
+            if m is None:
+                print("Skipping disabled model.")
+                continue
             for response_type in r[1].keys():
                 i = 0
                 for v in r[1][response_type]:
@@ -256,7 +278,8 @@ def work_with_generative_remote():
                                 print(
                                     f"Skipping, found bad data in {r} for rt {response_type}"
                                 )
-            model_index = model_index + 1
+                    else:
+                        print(f"We already have good data for {target_file} skipping..")
 
 
 def work_with_generative_local():
@@ -266,19 +289,22 @@ def work_with_generative_local():
         #        "ausboss/llama-30b-supercot",
         #        "CalderaAI/30B-Lazarus",
         #        "tiiuae/falcon-40b-instruct",
-        "mistralai/Mixtral-8x7B-Instruct-v0.1",
-        "teknium/OpenHermes-2-Mistral-7B",
-        "TheBloke/OpenHermes-2-Mistral-7B-GPTQ",
-        "mistralai/Mistral-7B-v0.1",
-        "databricks/dolly-v2-12b",
-        "databricks/dolly-v2-7b",
-        "databricks/dolly-v2-3b",
+        ("mistralai/Mixtral-8x7B-Instruct-v0.1", 2),
+#        "teknium/OpenHermes-2-Mistral-7B",
+#        "TheBloke/OpenHermes-2-Mistral-7B-GPTQ",
+#        ("mistralai/Mistral-7B-v0.1", 0)
+#        "databricks/dolly-v2-12b",
+#        "databricks/dolly-v2-7b",
+#        "databricks/dolly-v2-3b",
     ]
 
     # We load the model first to make sure we can actually do magic
     instruct_pipeline = None
 
-    for model in candidate_models:
+    for (model, model_index) in candidate_models:
+        mistr = ""
+        if model_index > 0:
+            mistr = f"{model_index}-"
         try:
             tokenizer = AutoTokenizer.from_pretrained(model)
             print(f"Loading {model}\n")
@@ -349,9 +375,9 @@ def work_with_generative_local():
                         continue
                     i = i + 1
                     if not check_for_bad(response_type, r):
-                        print(f"Writing out to {idx}MAGIC{i}{response_type}.txt")
+                        print(f"Writing out to {idx}MAGIC{mistr}{i}{response_type}.txt")
                         with open(
-                            join(gen_loc, f"{idx}MAGIC{i}{response_type}.txt"), "w"
+                            join(gen_loc, f"{idx}MAGIC{mistr}{i}{response_type}.txt"), "w"
                         ) as f:
                             f.write(r)
                     else:
@@ -408,7 +434,7 @@ I am writing you to appeal claim [CLAIMNUMBER]. I believe that it is medically n
 
 
 print("Generative:")
-#work_with_generative_remote()
-work_with_generative_local()
+work_with_generative_remote()
+#work_with_generative_local()
 print("biogpt:")
 work_with_biogpt()
