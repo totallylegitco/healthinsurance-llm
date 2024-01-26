@@ -244,7 +244,7 @@ def work_with_generative_remote():
     models = [
         #"mistral-7b-instruct",
         #"openhermes-2-mistral-7b",
-        ("mixtral-8x7b-instruct", 3)]
+        ("mistralai/Mixtral-8x7B-Instruct-v0.1", 3)]
 
     print("Generating prompts...")
     l = imrs.apply(generate_prompts, axis=1).tolist()
