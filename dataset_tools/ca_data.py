@@ -244,18 +244,14 @@ def work_with_generative_remote():
     models = [
         #"mistral-7b-instruct",
         #"openhermes-2-mistral-7b",
-        # When we don't want to bother with old models put in None so idxs remain consistent.
-        None,
-        None,
-        "mixtral-8x7b-instruct"]
+        ("mixtral-8x7b-instruct", 3)]
 
     print("Generating prompts...")
     l = imrs.apply(generate_prompts, axis=1).tolist()
 
     for r in l:
         print(r[1])
-        model_index = 0
-        for m in models:
+        for (m, modexl_index) in models:
             # For the first model we don't add an idex but subsequent ones we do.
             mistr = ""
             if model_index > 0:
