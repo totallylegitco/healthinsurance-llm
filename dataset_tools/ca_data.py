@@ -201,7 +201,7 @@ def generate_prompts(imr, format_for_model = lambda x: x):
 
 def work_with_generative_remote():
     backend = os.getenv("BACKEND_PROVIDER", "https://api.perplexity.ai/chat/completions")
-    print("Using backend {backend}")
+    print(f"Using backend {backend}")
 
     @backoff.on_exception(
         backoff.expo, requests.exceptions.RequestException, max_time=600
