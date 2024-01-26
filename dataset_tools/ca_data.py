@@ -200,6 +200,9 @@ def generate_prompts(imr, format_for_model = lambda x: x):
 
 
 def work_with_generative_remote():
+    backend = os.getenv("BACKEND_PROVIDER", "https://api.perplexity.ai/chat/completions")
+    print("Using backend {backend}")
+
     @backoff.on_exception(
         backoff.expo, requests.exceptions.RequestException, max_time=600
     )
@@ -209,7 +212,7 @@ def work_with_generative_remote():
         # creation so look for whoever is cheapest when running in prod.
         # deepinfra was cheap when working on this last. Always check TOS
         # See https://artificialanalysis.ai/
-        url = os.getenv("BACKEND_PROVIDER", "https://api.perplexity.ai/chat/completions")
+        url = backend
 
         token = os.getenv("SECRET_BACKEND_TOKEN", os.getenv("PERPLEXITY_API"))
         if token is None:
