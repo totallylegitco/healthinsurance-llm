@@ -251,7 +251,7 @@ def work_with_generative_remote():
 
     for r in l:
         print(r[1])
-        for (m, modexl_index) in models:
+        for (m, model_index) in models:
             # For the first model we don't add an idex but subsequent ones we do.
             mistr = ""
             if model_index > 0:
