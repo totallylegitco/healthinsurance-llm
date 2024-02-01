@@ -279,18 +279,14 @@ def work_with_generative_remote():
                     idx = r[0]
                     target_file = join(gen_loc, f"{idx}MAGIC{mistr}{i}{response_type}.txt")
                     i = i + 1
-                    if not os.path.exists(target_file) or check_for_bad_file(response_type, target_file):
+                    if not os.path.exists(target_file):
                         response = make_request(m, v)
                         if not check_for_bad(response_type, response):
                             print(f"Writing out to {target_file}")
                             with open(target_file, "w") as f:
                                 f.write(response)
-                        else:
-                            print(
-                                f"Skipping, found bad data in {r} for rt {response_type}"
-                            )
                     else:
-                        print(f"We already have good data for {target_file} skipping..")
+                        print(f"We already good data for {target_file} skipping..")
 
 
 def work_with_generative_local():
