@@ -211,22 +211,25 @@ def generate_prompts(imr, format_for_model = lambda x: x):
 def work_with_generative_remote():
     backend = os.getenv("BACKEND_PROVIDER", "https://api.perplexity.ai/chat/completions")
     print(f"Using backend {backend}")
+    # Perplexity is an interesting backend for personal use.
+    # The inference costs are a little high though for full training data
+    # creation so look for whoever is cheapest when running in prod.
+    # deepinfra was cheap when working on this last. Always check TOS
+    # See https://artificialanalysis.ai/
+    url = backend
+
+    token = None
+    if backend == "https://api.perplexity.ai/chat/completions":
+        token = os.getenv("PERPLEXITY_API")
+    else:
+        token = os.getenv("SECRET_BACKEND_TOKEN")
+    if token is None:
+        raise Exception("Error no Token provided for inference.")
 
     @backoff.on_exception(
         backoff.expo, requests.exceptions.RequestException, max_time=600
     )
     def make_request(model, prompt):
-        # Perplexity is an interesting backend for personal use.
-        # The inference costs are a little high though for full training data
-        # creation so look for whoever is cheapest when running in prod.
-        # deepinfra was cheap when working on this last. Always check TOS
-        # See https://artificialanalysis.ai/
-        url = backend
-
-        token = os.getenv("SECRET_BACKEND_TOKEN", os.getenv("PERPLEXITY_API"))
-        if token is None:
-            print("Error no Token provided for perplexity.")
-
         payload = {
             "model": model,
             "messages": [
