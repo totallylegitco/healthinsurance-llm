@@ -164,7 +164,8 @@ def cleanup_json(data):
 
 swaps = {
     "general": [
-        ("Note that the information is inferred based on the reviewer's findings, but the language used is general rather than directly referencing the reviewer's findings.", "")
+        ("Note that the information is inferred based on the reviewer's findings, but the language used is general rather than directly referencing the reviewer's findings.", ""),
+        ("Based on the information provided, ", "")
     ],
     "denial": [
                 (
