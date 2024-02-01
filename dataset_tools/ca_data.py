@@ -242,7 +242,7 @@ def work_with_generative_remote():
             "Authorization": f"Bearer {token}",
         }
 
-        # time.sleep(random.randint(0, 2))
+        time.sleep(random.randint(0, 5))
         print(f"Making request for {model} and {prompt}")
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
