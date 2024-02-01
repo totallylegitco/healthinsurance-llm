@@ -242,13 +242,13 @@ def work_with_generative_remote():
             "Authorization": f"Bearer {token}",
         }
 
-        time.sleep(random.randint(0, 5))
         print(f"Making request for {model} and {prompt}")
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
 
         response_text = response.json()["choices"][0]["message"]["content"]
         print(f"Promxspt: {prompt}\nResponse text: {response_text}")
+        time.sleep(random.randint(0, 5))
         return response_text
 
     # Note: when adding models make sure to add to the end of the list so that

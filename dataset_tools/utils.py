@@ -176,6 +176,7 @@ swaps = {
         ("Note that the information is inferred based on the reviewer's findings, but the language used is general rather than directly referencing the reviewer's findings.", ""),
         ("Based on the information provided, the following factors from the patient's history appear to have been relevant in the determination of", ""),
         ("Based on the information provided, ", ""),
+        ("and the reviewer's clinical experience and expertise in treating such cases", ""),
     ],
     "denial": [
                 (
