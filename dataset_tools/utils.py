@@ -100,7 +100,7 @@ def fix_missing_colons(json_string):
 json_string = '{"name": John, "age": 30, country: null, "email": test@example.com}'
 fixed_json = fix_missing_quotes(json_string)
 
-maybe_bad_url_endings = re.compile("^(.*)[\.\:\;\,\?]+$")
+maybe_bad_url_endings = re.compile("^(.*)[\.\:\;\,\?\>]+$")
 
 common_bad_result = [
     "The page you are trying to reach is not available. Please check the URL and try again.",
