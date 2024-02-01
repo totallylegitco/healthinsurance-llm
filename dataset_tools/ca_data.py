@@ -210,17 +210,18 @@ def generate_prompts(imr, format_for_model=lambda x: x):
         ]
     }
 
+    known = {}
     if not is_unknown(treatment):
         del prompts["treatment"]
+        known["treatment"] = treatment
     if not is_unknown(diagnosis):
         del prompts["diagnosis"]
+        known["diagnosis"] = diagnosis
     if not is_unknown(grounds):
         del prompts["reason_for_denial"]
+        known["reason_for_denial"] = grounds
 
-    return (index, prompts,
-            {"diagnosis": diagnosis,
-             "treatment": treatment,
-             "reason_for_denial": grounds})
+    return (index, prompts, known)
 
 def work_with_generative_remote():
     backend = os.getenv("BACKEND_PROVIDER",
