@@ -166,9 +166,9 @@ def generate_prompts(imr, format_for_model = lambda x: x):
     index = imr["ReferenceID"]
     treatment_extra = ""
     if treatment is not None:
-        treatment_extra = "We also guessed at treatment of {treatment}."
+        treatment_extra = f"We also guessed at treatment of {treatment}."
     if diagnosis is not None:
-        diagnosis_extra = "We guessed at a diagnosis of {diagnosis}."
+        diagnosis_extra = f"We guessed at a diagnosis of {diagnosis}."
 
     prompts = {
         "denial": [
