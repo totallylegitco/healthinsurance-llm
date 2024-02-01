@@ -135,9 +135,9 @@ score_words = {
     "appeal": {
         "diagnosis": 10,
         "medically necessary": 20,
-        "as a language model": -100, # sample we've rejected these already
+        "as a language model": -100,  # sample we've rejected these already
         "appeal": 5,
-        "days": 10, # possible timeline reference
+        "days": 10,  # possible timeline reference
         "in-network": 10,
         "out-of-network": 10,
         "ACA": 20,
@@ -148,7 +148,7 @@ score_words = {
         "hypertension": 1,
         "Diabetes mellitus": 1,
         "Osteoarthritis": 1,
-        "llama llama": -100, # already rejected but sample of bad score
+        "llama llama": -100,  # already rejected but sample of bad score
     }
 }
 
@@ -161,6 +161,7 @@ min_lengths = {
 
 checked_urls = {}
 
+
 def choose_best(best_type, options, rejection=""):
     magic_words = {}
     rejection = rejection.lower()
@@ -168,7 +169,8 @@ def choose_best(best_type, options, rejection=""):
     if best_type in score_words:
         magic_words = score_words[best_type]
     if best_type in min_lengths:
-        min_length = min_lengths[best_type] 
+        min_length = min_lengths[best_type]
+
     def score(filename_appeal_text):
         filename, option_text = filename_appeal_text
         if option_text is None:
@@ -181,7 +183,7 @@ def choose_best(best_type, options, rejection=""):
         for url in urls:
             if url not in checked_urls:
                 checked_urls[url] = is_valid_url(url)
-            ok = checked_urls[url]                
+            ok = checked_urls[url]
             if ok:
                 score += 200 + len(url)
                 # trust .gov more links (nih, healthcare, etc.)
@@ -201,6 +203,7 @@ def choose_best(best_type, options, rejection=""):
         else:
             score += len(option_text)/100.0
         return score
+
     def top_of(scorer, options):
         top = None
         top_score = 0
@@ -245,7 +248,8 @@ for case_key, case in cases.items():
         history = choose_best("history", loaded_case["patient_history"], r)
         history_extra = f"\nWith the following patient history: {history}\n"
     if "medically_necessary" in loaded_case:
-        medically_necessary = choose_best("medically_necessary", loaded_case["medically_necessary"], r)
+        medically_necessary = choose_best(
+            "medically_necessary", loaded_case["medically_necessary"], r)
     # Some different system prompts to write out
     appeal_system = "You possess extensive medical expertise and enjoy crafting appeals for health insurance denials as a personal interest."
     medically_necessary_system = "You have experience reading insurance claims and helping people understand them"
@@ -264,13 +268,14 @@ for case_key, case in cases.items():
                 f"Given the provided denial: {r}\n{treatment_extra}{history_extra}{diagnosis_extra}\n Write an appeal in the style of patio11. Feel free to be verbose",
                 best_appeal)
         if (medically_necessary is not None and treatment is not None and
-            diagnosis is not None):
+                diagnosis is not None):
             write(
                 medically_necessary_system,
                 f"{history_extra}Why is {treatment} medically necessary for {diagnosis}?",
                 medically_necessary)
         if "reason_for_denial" in loaded_case:
-            reason_for_denial = choose_best("reason_for_denial", loaded_case["reason_for_denial"], r)
+            reason_for_denial = choose_best(
+                "reason_for_denial", loaded_case["reason_for_denial"], r)
             write(
                 reason_for_denial_system,
                 f"Given the provided denial: {r}\n Why was it denied?",
@@ -285,7 +290,6 @@ for case_key, case in cases.items():
                 diagnosis_system,
                 f"Given the provided denial: {r}\n What was the patients diagnosis?",
                 diagnosis)
-
 
 
 write_chemo_drug_records()

@@ -151,13 +151,15 @@ imrs = load_data(
     "./data_sources/ca-independent-medical-review-imr-determinations-trends-utf8.csv"
 )
 
+
 def generate_prompts_instruct(imr):
     def format_for_model(x):
         return f"<s>[INST]{x}[/INST]"
 
     return generate_prompts(imr, format_for_model=format_for_model)
 
-def generate_prompts(imr, format_for_model = lambda x: x):
+
+def generate_prompts(imr, format_for_model=lambda x: x):
     determination = imr["Determination"]
     treatment = get_treatment_from_imr(imr)
     diagnosis = get_diagnosis_from_imr(imr)
@@ -199,10 +201,12 @@ def generate_prompts(imr, format_for_model = lambda x: x):
             format_for_model(f"""Given the following medical review findings:  {findings} and grounds were {grounds}{treatment_extra}. What excuse did the insurance company use to deny the treatment? Some common reasons are medical necessary, STEP treatment required, experimental treatments, or a procedure being considered cosmetic. These are just examples though, insurance companies can deny care for many reasons. What was the reason here? Be concise and do not mention reviewer findings. Please summarize.""")
         ],
         "treatment": [
-            format_for_model(f"""Based on the independent review findings: {findings}{treatment_extra}{diagnosis_extra}. You do not need to stick to our initial guess. Be consise. For example if the treatment was LINX just write LINX. What was the treatment, procedure, therapy, or surgery denied?""")
+            format_for_model(
+                f"""Based on the independent review findings: {findings}{treatment_extra}{diagnosis_extra}. You do not need to stick to our initial guess. Be consise. For example if the treatment was LINX just write LINX. What was the treatment, procedure, therapy, or surgery denied?""")
         ],
         "diagnosis": [
-            format_for_model(f"""Based on the independent review findings: {findings}{treatment_extra}{diagnosis_extra}. You do not need to stick to our initial guess. Be consise, for example if the diagnosis was gastroesophageal reflux disease just write gastroesophageal reflux disease. What was the diagnosis (or NONE if there was none)?""")
+            format_for_model(
+                f"""Based on the independent review findings: {findings}{treatment_extra}{diagnosis_extra}. You do not need to stick to our initial guess. Be consise, for example if the diagnosis was gastroesophageal reflux disease just write gastroesophageal reflux disease. What was the diagnosis (or NONE if there was none)?""")
         ]
     }
 
@@ -216,7 +220,8 @@ def generate_prompts(imr, format_for_model = lambda x: x):
 
 
 def work_with_generative_remote():
-    backend = os.getenv("BACKEND_PROVIDER", "https://api.perplexity.ai/chat/completions")
+    backend = os.getenv("BACKEND_PROVIDER",
+                        "https://api.perplexity.ai/chat/completions")
     print(f"Using backend {backend}")
     # Perplexity is an interesting backend for personal use.
     # The inference costs are a little high though for full training data
@@ -290,7 +295,8 @@ def work_with_generative_remote():
             for response_type in r[1].keys():
                 i = 0
                 for v in r[1][response_type]:
-                    target_file = join(gen_loc, f"{idx}MAGIC{mistr}{i}{response_type}.txt")
+                    target_file = join(
+                        gen_loc, f"{idx}MAGIC{mistr}{i}{response_type}.txt")
                     i = i + 1
                     if not os.path.exists(target_file):
                         response = make_request(m, v)
@@ -298,7 +304,8 @@ def work_with_generative_remote():
                         with open(target_file, "w") as f:
                             f.write(response)
                     else:
-                        print(f"We already good data for {target_file} skipping..")
+                        print(
+                            f"We already good data for {target_file} skipping..")
 
 
 def work_with_generative_local():
@@ -309,12 +316,12 @@ def work_with_generative_local():
         #        "CalderaAI/30B-Lazarus",
         #        "tiiuae/falcon-40b-instruct",
         ("mistralai/Mixtral-8x7B-Instruct-v0.1", 3),
-#        "teknium/OpenHermes-2-Mistral-7B",
-#        "TheBloke/OpenHermes-2-Mistral-7B-GPTQ",
-#        ("mistralai/Mistral-7B-v0.1", 0)
-#        "databricks/dolly-v2-12b",
-#        "databricks/dolly-v2-7b",
-#        "databricks/dolly-v2-3b",
+        #        "teknium/OpenHermes-2-Mistral-7B",
+        #        "TheBloke/OpenHermes-2-Mistral-7B-GPTQ",
+        #        ("mistralai/Mistral-7B-v0.1", 0)
+        #        "databricks/dolly-v2-12b",
+        #        "databricks/dolly-v2-7b",
+        #        "databricks/dolly-v2-3b",
     ]
 
     # We load the model first to make sure we can actually do magic
@@ -362,7 +369,7 @@ def work_with_generative_local():
 
     for b in range(0, len(l), batch_size):
         print(f"Running batch {b}")
-        batch = l[b : b + batch_size]
+        batch = l[b: b + batch_size]
 
         for k in batch[0].keys():
             mybatch = list(map(lambda x: x[k], batch))
@@ -388,19 +395,22 @@ def work_with_generative_local():
                 start = start_idxs[ci]
                 ci = ci + 1
                 i = 3
-                local_results = results[start : start + len(batch_prompts)]
+                local_results = results[start: start + len(batch_prompts)]
                 for r in local_results:
                     if r is None:
                         continue
                     i = i + 1
                     if not check_for_bad(response_type, r):
-                        print(f"Writing out to {idx}MAGIC{mistr}{i}{response_type}.txt")
+                        print(
+                            f"Writing out to {idx}MAGIC{mistr}{i}{response_type}.txt")
                         with open(
-                            join(gen_loc, f"{idx}MAGIC{mistr}{i}{response_type}.txt"), "w"
+                            join(
+                                gen_loc, f"{idx}MAGIC{mistr}{i}{response_type}.txt"), "w"
                         ) as f:
                             f.write(r)
                     else:
-                        print(f"Skipping, found bad data in {r} for rt {response_type}")
+                        print(
+                            f"Skipping, found bad data in {r} for rt {response_type}")
 
 
 def work_with_biogpt():
@@ -440,9 +450,10 @@ I am writing you to appeal claim [CLAIMNUMBER]. I believe that it is medically n
 
     for i in range(0, len(imrs), batch_size):
         print(f"looping on batch {i}")
-        batch = imrs[i : i + batch_size]
+        batch = imrs[i: i + batch_size]
         batch_prompts = list(
-            filter(not_none, batch.apply(generate_biogpt_hacks, axis=1).tolist())
+            filter(not_none, batch.apply(
+                generate_biogpt_hacks, axis=1).tolist())
         )
         idxs = map(lambda r: r[0], batch)
         qs = map(lambda r: r[1], batch)
@@ -454,6 +465,6 @@ I am writing you to appeal claim [CLAIMNUMBER]. I believe that it is medically n
 
 print("Generative:")
 work_with_generative_remote()
-#work_with_generative_local()
+# work_with_generative_local()
 print("biogpt:")
 work_with_biogpt()

@@ -106,6 +106,7 @@ common_bad_result = [
     "The page you are trying to reach is not available. Please check the URL and try again.",
     "The requested article is not currently available on this site."]
 
+
 def is_valid_url(url):
     try:
         # Some folks don't like the default urllib UA.
@@ -118,7 +119,8 @@ def is_valid_url(url):
             result_text = result.read().decode('utf-8').lower()
             for bad_result_text in common_bad_result:
                 if bad_result_text.lower() in result_text:
-                    raise Exception(f"Found {bad_result_text} in {result_text}")
+                    raise Exception(
+                        f"Found {bad_result_text} in {result_text}")
         return True
     except Exception as e:
         groups = maybe_bad_url_endings.search(url)
@@ -165,11 +167,13 @@ def cleanup_json(data):
                 for line in data.split("\n"):
                     if ":" in line:
                         elems = line.split(":")
-                        result[de_json(elems[0])] = de_json(":".join(elems[1:]))
+                        result[de_json(elems[0])] = de_json(
+                            ":".join(elems[1:]))
                 if "condition" in result and "approval_reason" in result:
                     return result
                 else:
                     return None
+
 
 swaps = {
     "general": [
@@ -179,13 +183,13 @@ swaps = {
         ("and the reviewer's clinical experience and expertise in treating such cases", ""),
     ],
     "patient_history": [
-        ("There is no information provided about the patient's demographic details.", "") 
+        ("There is no information provided about the patient's demographic details.", "")
     ],
     "diagnosis": [
         ("The diagnosis is ", ""),
     ],
     "denial": [
-                (
+        (
             "The Health Plans denial was overturned due to the reviewers determining that the requested services were likely to be more beneficial for treatment of the enrollees medical condition than any available standard therapy.",
             "",
         ),
@@ -218,12 +222,13 @@ swaps = {
         ("The physician reviewer found that", "We determined that"),
         ("independent medical review has determined", "we have determined"),
         ("was indicated for this patient", "was not indicated for this patient"),
-        ("the requested .* is appropriate for this patient", "the request has been denied for this patient"),
+        ("the requested .* is appropriate for this patient",
+         "the request has been denied for this patient"),
         ("Final Result: The reviewers determined that.*", ""),
         ("reviewers determined that.*", ""),
         ("findings: .* physician reviewers.*", ""),
         ("Thank you for providing me with this information.", ""),
-        ("Consequently, the Health Plan's denial should be overturned." , ""),
+        ("Consequently, the Health Plan's denial should be overturned.", ""),
         ("According to recent medical literature, [^\.]*.", ""),
     ],
     "appeal": [
@@ -246,16 +251,18 @@ swaps = {
             "Therefore, the provided denial should be upheld.",
             "Therefore, the denial should be overturned.",
         ),
-        ("who is seeking authorization and coverage of", "I am seeking authorization and coverage of"),
-        ("Therefore, it may not be covered by insurance", "Regardless, it should be covered"),
+        ("who is seeking authorization and coverage of",
+         "I am seeking authorization and coverage of"),
+        ("Therefore, it may not be covered by insurance",
+         "Regardless, it should be covered"),
         ("Dear \[Medical Necessity\]", "Dear \[Insurance Company\],"),
         ("to the independent medical review findings", "to your decision"),
-        ("Thank you for providing me with this information." , ""),
+        ("Thank you for providing me with this information.", ""),
         ("The independent medical review findings of.*?:", ""),
         ("According to the independent medical review, ", ""),
         ("Hence,  concluded", ""),
-    ]        
-    }
+    ]
+}
 
 
 def cleanup_lt(lt, data):
@@ -280,15 +287,18 @@ with open("bad_appeal_strings.txt") as f:
     bad_appeal_strings = list(map(lambda f: f.lower(), f.read().split("\n")))
 
 with open("bad_medically_necessary_strings.txt") as f:
-    bad_medically_necessary_strings = list(map(lambda f: f.lower(), f.read().split("\n")))
+    bad_medically_necessary_strings = list(
+        map(lambda f: f.lower(), f.read().split("\n")))
 
 with open("bad_treatment_strings.txt") as f:
-    bad_treatment_strings = list(map(lambda f: f.lower(), f.read().split("\n")))
+    bad_treatment_strings = list(
+        map(lambda f: f.lower(), f.read().split("\n")))
 
 
 # Load some strings we know the current model puts in rejections that are bad right away
 with open("bad_rejection_strings.txt") as f:
-    bad_rejection_strings = list(map(lambda f: f.lower(), f.read().split("\n")))
+    bad_rejection_strings = list(
+        map(lambda f: f.lower(), f.read().split("\n")))
 
 bad_strings_dict = {
     "appeal": bad_appeal_strings,
@@ -296,14 +306,17 @@ bad_strings_dict = {
     "medically_necessary": bad_medically_necessary_strings,
     "treatment": bad_treatment_strings}
 
+
 def check_record(record):
     response_type = letter_type(record)
     return not check_for_bad_file(response_type, record)
+
 
 def check_for_bad_file(response_type, target):
     with open(target, 'r') as file:
         data = file.read().replace('\n', '')
         return check_for_bad(response_type, data)
+
 
 def check_for_bad(response_type, data):
     ld = data.lower()
@@ -311,7 +324,8 @@ def check_for_bad(response_type, data):
         bad_strings = bad_strings_dict[response_type]
         for b in bad_strings:
             if b != "" and b.lower() in data:
-                print(f"Rejecting {data} for {response_type} as it contains {b}")
+                print(
+                    f"Rejecting {data} for {response_type} as it contains {b}")
                 return True
             return False
     else:
@@ -343,7 +357,7 @@ def file_name_to_magic_score(filename):
                 return int(re.findall(r'\d+-', g)[0])
             except:
                 return 0
-        
+
 
 def file_name_to_case(filename):
     groups = magic_re.search(filename)
@@ -352,6 +366,7 @@ def file_name_to_case(filename):
     else:
         print(f"No group in {filename}")
         return None
+
 
 def letter_type(filename):
     groups = magic_re.search(filename)
