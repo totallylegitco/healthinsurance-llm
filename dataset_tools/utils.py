@@ -175,6 +175,20 @@ def cleanup_json(data):
                     return None
 
 
+def is_unkown(item):
+    if item is None:
+        return true
+    lr = item.lower()
+    if "unkown" in lr:
+        return True
+    elif lr == "other":
+        return True
+    elif lr == "":
+        return True
+    else:
+        return False
+
+
 swaps = {
     "general": [
         ("Note that the information is inferred based on the reviewer's findings, but the language used is general rather than directly referencing the reviewer's findings.", ""),

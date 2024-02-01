@@ -185,20 +185,20 @@ def generate_prompts(imr, format_for_model=lambda x: x):
         ],
         "appeal": [
             format_for_model(
-                f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. In your response you are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Do not include any reference to the reviewers or their findings. Use this information to write the original appeal by the patient. Keep in mind the appeal would be written before the appeal. Remember you are writing for yourself, not on behalf of anyone else. If any studies or guidelines support the medical necessity include them. Feel free to be verbose and start your appeal with Dear [Insurance Company];"""),
+                f"""The independent medical review findings were {findings} and grounds were {grounds}.{treatment_extra} In your response you are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Do not include any reference to the reviewers or their findings. Use this information to write the original appeal by the patient. Keep in mind the appeal would be written before the appeal. Remember you are writing for yourself, not on behalf of anyone else. If any studies or guidelines support the medical necessity include them. Feel free to be verbose and start your appeal with Dear [Insurance Company];"""),
             format_for_model(
                 f"""Given the following medical reviewer findings:\n{findings}{treatment_extra}{diagnosis_extra}\n Do not include any information about the reviewers' findings. Instead, consider the patient's personal experience, medical history, and reasons for seeking the requested medical coverage. Craft the appeal to express the patient's perspective and emphasize their need for the requested medical intervention without referencing the independent medical review outcomes. Omit any mention of the independent medical reviewers' assessments or findings as those happend later in the process. Feel free to be verbose and write in the style of patio11 or a bureaucrat like sir humphrey appleby. Remember you are writing for yourself, not on behalf of anyone else. If any studies or guidelines from the reviewers support the medical necessity include them."""),
         ],
         "medically_necessary": [
             format_for_model(
-                f"""Given the following medical review findings: {findings} and grounds were {grounds}{treatment_extra}. Why was the treatment considered medically necessary? Don't refer to the reviewers findings directly instead write in a general fashion. For example if the reviewers found that facial feminization surgery was needed to treat gender dysphoria based on WPATH guidelines you would write something like: Facial feminization surgery is medically necessary for gender dysphoria per the WPATH guidelines. Do not refer to the reviewers qualifications or the reviewers themselves directly. If any studies or guidelines are referenced that support the medical necessity include them but don't make up new ones."""),
+                f"""Given the following medical review findings: {findings} and grounds were {grounds}.{treatment_extra}. Why was the treatment considered medically necessary? Don't refer to the reviewers findings directly instead write in a general fashion. For example if the reviewers found that facial feminization surgery was needed to treat gender dysphoria based on WPATH guidelines you would write something like: Facial feminization surgery is medically necessary for gender dysphoria per the WPATH guidelines. Do not refer to the reviewers qualifications or the reviewers themselves directly. If any studies or guidelines are referenced that support the medical necessity include them but don't make up new ones."""),
         ],
         "patient_history": [
             format_for_model(
                 f"""Given the following medical review findings: {findings} and grounds were {grounds}{treatment_extra}. What were relevant factors of the patients history? Don't refer to the reviewers findings directly instead write in a general fashion. For example if the reviewers found the patient needed a brand name drug because the generics did not work you would write something like: Previous treatments including the frontline #nameofdrug# were not effective. Do not refer to the reviewers qualifications or the reviewers themselves directly. If you don't know write NONE or UNKNOWN. It's expected you won't have a full history so only write NONE or UNKNOWN if you can't extract any relevant history."""),
         ],
         "reason_for_denial": [
-            format_for_model(f"""Given the following medical review findings:  {findings} and grounds were {grounds}{treatment_extra}. What excuse did the insurance company use to deny the treatment? Some common reasons are medical necessary, STEP treatment required, experimental treatments, or a procedure being considered cosmetic. These are just examples though, insurance companies can deny care for many reasons. What was the reason here? Be concise and do not mention reviewer findings. Please summarize.""")
+            format_for_model(f"""Given the following medical review findings:  {findings} and grounds were {grounds}.{treatment_extra}. What excuse did the insurance company use to deny the treatment? Some common reasons are medical necessary, STEP treatment required, experimental treatments, or a procedure being considered cosmetic. These are just examples though, insurance companies can deny care for many reasons. What was the reason here? Be concise and do not mention reviewer findings. Please summarize.""")
         ],
         "treatment": [
             format_for_model(
@@ -210,14 +210,17 @@ def generate_prompts(imr, format_for_model=lambda x: x):
         ]
     }
 
-    if treatment is not None and treatment.lower() != "other":
+    if not is_unknown(treatment):
         del prompts["treatment"]
-    if diagnosis is not None and diagnosis.lower() != "other":
+    if not is_unknown(diagnosis):
         del prompts["diagnosis"]
+    if not is_unknown(grounds):
+        del prompts["reason_for_denial"]
 
-    return (index, prompts, {"diagnosis": diagnosis,
-                             "treatment": treatment})
-
+    return (index, prompts,
+            {"diagnosis": diagnosis,
+             "treatment": treatment,
+             "reason_for_denial": grounds})
 
 def work_with_generative_remote():
     backend = os.getenv("BACKEND_PROVIDER",
