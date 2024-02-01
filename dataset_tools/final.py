@@ -82,7 +82,7 @@ def write(system, instruction, result, context=""):
 
 def write_small(system, instruction, result, context=""):
     record = format(system, instruction, result, context)
-    oa.write(record)
+    so.write(record)
 
 
 def process_pdf(pdf):

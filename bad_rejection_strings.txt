@@ -28,3 +28,4 @@ I reviewed the independent medical review findings
 three physician reviewers
 two physician reviewers
 {treatment}
+The medical records reviewed, in conjunction with current evidence-based guidelines, support the necessity of the requested medication for this patient's treatment.

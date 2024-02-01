@@ -62,14 +62,7 @@ def load_record(filename):
         raw_data = f.read()
     data = parse_record(raw_data)
     lt = letter_type(filename)
-    if lt == "appeal":
-        return cleanup_appeal(data)
-    elif lt == "rejection":
-        return cleanup_denial(data)
-    elif lt == "json":
-        return cleanup_json(data)
-    else:
-        return data
+    return cleanup_lt(lt, data)
 
 
 def remove_control_characters(s):
@@ -169,10 +162,12 @@ def cleanup_json(data):
                 else:
                     return None
 
-
-def cleanup_denial(data):
-    swap = [
-        (
+swaps = {
+    "general": [
+        ("Note that the information is inferred based on the reviewer's findings, but the language used is general rather than directly referencing the reviewer's findings.", "")
+    ],
+    "denial": [
+                (
             "The Health Plans denial was overturned due to the reviewers determining that the requested services were likely to be more beneficial for treatment of the enrollees medical condition than any available standard therapy.",
             "",
         ),
@@ -212,18 +207,8 @@ def cleanup_denial(data):
         ("Thank you for providing me with this information.", ""),
         ("Consequently, the Health Plan's denial should be overturned." , ""),
         ("According to recent medical literature, [^\.]*.", ""),
-    ]
-    old_data = ""
-    while old_data != data:
-        old_data = data
-        for o, r in swap:
-            data = re.sub(o, r, data, flags=re.IGNORECASE)
-
-    return data
-
-
-def cleanup_appeal(data):
-    swap = [
+    ],
+    "appeal": [
         ("Dear Independent Medical Reviewers", "Dear [Insurance Company];"),
         ("coverage has been approved.", "coverage should be approved."),
         ("The final determination was that ", ""),
@@ -251,11 +236,22 @@ def cleanup_appeal(data):
         ("The independent medical review findings of.*?:", ""),
         ("According to the independent medical review, ", ""),
         ("Hence,  concluded", ""),
-    ]
+    ]        
+    }
+
+
+def cleanup_lt(lt, data):
+    if lt == json:
+        return cleanup_json(data)
+    my_swaps = {}
+    my_swaps = swaps["general"]
+    if lt in swaps:
+        my_swaps += swaps[lt]
+
     old_data = ""
     while old_data != data:
         old_data = data
-        for o, r in swap:
+        for o, r in my_swaps:
             data = re.sub(o, r, data, flags=re.IGNORECASE)
 
     return data
