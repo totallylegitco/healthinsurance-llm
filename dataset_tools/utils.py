@@ -1,7 +1,12 @@
+import urllib
 import json
 import requests
 import re
 import unicodedata
+
+magic_re = re.compile(
+    r".*/(.*?)(MAGIC[0-9]|FARTS[0-9]*|farts[0-9]|)_*(appeal|rejection|denial|json|medically_necessary)\d*.txt"
+)
 
 
 def training_cleanup_appeal(text):
@@ -44,51 +49,11 @@ def training_cleanup_rejection(text):
     return cleanup_denial(text)
 
 
-def letter_type(filename):
-    if filename.endswith("_rejection.txt"):
-        return "rejection"
-    elif filename.endswith("denial.txt"):
-        return "rejection"
-    elif filename.endswith("json.txt"):
-        return "json"
-    elif filename.endswith("medically_necessary.txt"):
-        return "medically_necessary.txt"
-    elif filename.endswith("treatment.txt"):
-        return "treatment"
-    else:
-        return "appeal"
-
-
-def check_record(filename):
-    with open(filename, encoding="utf-8") as f:
-        data = f.read().lower()
-        if letter_type(filename) == "appeal":
-            return not (check_for_bad_appeal(data) or check_for_invalid_urls(data))
-        elif letter_type(filename) == "rejection":
-            return not check_for_bad_rejection(data)
-        else:
-            return False
-
-
 def check_for_invalid_urls(data):
     urls = re.findall(r"(https?://\S+)", data)
     for u in urls:
-        try:
-            response = requests.get(u)
-        except Exception as e1:
-            # For cases where the url is at the end of a sentence
-            # Try and see if it exists without the last after . part
-            try:
-                u2 = re.sub(r"(.*)\..*?$", r"\1", u)
-                if u2 != u:
-                    response = requests.get(u2)
-                else:
-                    return True
-            except Exception as e2:
-                print(
-                    f'Failed to get "{u}" (or "{u2}") dropping from candidates. {e1} {e2}'
-                )
-                return True
+        if not is_valid_url(u):
+            return True
     return False
 
 
@@ -141,6 +106,24 @@ def fix_missing_colons(json_string):
 # Example usage:
 json_string = '{"name": John, "age": 30, country: null, "email": test@example.com}'
 fixed_json = fix_missing_quotes(json_string)
+
+maybe_bad_url_endings = re.compile("^(.*)[\.\:\;\,\?]+$")
+
+def is_valid_url(url):
+    try:
+        # Some folks don't like the default urllib UA.
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36'
+        }
+        request = urllib.request.Request(url, headers=headers)
+        result = urllib.request.urlopen(request)
+        return True
+    except urllib.error.HTTPError as e:
+        groups = maybe_bad_url_endings.search(url)
+        if groups is not None:
+            return is_valid_url(groups.group(1))
+        else:
+            print(f"Bad url {url} e {e} with no bad to strip")
 
 
 def cleanup_json(data):
@@ -241,23 +224,8 @@ def cleanup_denial(data):
 
 def cleanup_appeal(data):
     swap = [
-        ("On behalf of the patient, we are requesting", "I am requesting"),
-        ("we are appealing the", "I am appealing the"),
-        ("An appeal has been filed regarding", "I am appealing"),
-        ("I am writing this appeal on behalf of [^\.]* who has", "I have"),
-        ("I am writing on behalf of \[.*?\]", "I am writing to appeal"),
-        ("We would like to request ", "I am requesting "),
-        ("I am writing this appeal on behalf of [^\.]*\.", ""),
-        ("was considered medically necessary", "is considered medically necessary"),
-        ("As an AI language model", ""),
-        ("\W+ of \W+ reviewers (determined|found) that", "It is believed that "),
-        ("\W+ of \W+ reviewers (determined|found)", "It is believed "),
-        ("the reviewer", " "),
-        ("Therefore, the reviewer concludes that", "That should "),
-        ("As an expert in the treatment of my medical condition and knowledgeable about the proposed treatment through recent or current actual clinical experience treating those with a similar medical condition,", ""),
         ("Dear Independent Medical Reviewers", "Dear [Insurance Company];"),
         ("coverage has been approved.", "coverage should be approved."),
-        ("Sincerely, Doctor", "Sincerely, [YOURNAME]"),
         ("The final determination was that ", ""),
         ("We reviewed the medical records of patients", "In patients"),
         ("We conducted a retrospective cohort", "In a"),
@@ -266,62 +234,23 @@ def cleanup_appeal(data):
         ("< / ABSTRACT >", ""),
         ("  ", " "),
         ("\.\.", "."),
-        ("was overturned", "should be overturned"),
-        ("is not medically necessary", "is medically necessary"),
-        ("this surgery is not necessary", "this surgery is necessary"),
-        (
-            "and is solely based on appeasing an overly-sufiisticated view of what women look like.",
-            "",
-        ),
         (
             "trans men have well-developed jawlines",
             "trans women have well-developed jawlines",
-        ),
-        (
-            "The requested procedures are aesthetic procedures to make the patient more attractive in her new gender.",
-            "",
         ),
         ("The provided denial was overturned", "The denial should be overturned"),
         (
             "Therefore, the provided denial should be upheld.",
             "Therefore, the denial should be overturned.",
         ),
-        ("denial should be upheld", "denial should be overturned"),
-        (
-            "did not have improved mental health outcomes compared to those who had",
-            "have improved mental health outcomes compared to those who had",
-        ),
-        ("I am writing this appeal on behalf of \[patient's full name\]", "I"),
-        ("I am writing this appeal on behalf of \[patient's name\]", "I"),
-        ("I am writing on behalf of \[patient's name\]", "I"),
-        ("I am writing on behalf of \[patient's full name\]", "I"),
-        ("\[patient's name\]'s medical", "my medical"),
-        ("\[Patient's Name\] has", "I have"),
         ("who is seeking authorization and coverage of", "I am seeking authorization and coverage of"),
-        ("\[patient's full name\]", "I"),
-        ("\[patient's name\]", "I"),
-        ("As an advocate on behalf of the patient,", ""),
-        ("As an advocate on behalf of the patient", "I"),
-        ("The records provided for review document that this patient", "I"),
-        ("The patient has", "I have"),
-        ("The patient's", "My"),
-        ("the patient's", "my"),
-        ("this patient's", "my"),
         ("Therefore, it may not be covered by insurance", "Regardless, it should be covered"),
-        ("for the patient", "for me"),
-        ("The patient ", "I "),
-        ("of his", "my"),
-        ("of her", "my"),
         ("Dear \[Medical Necessity\]", "Dear \[Insurance Company\],"),
         ("to the independent medical review findings", "to your decision"),
         ("Thank you for providing me with this information." , ""),
         ("The independent medical review findings of.*?:", ""),
         ("According to the independent medical review, ", ""),
         ("Hence,  concluded", ""),
-        ("After reviewing the independently reviewed findings, we found that", "")
-        ("this letter on behalf of \[Patient Name\]", "")
-        ("As an advocate on behalf of I,", ""),
-        ("As an advocate on behalf of I", "I"),
     ]
     old_data = ""
     while old_data != data:
@@ -353,6 +282,10 @@ bad_strings_dict = {
     "medically_necessary": bad_medically_necessary_strings,
     "treatment": bad_treatment_strings}
 
+def check_record(record):
+    response_type = letter_type(record)
+    return check_for_bad_file(response_type, record)
+
 def check_for_bad_file(response_type, target):
     with open(target, 'r') as file:
         data = file.read().replace('\n', '')
@@ -382,12 +315,32 @@ def not_none(i):
     return i is not None
 
 
+def file_name_to_magic_score(filename):
+    # Newer models get a higher bias, humans get most.
+    groups = magic_re.search(filename)
+    if groups is not None:
+        g = groups.group(2)
+        # Humans get max bonus
+        if "MAGIC" not in g:
+            return 1000000
+        else:
+            return int(re.findall(r'\d+', g)[0])
+
 def file_name_to_case(filename):
     groups = magic_re.search(filename)
     if groups is not None:
-        g = groups.group(1)
+        return groups.group(1)
+    else:
+        print(f"No group in {filename}")
+        return None
+
+def letter_type(filename):
+    groups = magic_re.search(filename)
+    if groups is not None:
+        g = groups.group(3)
         if g == "denial":
             return "rejection"
+        print(f"g is {g}")
         return g
     else:
         print(f"No group in {filename}")

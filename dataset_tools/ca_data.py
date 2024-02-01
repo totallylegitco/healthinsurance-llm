@@ -166,40 +166,46 @@ def generate_prompts(imr, format_for_model = lambda x: x):
     index = imr["ReferenceID"]
     treatment_extra = ""
     if treatment is not None:
-        treatment_extra = f" and treatment {treatment}"
+        treatment_extra = "We also guessed at treatment of {treatment}."
+    if diagnosis is not None:
+        diagnosis_extra = "We guessed at a diagnosis of {diagnosis}."
 
     prompts = {
         "denial": [
             format_for_model(
-                f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. Use this information to write the original insurance denial from the insurance company. Do not include any reference to the reviewers or their findings, instead focus on what the insurance company would have written denying the patients first claim. Keep in mind the denial would have been written before the independent review. Feel free to be verbose. You may wish to start your denial as a letter with \"Dear [Member];\""""),
+                f"""The independent medical review findings were {findings} and grounds were {grounds}.{treatment_extra} Use this information to write the original insurance denial from the insurance company. Do not include any reference to the reviewers or their findings, instead focus on what the insurance company would have written denying the patients first claim. Keep in mind the denial would have been written before the independent review. Feel free to be verbose. You may wish to start your denial as a letter with \"Dear [Member];\""""),
             format_for_model(
                 f"""Given the following medical reviewer findings:
 
-{findings}
+{findings}{treatment_extra}{diagnosis_extra}
                 Compose an initial rejection letter on behalf of the insurance company in response to a patient's request for medical coverage. Include specific details about the patient's case, addressing the reasons for denial without referencing any independent medical review findings. Ensure the letter is concise, professional, and clearly communicates the grounds for the denial. Focus on policy justifications, eligibility criteria, medical necessity, or any other relevant factors that would lead to the initial rejection. Omit any mention of the independent medical reviewers' assessments or findings as those happend later in the process.""")
         ],
         "appeal": [
             format_for_model(
                 f"""The independent medical review findings were {findings} and grounds were {grounds}{treatment_extra}. In your response you are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Do not include any reference to the reviewers or their findings. Use this information to write the original appeal by the patient. Keep in mind the appeal would be written before the appeal. Remember you are writing for yourself, not on behalf of anyone else. If any studies or guidelines support the medical necessity include them. Feel free to be verbose and start your appeal with Dear [Insurance Company];"""),
             format_for_model(
-                f"""Given the following medical reviewer findings:\n{findings}\n Do not include any information about the reviewers' findings. Instead, consider the patient's personal experience, medical history, and reasons for seeking the requested medical coverage. Craft the appeal to express the patient's perspective and emphasize their need for the requested medical intervention without referencing the independent medical review outcomes. Omit any mention of the independent medical reviewers' assessments or findings as those happend later in the process. Feel free to be verbose and write in the style of patio11 or a bureaucrat like sir humphrey appleby. Remember you are writing for yourself, not on behalf of anyone else. If any studies or guidelines support the medical necessity include them."""),
+                f"""Given the following medical reviewer findings:\n{findings}{treatment_extra}{diagnosis_extra}\n Do not include any information about the reviewers' findings. Instead, consider the patient's personal experience, medical history, and reasons for seeking the requested medical coverage. Craft the appeal to express the patient's perspective and emphasize their need for the requested medical intervention without referencing the independent medical review outcomes. Omit any mention of the independent medical reviewers' assessments or findings as those happend later in the process. Feel free to be verbose and write in the style of patio11 or a bureaucrat like sir humphrey appleby. Remember you are writing for yourself, not on behalf of anyone else. If any studies or guidelines support the medical necessity include them."""),
         ],
         "medically_necessary": [
             format_for_model(
                 f"""Given the following medical review findings: {findings} and grounds were {grounds}{treatment_extra}. Why was the treatment considered medically necessary? Don't refer to the reviewers findings directly instead write in a general fashion. For example if the reviewers found that facial feminization surgery was needed to treat gender dysphoria based on WPATH guidelines you would write something like: Facial feminization surgery is medically necessary for gender dysphoria per the WPATH guidelines. Do not refer to the reviewers qualifications or the reviewers themselves directly. If any studies or guidelines support the medical necessity include them."""),
         ],
+        "patient_history": [
+            format_for_model(
+                f"""Given the following medical review findings: {findings} and grounds were {grounds}{treatment_extra}. What were relevant factors of the patients history? Don't refer to the reviewers findings directly instead write in a general fashion. For example if the reviewers found the patient needed a brand name drug because the generics did not work you would write something like: Previous treatments including the frontline #nameofdrug# were not effective. Do not refer to the reviewers qualifications or the reviewers themselves directly. If you don't know write NONE or UNKNOWN."""),
+        ],
         "reason_for_denial": [
             format_for_model(f"""Given the following medical review findings:  {findings} and grounds were {grounds}{treatment_extra}. What excuse did the insurance company use to deny the treatment? Some common reasons are medical necessary, STEP treatment required, experimental treatments, or a procedure being considered cosmetic. These are just examples though, insurance companies can deny care for many reasons. What was the reason here? Be concise and do not mention reviewer findings.""")
         ],
         "treatment": [
-            format_for_model(f"""Based on the independent review findings: {findings}. What was the treatment, procedure, therapy, or surgery denied? Be concise and do not mention reviewer findings.""")
+            format_for_model(f"""Based on the independent review findings: {findings}{treatment_extra}{diagnosis_extra}. You do not need to stick to our initial guess. What was the treatment, procedure, therapy, or surgery denied?""")
         ],
-        "relevant_medical_history": [
-            format_for_model(f"""Based on the independent review findings: {findings}. What was the patients relevant medical history? Be concise and do not mention reviewer findings.""")
+        "diagnosis": [
+            format_for_model(f"""Based on the independent review findings: {findings}{treatment_extra}{diagnosis_extra}. You do not need to stick to our initial guess. What was the diagnosis (or NONE if there was none)?""")
         ]
     }
 
-    return (index, prompts)
+    return (index, prompts, diagnosis)
 
 
 def work_with_generative_remote():

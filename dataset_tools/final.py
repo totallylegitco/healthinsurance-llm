@@ -10,10 +10,6 @@ from PyPDF2 import PdfReader
 
 max_answer_len = 20480
 
-magic_re = re.compile(
-    r".*/(.*?)(MAGIC[0-9]|FARTS[0-9]*|)_*(appeal|rejection|denial|json|medically_necessary).txt"
-)
-
 with open("header.txt") as x:
     header = x.read()
 with open("alt_header.txt") as x:
@@ -56,56 +52,22 @@ for f in filter(check_record, data_files):
 # This is going to be an explosion! But intentional.
 recommend_regex = re.compile(r"recommends* ([^.]+)\.", re.IGNORECASE)
 short_recommendations = set()
-alpaca = open("out/train_alpaca.jsonl", "w")
-# alpaca.write("[")
-alpaca_smaller = open("out/train_alpaca_smaller.jsonl", "w")
-# alpaca_smaller.write("[")
 
-
-first_alpaca = True
-first_alpaca_small = True
 
 so = open("out/train_smaller.jsonl", "w")
 o = open("out/train.jsonl", "w")
 
 
-def format_dolly(instruction, result, context):
-    record = json.dumps(
-        {
-            "instruction": instruction,
-            "context": context,
-            "response": result[0:max_answer_len],
-            "category": "open_qa",
-        }
-    )
-    record.replace("\n", " ")
-    return record + "\n"
-
-
-def write(instruction, result, context=""):
-    write_dolly(instruction, result, context=context)
-    write_alpaca(instruction, result, context=context)
-
-
-def write_small(instruction, result, context=""):
-    write_dolly_small(instruction, result, context=context)
-    write_alpaca_small(instruction, result, context=context)
-
-
-def write_dolly_small(instruction, result, context=""):
-    so.write(format_dolly(instruction, result, context))
-
-
-def write_dolly(instruction, result, context=""):
-    o.write(format_dolly(instruction, result, context))
-
-
-def format_alpaca(instruction, result, context=""):
-    system = "<<SYS>>You possess extensive medical expertise and enjoy crafting appeals for health insurance denials as a personal interest.<</SYS>>"
+def format(system, instruction, result, context=""):
+    # Handle system
+    if system is None:
+        system = ""
+    if len(system) > 0:
+        if "<<SYS>>" not in system:
+            system = f"<<SYS>>{system}<</SYS>>"
     alpaca_record = json.dumps(
         {
             "instruction": "[INST] " + system + instruction + " " + context + "[/INST]",
-            "response": result[0:max_answer_len],
             "output": result[0:max_answer_len],
         }
     )
@@ -113,27 +75,18 @@ def format_alpaca(instruction, result, context=""):
     return alpaca_record + "\n"
 
 
-def write_alpaca(instruction, result, context=""):
-    global first_alpaca
-    if first_alpaca:
-        first_alpaca = False
-#    else:
-#        alpaca.write(",")
-    alpaca_record = format_alpaca(instruction, result, context)
-    alpaca.write(alpaca_record)
+def write(system, instruction, result, context=""):
+    record = format(system, instruction, result, context)
+    o.write(record)
 
 
-def write_alpaca_small(instruction, result, context=""):
-    global first_alpaca_small
-    if first_alpaca_small:
-        first_alpaca_small = False
-    #else:
-    #    alpaca_smaller.write(",")
-    alpaca_record = format_alpaca(instruction, result, context)
-    alpaca_smaller.write(alpaca_record)
+def write_small(system, instruction, result, context=""):
+    record = format(system, instruction, result, context)
+    oa.write(record)
 
 
 def process_pdf(pdf):
+    system = "You are a helpful assistant."
     print(f"Loading {pdf}")
     reader = PdfReader(pdf)
     c = 0
@@ -157,13 +110,12 @@ def process_pdf(pdf):
                 short_recommendations.add(short)
                 #                instruction = f"What is one of the recommendations in {pdf}?"
                 #                write_alpaca(instruction, result)
-                #                write_dolly(instruction, result)
                 recs.add(result)
 
     prompt = f"What are the recommendations in {pdf}"
     expect = "-\n".join(recs)
-    write(prompt, expect)
-    write_small(prompt, expect)
+    write(system, prompt, expect)
+    write_small(system, prompt, expect)
 
 
 for pdf in pdfs:
@@ -171,120 +123,169 @@ for pdf in pdfs:
 
 
 def write_chemo_drug_records():
+    system = "You are a medical assistant with knowledge of chemo. Be concise."
     parsed_chemo = pd.read_csv("./data_sources/parsed_chemo_drugs.csv")
     pcl = parsed_chemo.iterrows()
 
     for i, r in pcl:
-        write(r["question"], result=r["answer"], context="")
+        write(system, r["question"], result=r["answer"], context="")
 
 
-def write_mt_sample_contexts():
-    mt = pd.read_csv("./data_sources/mtsamples2.csv")
-    mtl = mt.iterrows()
+score_words = {
+    "appeal": {
+        "diagnosis": 10,
+        "medically necessary": 20,
+        "as a language model": -100, # sample we've rejected these already
+        "appeal": 5,
+        "days": 10, # possible timeline reference
+        "in-network": 10,
+        "out-of-network": 10,
+        "ACA": 20,
+        "ERISA": 20,
+        "healthcare.gov": 20,
+    },
+    "diagnosis": {
+        "hypertension": 1,
+        "Diabetes mellitus": 1,
+        "Osteoarthritis": 1,
+        "llama llama": -100, # already rejected but sample of bad score
+    }
+}
 
-    for i, r in mtl:
-        write(mt_header, r["transcription"], context=r["description"])
+min_lengths = {
+    "diagnosis": 10,
+    "medically_necessary": 20,
+    "treatment": 15,
+    "patient_history": 20,
+}
 
+checked_urls = {}
 
-def write_10k():
-    ic = pd.read_csv("./data_sources/ic10k.csv")
-    icl = ic.iterrows()
-
-    for i, r in icl:
-        write(r["input"], r["answer_icliniq"])
+def choose_best(best_type, options, rejection=""):
+    magic_words = {}
+    rejection = rejection.lower()
+    min_length = 5
+    if best_type in score_words:
+        magic_words = score_words[best_type]
+    if best_type in min_lengths:
+        min_length = min_lengths[best_type] 
+    def score(filename_appeal_text):
+        filename, option_text = filename_appeal_text
+        if option_text is None:
+            return -10000000000000000000000000
+        option_text = option_text.lower()
+        score = 0
+        score += file_name_to_magic_score(filename)
+        # We don't expect the appeal to show in in the denial & we want long appeals
+        urls = re.findall("(?P<url>https?://[^\s]+)", option_text)
+        for url in urls:
+            if url not in checked_urls:
+                checked_urls[url] = is_valid_url(url)
+            ok = checked_urls[url]                
+            if ok:
+                score += 200 + len(url)
+                # trust .gov more links (nih, healthcare, etc.)
+                if ".gov" in url:
+                    score += 100
+            else:
+                print(f"Found bad URL {url}")
+                score -= 100
+        if best_type != "appeal":
+            if option_text in rejection:
+                score = score + 20
+            # Prefer shorter options over a minimum length
+            if len(option_text) < min_length:
+                score = score + 0
+            else:
+                score -= len(option_text)/100.0
+        else:
+            score += len(option_text)/100.0
+        return score
+    def top_of(scorer, options):
+        top = None
+        top_score = 0
+        for o in options:
+            option_score = score(o)
+            if top is None:
+                top = o
+                top_score = option_score
+            elif option_score > top_score:
+                top = o
+                top_score = option_score
+        return top
+    top = top_of(score, options)
+    # Drop the filename
+    if top is None:
+        return top
+    else:
+        return top[1]
 
 
 for case_key, case in cases.items():
-    try:
-        for jf in case["json"]:
-            j = load_record(jf)
-            if j is None:
-                print(f"No json found in {jf}?")
-                continue
-            # Check and make sure we have some of the data we expect.
-            if (
-                "treatment" not in j
-                or j["treatment"] is None
-                or j["treatment"]
-                == "The condition and the treatment should not be the same, if either is unknown put in null."
-                or len(j["treatment"]) < 3
-            ):
-                continue
-            treatment = j["treatment"]
-            if type(treatment) == type([]):
-                treatment = " ".join(treatment)
-            approval_reason = None
-            if (
-                "approval_reason" not in j
-                or j["approval_reason"] is None
-                or len(j["approval_reason"]) < 3
-                or j["approval_reason"]
-                == "The physician reviewer found that the requested equipment is clinically indicated and the most appropriate equipment for treatment of the patients condition."
-            ):
-                continue
-            else:
-                approval_reason = j["approval_reason"]
+    loaded_case = {}
+    # Load the data for the case
+    for key in case.keys():
+        loaded_case[key] = list(
+            map(lambda x: (x, load_record(x)), case[key]))
+    print(f"Processing case {loaded_case}")
+    # We select the best appeal / hist and medically necessary regardless of the specific rejection since this information may not be present in the denial
+    best_appeal = None
+    if "appeal" in loaded_case:
+        best_appeal = choose_best("appeal", loaded_case["appeal"])
+    history_extra = ""
+    diagnosis_extra = ""
+    treatment = None
+    history = None
+    medically_necessary = None
+    diagnosis = None
+    if "diagnosis" in loaded_case:
+        diagnosis = choose_best("diagnosis", loaded_case["diagnosis"], r)
+        diagnosis_extra = f"\nWith a diagnosis of {diagnosis}\n"
+    if "patient_history" in loaded_case:
+        history = choose_best("history", loaded_case["patient_history"], r)
+        history_extra = f"\nWith the following patient history: {history}\n"
+    if "medically_necessary" in loaded_case:
+        medically_necessary = choose_best("medically_necessary", loaded_case["medically_necessary"], r)
+    # Some different system prompts to write out
+    appeal_system = "You possess extensive medical expertise and enjoy crafting appeals for health insurance denials as a personal interest."
+    medically_necessary_system = "You have experience reading insurance claims and helping people understand them"
+    # For rejection, we want all rejections
+    for (filename, r) in loaded_case["rejection"]:
+        # Select the treatment only if it is present in the rejection
+        # to (reduce hallucinations).
+        treatment_extra = ""
+        treatment = None
+        if "treatment" in loaded_case:
+            treatment = choose_best("treatment", loaded_case["treatment"], r)
+            treatment_extra = f"\nFor the provided treatment {treatment}\n"
+        if best_appeal is not None:
+            write(
+                appeal_system,
+                f"Given the provided denial: {r}\n{treatment_extra}{history_extra}{diagnosis_extra}\n Write an appeal in the style of patio11. Feel free to be verbose",
+                best_appeal)
+        if (medically_necessary is not None and treatment is not None and
+            diagnosis is not None):
+            write(
+                medically_necessary_system,
+                f"{history_extra}Why is {treatment} medically necessary for {diagnosis}?",
+                medically_necessary)
+        if "reason_for_denial" in loaded_case:
+            reason_for_denial = choose_best("reason_for_denial", loaded_case["reason_for_denail"], r)
+            write(
+                reason_for_denial_system,
+                f"Given the provided denial: {r}\n Why was it denied?",
+                reason_for_denial)
+        if treatment is not None:
+            write(
+                treatment_system,
+                f"Given the provided denial: {r}\n What was the treatment or procedure denied?",
+                treatment)
+        if diagnosis is not None:
+            write(
+                diagnosis_system,
+                f"Given the provided denial: {r}\n What was the patients diagnosis?",
+                diagnosis)
 
-            if treatment is not None:
-                for r in case["rejection"]:
-                    print(f"Processing {r}")
-                    rejection = load_record(r)
-                    if r is None or r == "null":
-                        continue
-                    write(
-                        "What was the medical condition in the following rejection:",
-                        r,
-                        treatment)
-            if "condition" in j and j["condition"] is not None:
-                condition = j["condition"]
-                if type(condition) == type([]):
-                    condition = " ".join(condition)
-                write(
-                    "Why should the the provided treatment be covered.",
-                    approval_reason,
-                    treatment + " for " + condition,
-                )
-            else:
-                print(f"No condition in {jf}")
-                write(
-                    "Why should the the provided treatment be covered.",
-                    approval_reason,
-                    treatment,
-                )
-            if (
-                "initial_denial_reason" in j
-                and j["initial_denial_reason"] != "N/A"
-                and j["initial_denial_reason"] is not None
-                and len(j["initial_denial_reason"]) > 10
-            ):
-                write(
-                    f"Why should the provided denial of {treatment} be overturned?",
-                    j["approval_reason"],
-                    j["initial_denial_reason"],
-                )
-    except Exception as e:
-        print(f"Exception {e} while processing case {case}")
-        raise e
-
-    try:
-        for r in case["rejection"]:
-            print(f"Processing {r}")
-            rejection = load_record(r)
-            if r is None or r == "null":
-                continue
-            for a in case["appeal"]:
-                appeal = load_record(a)
-                if a is None or a == "null" or a == "" or len(a) < 10:
-                    continue
-                write(header, appeal, rejection)
-                if "MAGIC" not in r:
-                    write_small(header, appeal, rejection)
-
-    except Exception as e:
-        print(f"Exception {e} while processing case {case}")
-        raise e
 
 
 write_chemo_drug_records()
-#alpaca.write("]")
-#alpaca_smaller.write("]")
