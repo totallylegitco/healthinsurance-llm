@@ -195,13 +195,13 @@ def generate_prompts(imr, format_for_model = lambda x: x):
                 f"""Given the following medical review findings: {findings} and grounds were {grounds}{treatment_extra}. What were relevant factors of the patients history? Don't refer to the reviewers findings directly instead write in a general fashion. For example if the reviewers found the patient needed a brand name drug because the generics did not work you would write something like: Previous treatments including the frontline #nameofdrug# were not effective. Do not refer to the reviewers qualifications or the reviewers themselves directly. If you don't know write NONE or UNKNOWN."""),
         ],
         "reason_for_denial": [
-            format_for_model(f"""Given the following medical review findings:  {findings} and grounds were {grounds}{treatment_extra}. What excuse did the insurance company use to deny the treatment? Some common reasons are medical necessary, STEP treatment required, experimental treatments, or a procedure being considered cosmetic. These are just examples though, insurance companies can deny care for many reasons. What was the reason here? Be concise and do not mention reviewer findings.""")
+            format_for_model(f"""Given the following medical review findings:  {findings} and grounds were {grounds}{treatment_extra}. What excuse did the insurance company use to deny the treatment? Some common reasons are medical necessary, STEP treatment required, experimental treatments, or a procedure being considered cosmetic. These are just examples though, insurance companies can deny care for many reasons. What was the reason here? Be concise and do not mention reviewer findings. Please summarize.""")
         ],
         "treatment": [
-            format_for_model(f"""Based on the independent review findings: {findings}{treatment_extra}{diagnosis_extra}. You do not need to stick to our initial guess. What was the treatment, procedure, therapy, or surgery denied?""")
+            format_for_model(f"""Based on the independent review findings: {findings}{treatment_extra}{diagnosis_extra}. You do not need to stick to our initial guess. Be consise. For example if the treatment was LINX just write LINX. What was the treatment, procedure, therapy, or surgery denied?""")
         ],
         "diagnosis": [
-            format_for_model(f"""Based on the independent review findings: {findings}{treatment_extra}{diagnosis_extra}. You do not need to stick to our initial guess. What was the diagnosis (or NONE if there was none)?""")
+            format_for_model(f"""Based on the independent review findings: {findings}{treatment_extra}{diagnosis_extra}. You do not need to stick to our initial guess. Be consise, for example if the diagnosis was gastroesophageal reflux disease just write gastroesophageal reflux disease. What was the diagnosis (or NONE if there was none)?""")
         ]
     }
 
