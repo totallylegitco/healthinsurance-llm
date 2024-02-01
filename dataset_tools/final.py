@@ -270,7 +270,7 @@ for case_key, case in cases.items():
                 f"{history_extra}Why is {treatment} medically necessary for {diagnosis}?",
                 medically_necessary)
         if "reason_for_denial" in loaded_case:
-            reason_for_denial = choose_best("reason_for_denial", loaded_case["reason_for_denail"], r)
+            reason_for_denial = choose_best("reason_for_denial", loaded_case["reason_for_denial"], r)
             write(
                 reason_for_denial_system,
                 f"Given the provided denial: {r}\n Why was it denied?",
