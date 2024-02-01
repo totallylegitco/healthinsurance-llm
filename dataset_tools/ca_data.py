@@ -166,7 +166,7 @@ def generate_prompts(imr, format_for_model = lambda x: x):
     index = imr["ReferenceID"]
     treatment_extra = ""
     if treatment is not None:
-        treatment_extra = " and treatment {treatment}"
+        treatment_extra = f" and treatment {treatment}"
 
     prompts = {
         "denial": [
@@ -189,10 +189,13 @@ def generate_prompts(imr, format_for_model = lambda x: x):
                 f"""Given the following medical review findings: {findings} and grounds were {grounds}{treatment_extra}. Why was the treatment considered medically necessary? Don't refer to the reviewers findings directly instead write in a general fashion. For example if the reviewers found that facial feminization surgery was needed to treat gender dysphoria based on WPATH guidelines you would write something like: Facial feminization surgery is medically necessary for gender dysphoria per the WPATH guidelines. Do not refer to the reviewers qualifications or the reviewers themselves directly. If any studies or guidelines support the medical necessity include them."""),
         ],
         "reason_for_denial": [
-            format_for_model(f"""Given the following medical review findings:  {findings} and grounds were {grounds}{treatment_extra}. What excuse did the insurance company use to deny the treatment? Some common reasons are medical necessary, STEP treatment required, experimental treatments, or a procedure being considered cosmetic. These are just examples though, insurance companies can deny care for many reasons. What was the reason here?""")
+            format_for_model(f"""Given the following medical review findings:  {findings} and grounds were {grounds}{treatment_extra}. What excuse did the insurance company use to deny the treatment? Some common reasons are medical necessary, STEP treatment required, experimental treatments, or a procedure being considered cosmetic. These are just examples though, insurance companies can deny care for many reasons. What was the reason here? Be concise and do not mention reviewer findings.""")
         ],
         "treatment": [
-            format_for_model(f"""Based on the independent review findings: {findings}. What was the treatment, procedure, therapy, or surgery denied?""")
+            format_for_model(f"""Based on the independent review findings: {findings}. What was the treatment, procedure, therapy, or surgery denied? Be concise and do not mention reviewer findings.""")
+        ],
+        "relevant_medical_history": [
+            format_for_model(f"""Based on the independent review findings: {findings}. What was the patients relevant medical history? Be concise and do not mention reviewer findings.""")
         ]
     }
 
@@ -230,7 +233,7 @@ def work_with_generative_remote():
             "Authorization": f"Bearer {token}",
         }
 
-        time.sleep(random.randint(0, 15))
+        # time.sleep(random.randint(0, 2))
         print(f"Making request for {model} and {prompt}")
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
@@ -242,9 +245,11 @@ def work_with_generative_remote():
     # Note: when adding models make sure to add to the end of the list so that
     # we apply the new model to the old records.
     models = [
-        #"mistral-7b-instruct",
-        #"openhermes-2-mistral-7b",
-        ("mistralai/Mixtral-8x7B-Instruct-v0.1", 3)]
+        #("mistral-7b-instruct", 0),
+        #("openhermes-2-mistral-7b", 1),
+        #("mistralai/Mixtral-8x7B-Instruct-v0.1", 3)
+        ("mixtral-8x7b-instruct", 3),
+    ]
 
     print("Generating prompts...")
     l = imrs.apply(generate_prompts, axis=1).tolist()
@@ -288,7 +293,7 @@ def work_with_generative_local():
         #        "ausboss/llama-30b-supercot",
         #        "CalderaAI/30B-Lazarus",
         #        "tiiuae/falcon-40b-instruct",
-        ("mistralai/Mixtral-8x7B-Instruct-v0.1", 2),
+        ("mistralai/Mixtral-8x7B-Instruct-v0.1", 3),
 #        "teknium/OpenHermes-2-Mistral-7B",
 #        "TheBloke/OpenHermes-2-Mistral-7B-GPTQ",
 #        ("mistralai/Mistral-7B-v0.1", 0)
