@@ -264,7 +264,6 @@ def work_with_generative_remote():
     l = imrs.apply(generate_prompts, axis=1).tolist()
 
     for r in l:
-        print(r[1])
         for (m, model_index) in models:
             # For the first model we don't add an idex but subsequent ones we do.
             mistr = ""
@@ -280,17 +279,16 @@ def work_with_generative_remote():
                     idx = r[0]
                     target_file = join(gen_loc, f"{idx}MAGIC{mistr}{i}{response_type}.txt")
                     i = i + 1
-                    if not os.path.exists(target_file) or not check_for_bad_file(response_type, target_file):
+                    if not os.path.exists(target_file) or check_for_bad_file(response_type, target_file):
                         response = make_request(m, v)
                         if not check_for_bad(response_type, response):
-                            if not check_for_bad(response_type, response):
-                                print(f"Writing out to {target_file}")
-                                with open(target_file, "w") as f:
-                                    f.write(response)
-                            else:
-                                print(
-                                    f"Skipping, found bad data in {r} for rt {response_type}"
-                                )
+                            print(f"Writing out to {target_file}")
+                            with open(target_file, "w") as f:
+                                f.write(response)
+                        else:
+                            print(
+                                f"Skipping, found bad data in {r} for rt {response_type}"
+                            )
                     else:
                         print(f"We already have good data for {target_file} skipping..")
 

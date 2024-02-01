@@ -178,6 +178,9 @@ swaps = {
         ("Based on the information provided, ", ""),
         ("and the reviewer's clinical experience and expertise in treating such cases", ""),
     ],
+    "diagnosis": [
+        ("The diagnosis is ", ""),
+    ],
     "denial": [
                 (
             "The Health Plans denial was overturned due to the reviewers determining that the requested services were likely to be more beneficial for treatment of the enrollees medical condition than any available standard therapy.",
@@ -292,12 +295,12 @@ bad_strings_dict = {
 
 def check_record(record):
     response_type = letter_type(record)
-    return check_for_bad_file(response_type, record)
+    return not check_for_bad_file(response_type, record)
 
 def check_for_bad_file(response_type, target):
     with open(target, 'r') as file:
         data = file.read().replace('\n', '')
-        return not check_for_bad(response_type, data)
+        return check_for_bad(response_type, data)
 
 def check_for_bad(response_type, data):
     ld = data.lower()
@@ -305,6 +308,7 @@ def check_for_bad(response_type, data):
         bad_strings = bad_strings_dict[response_type]
         for b in bad_strings:
             if b != "" and b.lower() in data:
+                print(f"Rejecting {data} for {response_type} as it contains {b}")
                 return True
             return False
     else:
