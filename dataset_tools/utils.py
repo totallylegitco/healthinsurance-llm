@@ -102,6 +102,10 @@ fixed_json = fix_missing_quotes(json_string)
 
 maybe_bad_url_endings = re.compile("^(.*)[\.\:\;\,\?]+$")
 
+common_bad_result = [
+    "The page you are trying to reach is not available. Please check the URL and try again.",
+    "The requested article is not currently available on this site."]
+
 def is_valid_url(url):
     try:
         # Some folks don't like the default urllib UA.
@@ -110,8 +114,13 @@ def is_valid_url(url):
         }
         request = urllib.request.Request(url, headers=headers)
         result = urllib.request.urlopen(request)
+        if ".pdf" not in url:
+            result_text = result.read().decode('utf-8').lower()
+            for bad_result_text in common_bad_result:
+                if bad_result_text.lower() in result_text:
+                    raise Exception(f"Found {bad_result_text} in {result_text}")
         return True
-    except urllib.error.HTTPError as e:
+    except Exception as e:
         groups = maybe_bad_url_endings.search(url)
         if groups is not None:
             return is_valid_url(groups.group(1))
