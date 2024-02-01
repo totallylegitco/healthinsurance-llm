@@ -183,7 +183,11 @@ swaps = {
         ("and the reviewer's clinical experience and expertise in treating such cases", ""),
     ],
     "patient_history": [
-        ("There is no information provided about the patient's demographic details.", "")
+        ("There is no information provided about the patient's demographic details.", ""),
+        ("In summary, the relevant factors of the patient's history include symptoms or findings suggestive of ", ""),
+        ("In summary, the relevant factors of the patient's history include", ""),
+        ("The relevant factors of the patient's history include:", ""),
+        ("Based on this information, it can be inferred that the patient's relevant history include", ""),
     ],
     "diagnosis": [
         ("The diagnosis is ", ""),
