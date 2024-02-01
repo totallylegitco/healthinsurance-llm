@@ -165,9 +165,10 @@ def generate_prompts(imr, format_for_model = lambda x: x):
     grounds = imr["Type"]
     index = imr["ReferenceID"]
     treatment_extra = ""
-    if treatment is not None:
+    diagnosis_extra = ""
+    if treatment is not None and treatment.lower() != "other":
         treatment_extra = f"We also guessed at treatment of {treatment}."
-    if diagnosis is not None:
+    if diagnosis is not None and diagnosis.lower() != "other":
         diagnosis_extra = f"We guessed at a diagnosis of {diagnosis}."
 
     prompts = {
@@ -205,7 +206,13 @@ def generate_prompts(imr, format_for_model = lambda x: x):
         ]
     }
 
-    return (index, prompts, diagnosis)
+    if treatment is not None and treatment.lower() != "other":
+        del prompts["treatment"]
+    if diagnosis is not None and diagnosis.lower() != "other":
+        del prompts["diagnosis"]
+
+    return (index, prompts, {"diagnosis": diagnosis,
+                             "treatment": treatment})
 
 
 def work_with_generative_remote():
@@ -264,27 +271,32 @@ def work_with_generative_remote():
     l = imrs.apply(generate_prompts, axis=1).tolist()
 
     for r in l:
+        idx = r[0]
         for (m, model_index) in models:
             # For the first model we don't add an idex but subsequent ones we do.
             mistr = ""
             if model_index > 0:
                 mistr = f"{model_index}-"
             model_index = model_index + 1
+            print(r[2])
+            for (k, v) in r[2].items():
+                target_file = join(gen_loc, f"{idx}EXTRACTED{k}.txt")
+                if not os.path.exists(target_file):
+                    with open(target_file, "w") as f:
+                        f.write(v)
             if m is None:
                 print("Skipping disabled model.")
                 continue
             for response_type in r[1].keys():
                 i = 0
                 for v in r[1][response_type]:
-                    idx = r[0]
                     target_file = join(gen_loc, f"{idx}MAGIC{mistr}{i}{response_type}.txt")
                     i = i + 1
                     if not os.path.exists(target_file):
                         response = make_request(m, v)
-                        if not check_for_bad(response_type, response):
-                            print(f"Writing out to {target_file}")
-                            with open(target_file, "w") as f:
-                                f.write(response)
+                        print(f"Writing out to {target_file}")
+                        with open(target_file, "w") as f:
+                            f.write(response)
                     else:
                         print(f"We already good data for {target_file} skipping..")
 

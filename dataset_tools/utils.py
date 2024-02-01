@@ -5,7 +5,7 @@ import re
 import unicodedata
 
 magic_re = re.compile(
-    r".*/(.*?)(MAGIC[0-9]|FARTS[0-9]*|farts[0-9]|)_*(appeal|rejection|denial|json|medically_necessary)\d*.txt"
+    r".*/(.*?)(MAGIC[0-9]|FARTS[0-9]*|farts[0-9]|EXTRACTED)_*(appeal|rejection|denial|json|medically_necessary)\d*.txt"
 )
 
 
@@ -178,6 +178,9 @@ swaps = {
         ("Based on the information provided, ", ""),
         ("and the reviewer's clinical experience and expertise in treating such cases", ""),
     ],
+    "patient_history": [
+        ("There is no information provided about the patient's demographic details.", "") 
+    ],
     "diagnosis": [
         ("The diagnosis is ", ""),
     ],
@@ -333,10 +336,14 @@ def file_name_to_magic_score(filename):
     if groups is not None:
         g = groups.group(2)
         # Humans get max bonus
-        if "MAGIC" not in g:
+        if "MAGIC" not in g and "EXTRACTED" not in g:
             return 1000000
         else:
-            return int(re.findall(r'\d+', g)[0])
+            try:
+                return int(re.findall(r'\d+-', g)[0])
+            except:
+                return 0
+        
 
 def file_name_to_case(filename):
     groups = magic_re.search(filename)
