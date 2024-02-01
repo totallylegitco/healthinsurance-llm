@@ -175,7 +175,7 @@ def cleanup_json(data):
                     return None
 
 
-def is_unkown(item):
+def is_unknown(item):
     if item is None:
         return true
     lr = item.lower()
