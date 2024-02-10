@@ -44,6 +44,10 @@ llm = OpenAILike(
 print(f"WTTF: {llm.api_base}")
 print(llm.complete("San Francisco:"))
 
+sentence_context = ServiceContext.from_defaults(
+    llm = llm
+)
+
 print("Downloading loaders (e.g. random untrusted code from the web?)")
 
 PubmedReader = download_loader("PubmedReader")
@@ -101,6 +105,6 @@ docs = pdf_docs + pubmed_docs
 
 print("Ok party time!")
 
-index = VectorStoreIndex.from_documents(docs, show_progress=True)
+index = VectorStoreIndex.from_documents(docs, show_progress=True, service_context=sentence_context)
 
 index.storage_context.persist()
