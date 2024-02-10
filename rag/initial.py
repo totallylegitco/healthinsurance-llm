@@ -41,24 +41,39 @@ pubmed_loader = PubmedReader()
 
 pdf_loader = PDFReader()
 
-def load_pdf_doc(filename):
-    print(f"Loading pdf doc {filename}")
-    return pdf_loader.load_data(filename)
+def load_pdf_docs():
 
-pdf_docs = list(map(load_pdf_doc, glob("data_sources/*.pdf")))
+    def load_pdf_doc(filename):
+        print(f"Loading pdf doc {filename}")
+        return pdf_loader.load_data(filename)
+
+    pdf_docs = list(map(load_pdf_doc, glob("data_sources/*.pdf")))
+
+    return pdf_docs
+
+
+pdf_docs = load_pdf_docs()
 
 print("Constructing pubmed queries")
+
 
 def echo(x):
     print(x)
     return x
 
-treatments = set(map(echo, map(load_record, glob("generated-llm-data/*treatment.txt"))))
-diagnosis = set(map(echo, map(load_record, glob("generated-llm-data/*diagnosis.txt"))))
 
-queries = treatments.union(diagnosis)
+def load_pubmed_docs():
+    # For now do nothing
+    return []
+    treatments = set(map(echo, map(load_record, glob("generated-llm-data/*treatment.txt"))))
+    diagnosis = set(map(echo, map(load_record, glob("generated-llm-data/*diagnosis.txt"))))
 
-pubmed_docs = list(map(lambda x: pubmed_loader(x), queries))
+    queries = treatments.union(diagnosis)
+
+    pubmed_docs = list(map(lambda x: pubmed_loader(x), queries))
+
+
+pubmud_docs = load_pubmed_docs()
 
 docs = pdf_docs + pubmed_docs
 
