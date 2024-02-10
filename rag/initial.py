@@ -1,6 +1,6 @@
 from llama_index import download_loader, StorageContext, load_index_from_storage, VectorStoreIndex, SimpleDirectoryReader, set_global_tokenizer, ServiceContext
 from llama_index.embeddings import HuggingFaceEmbedding
-from llama_index.llms.openai_like import OpenAILike
+from llama_index.llms.vllm import Vllm
 from glob import glob
 from dataset_tools.utils import load_record
 import os
@@ -22,26 +22,12 @@ global_llm = os.getenv(
     "GLOBAL_MODEL",
     os.getenv("LLM", "TotallyLegitCo/fighthealthinsurance_model_v0.3"))
 
-llm_server_base = os.getenv("OPENAI_BASE_API")
+set_global_tokenizer(
+    AutoTokenizer.from_pretrained(global_llm).encode
+)
 
-print(f"Using {local_llm} / {global_llm} with backend {llm_server_base}")
+llm = Vllm(model=local_llm)
 
-try:
-    set_global_tokenizer(
-        AutoTokenizer.from_pretrained(global_llm).encode
-    )
-except:
-    time.sleep(5)
-    set_global_tokenizer(
-        AutoTokenizer.from_pretrained(global_llm).encode
-    )
-
-llm = OpenAILike(
-    model=local_llm,
-    api_key=os.getenv("OPENAI_API_KEY"),
-    api_base=llm_server_base)
-
-print(f"WTTF: {llm.api_base}")
 print(llm.complete("San Francisco:"))
 
 sentence_context = ServiceContext.from_defaults(
