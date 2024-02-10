@@ -46,7 +46,7 @@ print(f"WTTF: {llm.api_base}")
 
 sentence_context = ServiceContext.from_defaults(
     llm = llm,
-    embed_model="local:BAAI/bge-large-en",
+    embed_model="local",
 )
 
 print("Downloading loaders (e.g. random untrusted code from the web?)")
