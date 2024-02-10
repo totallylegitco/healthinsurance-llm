@@ -41,6 +41,9 @@ llm = OpenAILike(
     api_key=os.getenv("OPENAI_API_KEY"),
     api_base=llm_server_base)
 
+print(f"WTTF: {llm.api_base}")
+print(llm.complete("San Francisco:"))
+
 print("Downloading loaders (e.g. random untrusted code from the web?)")
 
 PubmedReader = download_loader("PubmedReader")
