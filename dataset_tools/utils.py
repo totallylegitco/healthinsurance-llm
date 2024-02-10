@@ -205,9 +205,16 @@ swaps = {
     ],
     "diagnosis": [
         ("The diagnosis is ", ""),
+        ("The diagnosis was ", ""),
+        ("The diagnosis in this case is ", ""),
     ],
     "treatment": [
         ("The treatment denied in this case is ", ""),
+        ("The treatment denied in this case was ", ""),
+        ("The treatment in this case is ", ""),
+        ("The treatment in this case was ", ""),
+        ("The treatment was ", ""),
+        ("The treatment is ", ""),
     ],
     "denial": [
         (

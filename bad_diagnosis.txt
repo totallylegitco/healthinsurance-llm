@@ -2,3 +2,5 @@ NONE
 Good guess
 llama llama
 not mentioned
+not explicitly stated in the review findings
+The review does not specifically mention a diagnosis
