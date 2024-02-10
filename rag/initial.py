@@ -6,6 +6,7 @@ from dataset_tools.utils import load_record
 import os
 from transformers import AutoTokenizer
 import time
+from itertools import chain
 
 print("Loading LLM (ish)")
 
@@ -26,6 +27,7 @@ except:
         AutoTokenizer.from_pretrained(global_llm).encode
     )
 
+llm = OpenAILike(model=local_llm)
 
 print("Downloading loaders (e.g. random untrusted code from the web?)")
 
@@ -43,16 +45,22 @@ def load_pdf_doc(filename):
     print(f"Loading pdf doc {filename}")
     return pdf_loader.load_data(filename)
 
-pdf_docs = map(load_pdf_doc, glob("data_sources/*.pdf"))
+pdf_docs = list(map(load_pdf_doc, glob("data_sources/*.pdf")))
+
+print("Constructing pubmed queries")
 
 treatments = set(map(load_record, glob("generated-llm-data/*treatment.txt")))
 diagnosis = set(map(load_record, glob("generated-llm-data/*diagnosis.txt")))
 
 queries = treatments.union(diagnosis)
 
-pubmed_docs = map(lambda x: pubmed_loader(x), queries)    
-    
+pubmed_docs = list(map(lambda x: pubmed_loader(x), queries))
 
-llm = OpenAILike(model=local_llm)
+docs = pdf_docs + pubmed_docs
+
+
+print("Ok party time!")
+
+index = VectorStoreIndex.from_documents(docs, show_progress=True)
 
 index.storage_context.persist()
