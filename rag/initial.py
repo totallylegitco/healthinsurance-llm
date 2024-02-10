@@ -8,6 +8,9 @@ from transformers import AutoTokenizer
 import time
 from itertools import chain
 
+flat_map = lambda f, xs: [y for ys in xs for y in f(ys)]
+
+
 print("Loading LLM (ish)")
 
 local_llm = os.getenv(
@@ -47,7 +50,7 @@ def load_pdf_docs():
         print(f"Loading pdf doc {filename}")
         return pdf_loader.load_data(filename)
 
-    pdf_docs = list(map(load_pdf_doc, glob("data_sources/*.pdf")))
+    pdf_docs = list(flat_map(load_pdf_doc, glob("data_sources/*.pdf")))
 
     return pdf_docs
 
@@ -70,7 +73,7 @@ def load_pubmed_docs():
 
     queries = treatments.union(diagnosis)
 
-    pubmed_docs = list(map(lambda x: pubmed_loader(x), queries))
+    pubmed_docs = list(flat_map(lambda x: pubmed_loader(x), queries))
 
 
 pubmed_docs = load_pubmed_docs()
