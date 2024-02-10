@@ -210,7 +210,7 @@ swaps = {
         ("the enrollees ", ""),
     ],
     "treatment": [
-        ("The treatment denied was an ", "")
+        ("The treatment denied was an ", ""),
         ("The treatment denied is ", ""),
         ("the enrollees ", ""),
         ("The treatment denied in this case is ", ""),
