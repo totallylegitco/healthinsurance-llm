@@ -1,3 +1,5 @@
+The reviewing physician found that
+based on the independent review findings.
 None is medically necessary
 is medically necessary for None
 I would like to speak with a manager to discuss this decision.
@@ -37,6 +39,8 @@ The independent medical review findings suggest
 necessary.e question:
 Three physician reviewers have independently concluded that
 Three physician reviewers conducted an
+based on the independent review findings.
+The physician reviewer found that in this case,
 based on the independent medical review conducted by three physician reviewers
 An appeal is being made by a
 The patient was informed of a review process involving

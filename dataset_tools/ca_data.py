@@ -302,7 +302,8 @@ def work_with_generative_remote():
                     target_file = join(
                         gen_loc, f"{idx}MAGIC{mistr}{i}{response_type}.txt")
                     i = i + 1
-                    if not os.path.exists(target_file) and (response_type != "appeal" or not check_for_bad_file(response_type, response)):
+#                    if not os.path.exists(target_file) and (response_type != "appeal" or not check_for_bad_file(response_type, response)):
+                    if not os.path.exists(target_file) and not check_for_bad_file(response_type, response):
                         response = make_request(m, v)
                         print(f"Writing out to {target_file}")
                         with open(target_file, "w") as f:
