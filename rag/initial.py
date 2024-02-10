@@ -1,4 +1,4 @@
-from llama_index import download_loader, StorageContext, load_index_from_storage, VectorStoreIndex, SimpleDirectoryReader, set_global_tokenizer
+from llama_index import download_loader, StorageContext, load_index_from_storage, VectorStoreIndex, SimpleDirectoryReader, set_global_tokenizer, ServiceContext
 from llama_index.embeddings import HuggingFaceEmbedding
 from llama_index.llms.openai_like import OpenAILike
 from glob import glob
