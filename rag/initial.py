@@ -73,7 +73,7 @@ def load_pubmed_docs():
     pubmed_docs = list(map(lambda x: pubmed_loader(x), queries))
 
 
-pubmud_docs = load_pubmed_docs()
+pubmed_docs = load_pubmed_docs()
 
 docs = pdf_docs + pubmed_docs
 
