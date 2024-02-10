@@ -7,6 +7,8 @@ import os
 from transformers import AutoTokenizer
 import time
 from itertools import chain
+import backoff
+import requests
 
 flat_map = lambda f, xs: [y for ys in xs for y in f(ys)]
 
@@ -19,6 +21,10 @@ local_llm = os.getenv(
 global_llm = os.getenv(
     "GLOBAL_MODEL",
     os.getenv("LLM", "TotallyLegitCo/fighthealthinsurance_model_v0.3"))
+
+llm_server_base = os.getenv("OPENAI_BASE_API")
+
+print(f"Using {local_llm} / {global_llm} with backend {llm_server_base}")
 
 try:
     set_global_tokenizer(
@@ -68,12 +74,18 @@ def echo(x):
 def load_pubmed_docs():
     # For now do nothing
     return []
+    @backoff.on_exception(
+        backoff.expo, requests.exceptions.RequestException, max_time=600
+    )
+    def load_for_query(q):
+        return pubmed_loader.load_data(q)
+
     treatments = set(map(echo, map(load_record, glob("generated-llm-data/*treatment.txt"))))
     diagnosis = set(map(echo, map(load_record, glob("generated-llm-data/*diagnosis.txt"))))
 
     queries = treatments.union(diagnosis)
 
-    pubmed_docs = list(flat_map(lambda x: pubmed_loader(x), queries))
+    pubmed_docs = list(flat_map(load_for_query, queries))
 
 
 pubmed_docs = load_pubmed_docs()
