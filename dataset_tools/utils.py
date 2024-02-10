@@ -206,6 +206,9 @@ swaps = {
     "diagnosis": [
         ("The diagnosis is ", ""),
     ],
+    "treatment": [
+        ("The treatment denied in this case is ", ""),
+    ],
     "denial": [
         (
             "The Health Plans denial was overturned due to the reviewers determining that the requested services were likely to be more beneficial for treatment of the enrollees medical condition than any available standard therapy.",
@@ -298,7 +301,6 @@ def cleanup_lt(lt, data):
             data = re.sub(o, r, data, flags=re.IGNORECASE)
 
     return data
-
 
 # Load some strings we know the current model puts in appeals that are bad right away
 with open("bad_appeal_strings.txt") as f:
