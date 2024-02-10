@@ -36,7 +36,10 @@ except:
         AutoTokenizer.from_pretrained(global_llm).encode
     )
 
-llm = OpenAILike(model=local_llm)
+llm = OpenAILike(
+    model=local_llm,
+    api_key=os.getenv("OPENAI_API_KEY"),
+    api_base=llm_server_base)
 
 print("Downloading loaders (e.g. random untrusted code from the web?)")
 
