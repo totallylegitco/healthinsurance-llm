@@ -49,8 +49,12 @@ pdf_docs = list(map(load_pdf_doc, glob("data_sources/*.pdf")))
 
 print("Constructing pubmed queries")
 
-treatments = set(map(load_record, glob("generated-llm-data/*treatment.txt")))
-diagnosis = set(map(load_record, glob("generated-llm-data/*diagnosis.txt")))
+def echo(x):
+    print(x)
+    return x
+
+treatments = set(map(echo, map(load_record, glob("generated-llm-data/*treatment.txt"))))
+diagnosis = set(map(echo, map(load_record, glob("generated-llm-data/*diagnosis.txt"))))
 
 queries = treatments.union(diagnosis)
 
