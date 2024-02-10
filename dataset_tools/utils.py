@@ -321,6 +321,9 @@ with open("bad_treatment_strings.txt") as f:
     bad_treatment_strings = list(
         map(lambda f: f.lower(), f.read().split("\n")))
 
+with open("bad_diagnosis_strings.txt") as f:
+    bad_diagnosis_strings = list(
+        map(lambda f: f.lower(), f.read().split("\n")))
 
 # Load some strings we know the current model puts in rejections that are bad right away
 with open("bad_rejection_strings.txt") as f:
@@ -331,7 +334,8 @@ bad_strings_dict = {
     "appeal": bad_appeal_strings,
     "rejection": bad_rejection_strings,
     "medically_necessary": bad_medically_necessary_strings,
-    "treatment": bad_treatment_strings}
+    "treatment": bad_treatment_strings,
+    "diagnosis": bad_diagnosis_strings}
 
 
 def check_record(record):
