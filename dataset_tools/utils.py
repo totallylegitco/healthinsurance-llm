@@ -5,7 +5,7 @@ import re
 import unicodedata
 
 magic_re = re.compile(
-    r".*/(.*?)(MAGIC[0-9]|FARTS[0-9]*|farts[0-9]|EXTRACTED)_*(appeal|rejection|denial|json|medically_necessary)\d*.txt"
+    r".*/(.*?)(MAGIC[0-9]*-*[0-9]*|FARTS[0-9]*|farts[0-9]|EXTRACTED)_*(appeal|rejection|denial|json|medically_necessary|treatment|diagnosis)\d*.txt"
 )
 
 
@@ -401,7 +401,6 @@ def letter_type(filename):
         g = groups.group(3)
         if g == "denial":
             return "rejection"
-        print(f"g is {g}")
         return g
     else:
         print(f"No group in {filename}")
