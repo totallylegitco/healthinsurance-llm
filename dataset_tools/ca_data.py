@@ -191,7 +191,11 @@ def generate_prompts(imr, format_for_model=lambda x: x):
         ],
         "medically_necessary": [
             format_for_model(
-                f"""Given the following medical review findings: {findings} and grounds for denial were {grounds}.{treatment_extra}. Why was the treatment considered medically necessary? Don't refer to the reviewers findings directly instead write in a general fashion. For example if the reviewers found that facial feminization surgery was needed to treat gender dysphoria based on WPATH guidelines you would write something like: Facial feminization surgery is medically necessary for gender dysphoria per the WPATH guidelines. Do not refer to the reviewers qualifications or the reviewers themselves directly. If any studies or guidelines are referenced that support the medical necessity include them but don't make up new ones."""),
+                f"""Given the following medical review findings: {findings} and grounds for denial were {grounds}.{treatment_extra}. Why was the treatment considered medically necessary? Don't refer to the reviewers findings directly instead write in a general fashion. For example if the reviewers found that facial feminization surgery was needed to treat gender dysphoria based on WPATH guidelines you would write something like: Facial feminization surgery is medically necessary for gender dysphoria per the WPATH guidelines. Do not refer to the reviewers qualifications or the reviewers themselves directly. If any studies or guidelines are referenced that support the medical necessity include them but don't make up new ones. Be concise (each word costs $200) and remember do not mention the reviewers."""),
+        ],
+        "studies":
+            format_for_model(
+                f"""What studies/references are mentioned in {findings}?  Be concise (each word costs $200) and do not mention the reviewers, if none say NONE."""),
         ],
         "patient_history": [
             format_for_model(
