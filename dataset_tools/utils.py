@@ -174,6 +174,14 @@ def cleanup_json(data):
                 else:
                     return None
 
+journal_re = re.compile(
+    r"/journal/article/study by/", re.IGNORECASE)
+
+def has_journal(item):
+    if item is None:
+        return False
+    return journal_re.search(item) is not None:
+
 
 def is_unknown(item):
     if item is None:

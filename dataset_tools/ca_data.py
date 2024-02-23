@@ -195,7 +195,7 @@ def generate_prompts(imr, format_for_model=lambda x: x):
         ],
         "studies": [
             format_for_model(
-                f"""What studies/references are mentioned in {findings}?  Be concise (each word costs $200) and do not mention the reviewers, if none say NONE."""),
+                f"""What studies/references are mentioned in {findings}?  Be concise (each word costs $2000) and do not mention the reviewers, if none say NONE. Provide each reference as a bullet on a new line. If an article is not explicilty mentioned by name in the source text above do not include it. Including an incorrect journal could result in someone not getting health care. If there is a journal article referenced but not by name or by auhtor write just the name of the journal don't guess. Remember be concise leave out things like \"the case summary mentions\" or anything that is not the references (like the final decision) -- just provide bulleted list of the references."""),
         ],
         "patient_history": [
             format_for_model(
@@ -224,6 +224,8 @@ def generate_prompts(imr, format_for_model=lambda x: x):
     if not is_unknown(grounds):
         del prompts["reason_for_denial"]
         known["reason_for_denial"] = grounds
+    if not has_journal(grounds):
+        del prompts["studies"]
 
     return (index, prompts, known)
 
@@ -307,7 +309,7 @@ def work_with_generative_remote():
                         gen_loc, f"{idx}MAGIC{mistr}{i}{response_type}.txt")
                     i = i + 1
 #                    if not os.path.exists(target_file) and (response_type != "appeal" or not check_for_bad_file(response_type, response)):
-                    if not os.path.exists(target_file) or not check_for_bad_file(response_type, target_file):
+                    if not os.path.exists(target_file) or check_for_bad_file(response_type, target_file):
                         response = make_request(m, v)
                         print(f"Writing out to {target_file}")
                         with open(target_file, "w") as f:

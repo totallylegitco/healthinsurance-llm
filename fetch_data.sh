@@ -9,7 +9,7 @@ if [ ! -f "./data_sources/drugs.csv" ]; then
 fi
 if [ ! -f "./data_sources/mtsamples2.csv" ]; then
   wget "https://raw.githubusercontent.com/mcoplan11/service_denial/master/dataset/mtsamples%202.csv" -O \
-       ./data_sources/mtsamples2.csv
+       ./data_sources/mtsamples2.csv || echo "huh no luck"
 fi
 if [ ! -f "./data_sources/wpath_soc7.pdf"]; then
   wget https://www.wpath.org/media/cms/Documents/SOC%20v7/SOC%20V7_English2012.pdf?_t=1613669341 -O \
@@ -46,8 +46,8 @@ if [ ! -f "./data_sources/ca-independent-medical-review-imr-determinations-trend
        ./data_sources/ca-independent-medical-review-imr-determinations-trends.csv
   iconv -c -t utf-8 ./data_sources/ca-independent-medical-review-imr-determinations-trends.csv  > ./data_sources/ca-independent-medical-review-imr-determinations-trends-utf8.csv
 fi
-#if [ ! -d "./data_sources/pubmed" ]; then
-#  mkdir -p ./data_sources/pubmed
-#  wget --recursive -e robots=off --no-parent https://ftp.ncbi.nlm.nih.gov/pubmed/updatefiles/ -P ./data_sources/pubmed
-#fi
+if [ ! -d "./data_sources/pubmed" ]; then
+  mkdir -p ./data_sources/pubmed
+  wget --recursive -e robots=off --no-parent https://ftp.ncbi.nlm.nih.gov/pubmed/updatefiles/ -P ./data_sources/pubmed
+fi
 touch .fetched_data
