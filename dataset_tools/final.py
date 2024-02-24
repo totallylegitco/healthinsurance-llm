@@ -244,6 +244,8 @@ for case_key, case in cases.items():
     medically_necessary = None
     diagnosis = None
     studies = None
+    # Fake rejection to start with.
+    r = ""
     if "diagnosis" in loaded_case:
         diagnosis = choose_best("diagnosis", loaded_case["diagnosis"], r)
         diagnosis_extra = f"\nWith a diagnosis of {diagnosis}\n"
