@@ -42,7 +42,9 @@ def insert_into_case_dict(filename):
         lt = letter_type(filename)
         print(f"Adding {case} of type {lt}")
         if case not in cases:
-            cases[case] = {"appeal": [], "rejection": [], "json": []}
+            cases[case] = {}
+        if lt not in cases[case]:
+            cases[case][lt] = []
         cases[case][lt] += [filename]
 
 
@@ -241,6 +243,7 @@ for case_key, case in cases.items():
     history = None
     medically_necessary = None
     diagnosis = None
+    studies = None
     if "diagnosis" in loaded_case:
         diagnosis = choose_best("diagnosis", loaded_case["diagnosis"], r)
         diagnosis_extra = f"\nWith a diagnosis of {diagnosis}\n"
@@ -250,6 +253,8 @@ for case_key, case in cases.items():
     if "medically_necessary" in loaded_case:
         medically_necessary = choose_best(
             "medically_necessary", loaded_case["medically_necessary"], r)
+    if "studies" in loaded_case:
+        studies = choose_best("studies", loaded_case["studies"], r)
     # Some different system prompts to write out
     appeal_system = "You possess extensive medical expertise and enjoy crafting appeals for health insurance denials as a personal interest."
     medically_necessary_system = "You have experience reading insurance claims and helping people understand them"
@@ -290,6 +295,11 @@ for case_key, case in cases.items():
                 diagnosis_system,
                 f"Given the provided denial: {r}\n What was the patients diagnosis?",
                 diagnosis)
+        if studies is not None and diagnosis is not None and treatment is not None:
+            write(
+                appeal_system,
+                f"What are some studies relevant to using the treatment {treatment} for the diagnosis {diagnosis}",
+                studies)
 
 
 write_chemo_drug_records()
