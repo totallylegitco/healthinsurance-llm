@@ -29,3 +29,6 @@ fire
 py7zr
 backoff
 llama-index
+pandas
+nltk
+pypdf2

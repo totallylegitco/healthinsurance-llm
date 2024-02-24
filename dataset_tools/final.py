@@ -232,7 +232,7 @@ for case_key, case in cases.items():
     for key in case.keys():
         loaded_case[key] = list(
             map(lambda x: (x, load_record(x)), case[key]))
-    print(f"Processing case {loaded_case}")
+    # print(f"Processing case {loaded_case}")
     # We select the best appeal / hist and medically necessary regardless of the specific rejection since this information may not be present in the denial
     best_appeal = None
     if "appeal" in loaded_case:
@@ -258,6 +258,23 @@ for case_key, case in cases.items():
     # Some different system prompts to write out
     appeal_system = "You possess extensive medical expertise and enjoy crafting appeals for health insurance denials as a personal interest."
     medically_necessary_system = "You have experience reading insurance claims and helping people understand them"
+    treatment = None
+    if "treatment" in loaded_case:
+        treatment = choose_best("treatment", loaded_case["treatment"], r)
+    # Output the elements which don't depend on the specific rejection
+    if (medically_necessary is not None and treatment is not None and
+        diagnosis is not None):
+        write(
+            medically_necessary_system,
+            f"{history_extra}Why is {treatment} medically necessary for {diagnosis}?",
+            medically_necessary)
+    if studies is not None and diagnosis is not None and treatment is not None:
+        write(
+            appeal_system,
+            f"What are some studies relevant to using the treatment {treatment} for the diagnosis {diagnosis}",
+            studies)
+    if "rejection" not in loaded_case:
+        print(f"No rejections found in {loaded_case}")
     # For rejection, we want all rejections
     for (filename, r) in loaded_case["rejection"]:
         # Select the treatment only if it is present in the rejection
@@ -272,12 +289,6 @@ for case_key, case in cases.items():
                 appeal_system,
                 f"Given the provided denial: {r}\n{treatment_extra}{history_extra}{diagnosis_extra}\n Write an appeal in the style of patio11. Feel free to be verbose",
                 best_appeal)
-        if (medically_necessary is not None and treatment is not None and
-                diagnosis is not None):
-            write(
-                medically_necessary_system,
-                f"{history_extra}Why is {treatment} medically necessary for {diagnosis}?",
-                medically_necessary)
         if "reason_for_denial" in loaded_case:
             reason_for_denial = choose_best(
                 "reason_for_denial", loaded_case["reason_for_denial"], r)
@@ -295,11 +306,6 @@ for case_key, case in cases.items():
                 diagnosis_system,
                 f"Given the provided denial: {r}\n What was the patients diagnosis?",
                 diagnosis)
-        if studies is not None and diagnosis is not None and treatment is not None:
-            write(
-                appeal_system,
-                f"What are some studies relevant to using the treatment {treatment} for the diagnosis {diagnosis}",
-                studies)
 
 
 write_chemo_drug_records()

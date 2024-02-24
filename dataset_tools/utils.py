@@ -5,7 +5,7 @@ import re
 import unicodedata
 
 magic_re = re.compile(
-    r".*/(.*?)(MAGIC[0-9]*-*[0-9]*|FARTS[0-9]*|farts[0-9]|EXTRACTED)_*(appeal|rejection|denial|json|medically_necessary|treatment|diagnosis)\d*.txt"
+    r".*/(.*?)(MAGIC[0-9]*-*[0-9]*|FARTS[0-9]*|farts[0-9]|EXTRACTED|)_*(appeal|rejection|denial|json|medically_necessary|treatment|diagnosis)\d*.txt"
 )
 
 
@@ -180,7 +180,7 @@ journal_re = re.compile(
 def has_journal(item):
     if item is None:
         return False
-    return journal_re.search(item) is not None:
+    return journal_re.search(item) is not None
 
 
 def is_unknown(item):
