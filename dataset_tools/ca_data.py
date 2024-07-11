@@ -279,7 +279,9 @@ def work_with_generative_remote():
         #("mistral-7b-instruct", 0),
         #("openhermes-2-mistral-7b", 1),
         #("mistralai/Mixtral-8x7B-Instruct-v0.1", 3)
-        ("mixtral-8x7b-instruct", 3),
+        #("mixtral-8x7b-instruct", 3),
+        ("mixtral-8x22b-instruct", 4),
+        #("dbrx-instruct", 5),
     ]
 
     print("Generating prompts...")

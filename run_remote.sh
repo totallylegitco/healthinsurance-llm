@@ -21,7 +21,7 @@ temp_dir=$(mktemp -d -t "fartsXXXXXXXXXXX")
 filename=upload.tbz2
 target="${temp_dir}/${filename}"
 
-tar --exclude apex --exclude axolotl --exclude lit-parrot --exclude falcontune --exclude "*.tbz2" --exclude wandb --exclude "results" --exclude="dolly" --exclude "combined-llm-data*" --exclude "generated-llm-data*" --exclude "*_out" --exclude "falcon-7b-instruct-alpaca" -cjf "${target}" . &
+tar --exclude apex --exclude axolotl --exclude lit-parrot --exclude falcontune --exclude "*.tbz2" --exclude wandb --exclude "results" --exclude="dolly" --exclude "out*" --exclude "combined-llm-data*" --exclude "generated-llm-data*" --exclude "*_out" --exclude "falcon-7b-instruct-alpaca" --exclude "*_model_*" --exclude "*_out_*" --exclude "apex" --exclude "other" --exclude "storage" --exclude "*/runs/*" --exclude "backup-generated" --exclude "miniconda" -cjf "${target}" . &
 tpid=$!
 
 # Copy over firstrun.sh so we can get the system setup a bit while we transfer all of ourdata.

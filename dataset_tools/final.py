@@ -136,7 +136,7 @@ def write_chemo_drug_records():
 score_words = {
     "appeal": {
         "diagnosis": 10,
-        "medically necessary": 20,
+        "medically necessary": 30,
         "as a language model": -100,  # sample we've rejected these already
         "appeal": 5,
         "days": 10,  # possible timeline reference
@@ -145,6 +145,16 @@ score_words = {
         "ACA": 20,
         "ERISA": 20,
         "healthcare.gov": 20,
+        "guidelines": 20,
+        "criteria": 20,
+        "affordable care act": 15,
+        "american society of": 10,
+        "world association of": 15,
+        "american association of": 10,
+        "standards of care": 20,
+        "Health and Safety Code": 10,
+        "my healthcare provider": 15,
+        "diagnosed with ": 10,
     },
     "diagnosis": {
         "hypertension": 1,
@@ -260,6 +270,8 @@ for case_key, case in cases.items():
     # Some different system prompts to write out
     appeal_system = "You possess extensive medical expertise and enjoy crafting appeals for health insurance denials as a personal interest."
     medically_necessary_system = "You have experience reading insurance claims and helping people understand them"
+    treatment_system = medically_necessary_system
+    diagnosis_system = medically_necessary_system
     treatment = None
     if "treatment" in loaded_case:
         treatment = choose_best("treatment", loaded_case["treatment"], r)

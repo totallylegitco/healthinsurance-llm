@@ -203,6 +203,8 @@ swaps = {
         ("Based on the information provided, the following factors from the patient's history appear to have been relevant in the determination of", ""),
         ("Based on the information provided, ", ""),
         ("and the reviewer's clinical experience and expertise in treating such cases", ""),
+        ("Please note: This letter is a hypothetical response and does not reflect the actual policies or decisions of any specific insurance company. It is intended for illustrative purposes only.", ""),
+        ("Please note: This letter is a hypothetical response and does not reflect the actual policies or decisions of any specific insurance company. It is intended for informational purposes only and should not be used as a substitute for professional legal or medical advice.", ""),
     ],
     "patient_history": [
         ("There is no information provided about the patient's demographic details.", ""),
@@ -237,6 +239,8 @@ swaps = {
         ("  ", " "),
     ],
     "denial": [
+        ("Esteemed Members of the Review Board",
+         "$insurancecompany"),
         (
             "The Health Plans denial was overturned due to the reviewers determining that the requested services were likely to be more beneficial for treatment of the enrollees medical condition than any available standard therapy.",
             "",
@@ -277,7 +281,8 @@ swaps = {
         ("findings: .* physician reviewers.*", ""),
         ("Thank you for providing me with this information.", ""),
         ("Consequently, the Health Plan's denial should be overturned.", ""),
-        ("According to recent medical literature, [^\.]*.", ""),
+        ("According to recent medical literature,", ""),
+        ("I hope this letter finds you in good health and high spirits.", ""),
     ],
     "appeal": [
         ("Dear Independent Medical Reviewers", "Dear [Insurance Company];"),

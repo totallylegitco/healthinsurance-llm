@@ -18,7 +18,12 @@ if [ ! -f ".firstrun" ]; then
   fi
 
   sudo apt-get update
-  sudo apt-get install -y libaio-dev python3-pybind11 screen nano emacs
+  sudo apt-get install -y libaio-dev python3-pybind11 screen nano emacs lbzip2
+  # Use parallel bzip2
+  sudo rm $(which bzip2)
+  sudo ln -s $(which lbzip2) /bin/bzip2
+  sudo rm $(which bunzip2)
+  sudo ln -s $(which lbunzip2) /bin/bunzip2
   nvcc --version || sudo apt install nvidia-cuda-toolkit
 
   python3 -m pip install --upgrade pip
@@ -28,15 +33,19 @@ if [ ! -f ".firstrun" ]; then
   pip install ninja
   # We need good pytorch v soon
   CU_MINOR=$(nvcc --version |grep "cuda_" |cut -d "_" -f 2 |cut -d "." -f 2)
-  pip install "torch==2.0.1" --index-url https://download.pytorch.org/whl/cu11${CU_MINOR} || pip install torch
+  #pip install -U "torch>=2.1.1" --index-url https://download.pytorch.org/whl/cu11${CU_MINOR} || pip install -U "torch>=2.1.1"
+  # We need to install xformers at the same time so we get a compatible torch version.
+  pip install -U "xformers<=0.0.26.post1" "torch>=2.1.1" --index-url https://download.pytorch.org/whl/cu11${CU_MINOR} || pip install -U "xformers<=0.0.26.post1" "torch>=2.1.1"
 
   if [ ! -d axolotl ]; then
     git clone https://github.com/OpenAccess-AI-Collective/axolotl
   fi
   cd axolotl
   pip install packaging
+  pip install ninja
   # flash-attn hack version magic
-  pip install -e '.[deepspeed]' "flash-attn==2.3.6"
+  #pip install -e '.' "flash-attn==2.3.6"
+  pip install -U -e '.[flash-attn,deepspeed]'
   pip install -U git+https://github.com/huggingface/peft.git
   cd ..
   if [ ! -d apex ]; then
