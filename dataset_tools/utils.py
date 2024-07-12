@@ -9,12 +9,6 @@ magic_re = re.compile(
 )
 
 
-def training_cleanup_appeal(text):
-    if text is None:
-        return None
-    return cleanup_appeal(text)
-
-
 was_rejected = re.compile(
     r"(deneied|no additional treatment|not covered|not reimbursed|not eligible)",
     re.IGNORECASE,

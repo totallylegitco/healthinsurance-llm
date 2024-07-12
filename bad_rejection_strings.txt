@@ -29,3 +29,5 @@ three physician reviewers
 two physician reviewers
 {treatment}
 The medical records reviewed, in conjunction with current evidence-based guidelines, support the necessity of the requested medication for this patient's treatment.
+the insurance company initially denied coverage for
+The specific reason for the denial is not explicitly stated in the review findings

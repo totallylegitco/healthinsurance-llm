@@ -242,11 +242,13 @@ for case_key, case in cases.items():
     for key in case.keys():
         loaded_case[key] = list(
             map(lambda x: (x, load_record(x)), case[key]))
-    # print(f"Processing case {loaded_case}")
+    print(f"Processing case {loaded_case}")
     # We select the best appeal / hist and medically necessary regardless of the specific rejection since this information may not be present in the denial
     best_appeal = None
     if "appeal" in loaded_case:
         best_appeal = choose_best("appeal", loaded_case["appeal"])
+    else:
+        print(f"Unexpected no appeal founded for {loaded_case}")
     history_extra = ""
     diagnosis_extra = ""
     treatment = None
