@@ -236,7 +236,7 @@ def choose_best(best_type, options, rejection=""):
         return top[1]
 
 
-for case_key, case in cases.items():
+def process_case(case_key, case):
     loaded_case = {}
     # Load the data for the case
     for key in case.keys():
@@ -280,12 +280,12 @@ for case_key, case in cases.items():
     # Output the elements which don't depend on the specific rejection
     if (medically_necessary is not None and treatment is not None and
         diagnosis is not None):
-        write(
+        yield(
             medically_necessary_system,
             f"{history_extra}Why is {treatment} medically necessary for {diagnosis}?",
             medically_necessary)
     if studies is not None and diagnosis is not None and treatment is not None:
-        write(
+        yield(
             appeal_system,
             f"What are some studies relevant to using the treatment {treatment} for the diagnosis {diagnosis}",
             studies)
@@ -301,27 +301,40 @@ for case_key, case in cases.items():
             treatment = choose_best("treatment", loaded_case["treatment"], r)
             treatment_extra = f"\nFor the provided treatment {treatment}\n"
         if best_appeal is not None:
-            write(
+            yield(
                 appeal_system,
                 f"Given the provided denial: {r}\n{treatment_extra}{history_extra}{diagnosis_extra}\n Write an appeal in the style of patio11. Feel free to be verbose",
                 best_appeal)
         if "reason_for_denial" in loaded_case:
             reason_for_denial = choose_best(
                 "reason_for_denial", loaded_case["reason_for_denial"], r)
-            write(
+            yield(
                 reason_for_denial_system,
                 f"Given the provided denial: {r}\n Why was it denied?",
                 reason_for_denial)
         if treatment is not None:
-            write(
+            yield(
                 treatment_system,
                 f"Given the provided denial: {r}\n What was the treatment or procedure denied?",
                 treatment)
         if diagnosis is not None:
-            write(
+            yield(
                 diagnosis_system,
                 f"Given the provided denial: {r}\n What was the patients diagnosis?",
                 diagnosis)
 
+def safe_process_case(x):
+    # We can't return generators directly
+    return list(process_case(*x))
 
-write_chemo_drug_records()
+import multiprocessing
+with multiprocessing.Pool(processes=30) as pool:
+    mapped = pool.map(safe_process_case, cases.items())
+for grouped_values in mapped:
+    for system, instruction, result in grouped_values:
+        write(system, instruction, result)
+
+try:
+    write_chemo_drug_records()
+except:
+    print(f"Error writing chemo drugs output")

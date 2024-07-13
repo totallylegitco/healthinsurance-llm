@@ -32,3 +32,10 @@ llama-index
 pandas
 nltk
 pypdf2
+llama-index-core
+llama-index-readers-file
+llama-index-embeddings-huggingface
+llama-index-embeddings-instructor
+llama-index-llms-openai-like
+pyMuPDF
+pubmed_parser

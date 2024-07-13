@@ -1,6 +1,9 @@
-from llama_index import download_loader, StorageContext, load_index_from_storage, VectorStoreIndex, SimpleDirectoryReader, set_global_tokenizer, ServiceContext
-from llama_index.embeddings import HuggingFaceEmbedding
+from llama_index.core import Settings
+from llama_index.core.storage.storage_context import StorageContext
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.core.node_parser import SentenceSplitter
 from llama_index.llms.openai_like import OpenAILike
+from llama_index.core import set_global_tokenizer
 from glob import glob
 from dataset_tools.utils import load_record
 import os
@@ -9,6 +12,7 @@ import time
 from itertools import chain
 import backoff
 import requests
+from .fullpubmedreader import FullPubMedReader
 
 flat_map = lambda f, xs: [y for ys in xs for y in f(ys)]
 
@@ -44,64 +48,21 @@ llm = OpenAILike(
 print(f"WTTF: {llm.api_base}")
 #print(llm.complete("San Francisco:"))
 
-sentence_context = ServiceContext.from_defaults(
-    llm = llm,
-    embed_model="local",
+Settings.llm = llm
+Settings.embed_model = HuggingFaceEmbedding(
+    model_name="BAAI/bge-small-en-v1.5"
 )
-
-print("Downloading loaders (e.g. random untrusted code from the web?)")
-
-PubmedReader = download_loader("PubmedReader")
-
-PDFReader = download_loader("PDFReader")
-
-print("Running the loaders (see above). Fingers crossed.")
-
-pubmed_loader = PubmedReader()
-
-pdf_loader = PDFReader()
-
-def load_pdf_docs():
-
-    def load_pdf_doc(filename):
-        print(f"Loading pdf doc {filename}")
-        return pdf_loader.load_data(filename)
-
-    pdf_docs = list(flat_map(load_pdf_doc, glob("data_sources/*.pdf")))
-
-    return pdf_docs
-
-
-pdf_docs = load_pdf_docs()
-
-print("Constructing pubmed queries")
-
-
-def echo(x):
-    print(x)
-    return x
-
+Settings.node_parser = SentenceSplitter(chunk_size=512, chunk_overlap=20)
+Settings.num_output = 512
+Settings.context_window = 3900
 
 def load_pubmed_docs():
-    # For now do nothing
-    return []
-    @backoff.on_exception(
-        backoff.expo, requests.exceptions.RequestException, max_time=600
-    )
-    def load_for_query(q):
-        return pubmed_loader.load_data(q)
+    reader = FullPubMedReader()
+    return reader.load_data("data_sources/pubmed/ftp.ncbi.nlm.nih.gov/pubmed/updatefiles/")
 
-    treatments = set(map(echo, map(load_record, glob("generated-llm-data/*treatment.txt"))))
-    diagnosis = set(map(echo, map(load_record, glob("generated-llm-data/*diagnosis.txt"))))
+print(f"Loading PubMed data")
 
-    queries = treatments.union(diagnosis)
-
-    pubmed_docs = list(flat_map(load_for_query, queries))
-
-
-pubmed_docs = load_pubmed_docs()
-
-docs = pdf_docs + pubmed_docs
+docs = load_pubmed_docs()
 
 
 print("Ok party time!")
