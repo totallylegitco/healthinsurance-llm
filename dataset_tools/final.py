@@ -291,6 +291,7 @@ def process_case(case_key, case):
             studies)
     if "rejection" not in loaded_case:
         print(f"No rejections found in {loaded_case}")
+        return
     # For rejection, we want all rejections
     for (filename, r) in loaded_case["rejection"]:
         # Select the treatment only if it is present in the rejection
