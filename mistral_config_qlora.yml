@@ -8,7 +8,9 @@ load_in_4bit: false
 strict: false
 
 datasets:
-  - path: out/train_alpaca.jsonl
+  - data_files: out/train.jsonl
+    path: out/
+    ds_type: json
     type: alpaca
 dataset_prepared_path: last_run_prepared
 val_set_size: 0.05
