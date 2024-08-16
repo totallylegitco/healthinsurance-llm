@@ -26,7 +26,7 @@ spec:
 #        image: ghcr.io/mistralai/mistral-src/vllm:288c7c
         image: vllm/vllm-openai:latest
         imagePullPolicy: Always
-        args: ["--model=TotallyLegitCo/fighthealthinsurance_model_v0.3", "--host", "0.0.0.0", "--gpu-memory-utilization=0.9", "--max-model-len=26280", "--enforce-eager"]
+        args: ["--model=TotallyLegitCo/fighthealthinsurance_model_v0.5", "--host", "0.0.0.0", "--gpu-memory-utilization=0.9", "--max-model-len=26280", "--enforce-eager"]
         # Extra args for running on vllm/vllm-openai
         resources:
           requests:

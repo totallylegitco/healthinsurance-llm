@@ -199,6 +199,10 @@ swaps = {
         ("and the reviewer's clinical experience and expertise in treating such cases", ""),
         ("Please note: This letter is a hypothetical response and does not reflect the actual policies or decisions of any specific insurance company. It is intended for illustrative purposes only.", ""),
         ("Please note: This letter is a hypothetical response and does not reflect the actual policies or decisions of any specific insurance company. It is intended for informational purposes only and should not be used as a substitute for professional legal or medical advice.", ""),
+        ("Facial Feminization Surgery (FGS)", "Facial Feminization Surgery (FFS)"),
+        ("Facial Feminization Surgery (FMS)", "Facial Feminization Surgery (FFS)"),
+        ("Facial Masculinization Surgery (FFS)", "Facial Masculinization Surgery (FMS)"),
+        ("Facial Masculinization Surgery (FGS)", "Facial Masculinization Surgery (FMS)"),
     ],
     "patient_history": [
         ("There is no information provided about the patient's demographic details.", ""),

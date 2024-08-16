@@ -185,7 +185,7 @@ def generate_prompts(imr, format_for_model=lambda x: x):
         ],
         "appeal": [
             format_for_model(
-                f"""The independent medical review findings were {findings} and grounds for denial were {grounds}.{treatment_extra} In your response you are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Do not include any reference to the reviewers or their findings. Use this information to write the original appeal by the patient. Keep in mind the appeal would be written before the appeal. Remember you are writing for yourself, not on behalf of anyone else. If any studies or guidelines support the medical necessity include them. Feel free to be verbose and start your appeal with Dear [Insurance Company];"""),
+                f"""The independent medical review findings were {findings} and grounds for denial were {grounds}.{treatment_extra} In your response you are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Do not include any reference to the reviewers or their findings. Use this information to write the original appeal by the patient. Keep in mind the denial would be written before the appeal. Remember you are writing for yourself, not on behalf of anyone else. If any studies or guidelines support the medical necessity include them. Feel free to be verbose and start your appeal with Dear [Insurance Company];"""),
             format_for_model(
                 f"""Given the following medical reviewer findings:\n{findings}{treatment_extra}{diagnosis_extra}\n Do not include any information about the reviewers' findings. Instead, consider the patient's personal experience, medical history, and reasons for seeking the requested medical coverage. Craft the appeal to express the patient's perspective and emphasize their need for the requested medical intervention without referencing the independent medical review outcomes. Omit any mention of the independent medical reviewers' assessments or findings as those happend later in the process. Feel free to be verbose and write in the style of patio11 or a bureaucrat like sir humphrey appleby. Remember you are writing for yourself, not on behalf of anyone else. If any studies or guidelines from the reviewers support the medical necessity include them."""),
         ],
@@ -252,6 +252,7 @@ def work_with_generative_remote():
         backoff.expo, requests.exceptions.RequestException, max_time=600
     )
     def make_request(model, prompt):
+        time.sleep(random.randint(0, 4))
         payload = {
             "model": model,
             "messages": [
@@ -270,7 +271,6 @@ def work_with_generative_remote():
 
         response_text = response.json()["choices"][0]["message"]["content"]
         print(f"Promxspt: {prompt}\nResponse text: {response_text}")
-        time.sleep(random.randint(0, 5))
         return response_text
 
     # Note: when adding models make sure to add to the end of the list so that
@@ -279,9 +279,10 @@ def work_with_generative_remote():
         #("mistral-7b-instruct", 0),
         #("openhermes-2-mistral-7b", 1),
         #("mistralai/Mixtral-8x7B-Instruct-v0.1", 3)
-        #("mixtral-8x7b-instruct", 3),
-        ("mixtral-8x22b-instruct", 4),
+        ("mixtral-8x7b-instruct", 3),
+        #("mixtral-8x22b-instruct", 4),
         #("dbrx-instruct", 5),
+        ("llama-3.1-70b-instruct", 6),
     ]
 
     print("Generating prompts...")
@@ -328,13 +329,14 @@ def work_with_generative_local():
         #        "ausboss/llama-30b-supercot",
         #        "CalderaAI/30B-Lazarus",
         #        "tiiuae/falcon-40b-instruct",
-        ("mistralai/Mixtral-8x7B-Instruct-v0.1", 3),
+        #("mistralai/Mixtral-8x7B-Instruct-v0.1", 3),
         #        "teknium/OpenHermes-2-Mistral-7B",
         #        "TheBloke/OpenHermes-2-Mistral-7B-GPTQ",
         #        ("mistralai/Mistral-7B-v0.1", 0)
         #        "databricks/dolly-v2-12b",
         #        "databricks/dolly-v2-7b",
         #        "databricks/dolly-v2-3b",
+        ("llama-3.1-70b-instruct", 6),
     ]
 
     # We load the model first to make sure we can actually do magic
