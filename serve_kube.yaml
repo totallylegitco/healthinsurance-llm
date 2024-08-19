@@ -6,6 +6,7 @@ metadata:
   labels:
     app: vllm-health
 spec:
+#  replicas: 2
   replicas: 1
   selector:
     matchLabels:
@@ -34,7 +35,7 @@ spec:
             ephemeral-storage: "60Gi"
           limits:
             nvidia.com/gpu: 1
-            ephemeral-storage: "60Gi"
+            ephemeral-storage: "65Gi"
         ports:
           - containerPort: 8000
             name: http
@@ -42,13 +43,13 @@ spec:
           httpGet:
             path: /v1/models
             port: http
-          initialDelaySeconds: 60
+          initialDelaySeconds: 240
           periodSeconds: 60
         readinessProbe:
           httpGet:
             path: /v1/models
             port: http
-          initialDelaySeconds: 60
+          initialDelaySeconds: 240
           periodSeconds: 60
 ---
 apiVersion: v1
