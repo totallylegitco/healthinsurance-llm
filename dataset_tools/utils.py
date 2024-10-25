@@ -43,13 +43,20 @@ def training_cleanup_rejection(text):
     return cleanup_denial(text)
 
 
-def check_for_invalid_urls(data):
+def check_for_invalid_urls(data) -> bool:
     urls = re.findall(r"(https?://\S+)", data)
     for u in urls:
         if not is_valid_url(u):
             return True
     return False
 
+def list_invalid_urls(data) -> list[str]:
+    urls = re.findall(r"(https?://\S+)", data)
+    bad_urls = []
+    for u in urls:
+        if not is_valid_url(u):
+            bad_urls.append(u)
+    return bad_urls
 
 def load_record(filename):
     with open(filename, encoding="utf-8") as f:
@@ -372,18 +379,21 @@ def check_for_bad_file(response_type, target):
         return check_for_bad(response_type, data)
 
 
-def check_for_bad(response_type, data):
+def check_for_bad_and_return_result(response_type, data):
     ld = data.lower()
+    bad_results = []
     if response_type in bad_strings_dict.keys():
         bad_strings = bad_strings_dict[response_type]
         for b in bad_strings:
             if b != "" and b.lower() in data:
                 print(
                     f"Rejecting {data} for {response_type} as it contains {b}")
-                return True
-            return False
-    else:
-        return False
+                bad_results.append(b)
+    return bad_results
+    
+def check_for_bad(response_type, data):
+    bad_results = check_for_bad_and_return_result(response_type, data)
+    return len(bad_results) > 0
 
 
 def check_for_bad_appeal(data):

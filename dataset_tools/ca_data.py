@@ -122,11 +122,6 @@ def extract_text(result):
     return result[0]["generated_text"]
 
 
-# Load some strings we know the current model puts in appeals that are bad right away
-with open("bad_appeal_strings.txt") as f:
-    bad_appeal_strings = f.read().split("\n")
-
-
 def load_data(path):
     imr = pandas.read_csv(
         path,
@@ -245,19 +240,26 @@ def work_with_generative_remote():
         token = os.getenv("PERPLEXITY_API")
     else:
         token = os.getenv("SECRET_BACKEND_TOKEN")
+    if backend == "https://api.deepinfra.com/v1/openai":
+        token = os.getenv("DEEPINFRA_API")
     if token is None:
         raise Exception("Error no Token provided for inference.")
 
     @backoff.on_exception(
         backoff.expo, requests.exceptions.RequestException, max_time=600
     )
-    def make_request(model, prompt):
+    def make_request(model, prompt, previous_response=None, error=None):
         time.sleep(random.randint(0, 4))
+        messages = [{"role": "user", "content": prompt}]
+        if previous_response is not None:
+            messages.extend(
+                [{"role": "assistant", "content": previous_response},
+                 {"role": "user", "content": f"Please do better {error}"},
+                 ]
+                 )
         payload = {
             "model": model,
-            "messages": [
-                {"role": "user", "content": prompt},
-            ],
+            "messages": messages,
         }
         headers = {
             "accept": "application/json",
@@ -279,10 +281,11 @@ def work_with_generative_remote():
         #("mistral-7b-instruct", 0),
         #("openhermes-2-mistral-7b", 1),
         #("mistralai/Mixtral-8x7B-Instruct-v0.1", 3)
-        ("mixtral-8x7b-instruct", 3),
+#        ("mixtral-8x7b-instruct", 3),
         #("mixtral-8x22b-instruct", 4),
         #("dbrx-instruct", 5),
-        ("llama-3.1-70b-instruct", 6),
+#        ("llama-3.1-70b-instruct", 6),
+        ("nvidia/Llama-3.1-Nemotron-70B-Instruct", 60),
     ]
 
     print("Generating prompts...")
@@ -314,9 +317,21 @@ def work_with_generative_remote():
 #                    if not os.path.exists(target_file) and (response_type != "appeal" or not check_for_bad_file(response_type, response)):
                     if not os.path.exists(target_file) or check_for_bad_file(response_type, target_file):
                         response = make_request(m, v)
-                        print(f"Writing out to {target_file}")
-                        with open(target_file, "w") as f:
-                            f.write(response)
+                        # If we find an invalid url ask the model to go again
+                        if check_for_invalid_urls(response):
+                            bad_urls = list_invalid_urls(response)
+                            error = f"You referenced some invalid urls {bad_urls}."
+                            response = make_request(m, v, response, error)
+                        bad_results = check_for_bad_and_return_result(response_type, data)
+                        if len(bad_results) > 0:
+                            error = f"You referenced {bad_results} don't do that your writing as if it was before the reviewers looked."
+                            response = make_request(m, v, response, error)
+                        if not check_for_bad(response_type, response):
+                            print(f"Writing out to {target_file}")
+                            with open(target_file, "w") as f:
+                                f.write(response)
+                        else:
+                            print(f"Bad response {response} skipping for now")
                     else:
                         print(
                             f"We already good data for {target_file} skipping..")
