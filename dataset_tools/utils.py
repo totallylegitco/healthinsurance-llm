@@ -44,7 +44,8 @@ def training_cleanup_rejection(text):
 
 
 def check_for_invalid_urls(data) -> bool:
-    urls = re.findall(r"(https?://\S+)", data)
+    url_pattern = "https?:\\/\\/(?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b(?:[-a-zA-Z0-9@:%_\\+.~#?&\\/=]*)"
+    urls = re.findall(url_pattern, data)
     for u in urls:
         if not is_valid_url(u):
             return True

@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import random
-import backoff
 import time
 import os
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
@@ -9,11 +8,10 @@ import pandas
 import torch
 import argparse
 import re
-import itertools
 from .utils import *
 import multiprocessing
+from .ca_data_utils import *
 
-flatten = itertools.chain.from_iterable
 
 gen_loc = "generated-llm-data"
 
@@ -25,116 +23,10 @@ parser.add_argument("--small-gpu", action="store_true")
 
 args = parser.parse_args()
 
-treatment_regex = re.compile(
-    r"""\s*(The|An|A)?\s*(parent|father|mother|patient|enrollee|member|provider)\s*[^.]*(requested|required|asked|requires|reimbursement|coverage|requesting|has)\s*[^.]*(of|for|medication|reimbursement|coverage|services)\s+(?P<treatment>\d*\w+.+?)\.""",
-    re.IGNORECASE,
-)
-alt_treatment_regex = re.compile(
-    r"""At issue\s*(in this case|)\s*(is|)\s*(whether|if)\s+(?P<treatment>\d*\w+.+?) (is|were|was) medically (necessary|indicated)""",
-    re.IGNORECASE,
-)
-more_alt_treatment_regex = re.compile(
-    r"""the requested (medication|treatment|service|procedure)\s+(?P<treatment>\d*\w+.+?) (is|were|was) (likely to be|medically necessary|medically indicated)""",
-    re.IGNORECASE,
-)
-
-even_more_alt_treatment_regex = re.compile(
-    r"""(Therefore|Thus|As such),[^.]*?\s+(an|a|the|that) (?P<treatment>\w+[^.]+?) (is|were|was|should be) (medically necessary|medically indicated|likely to be|authorized)""",
-    re.IGNORECASE,
-)
-
-perscribed_regex = re.compile(
-    r"""patients provider has prescribed the medication\s+(?P<treatment>[^.]+?).""",
-    re.IGNORECASE,
-)
-
-wishes_to_regex = re.compile(
-    r"""(wishes|desires|like) to (undergo|take)\s+(?P<treatment>[^.]+?).""",
-    re.IGNORECASE,
-)
-
-health_plan_not_necessary_regex = re.compile(
-    r"""The (Health Plan|Plan|Insurance Company) (determined the|determined|indicates) (?P<treatment>.+?) (is|was|were) not""",
-    re.IGNORECASE,
-)
-
-almost_sketchy_regex = re.compile(
-    r"""treatment[^.]*with\s+(?P<treatment>[^.]+?) (is|were|was)""", re.IGNORECASE
-)
-
-sketchy_regex = re.compile(
-    r"""(requested|required|asked|requires|reimbursement|coverage|request|requesting)\s*[^.]*(for|medication|reimbursement|coverage|of)\s+(?P<treatment>\d*\w+.+?)\.""",
-    re.IGNORECASE,
-)
-
-seeking_regex = re.compile(
-    r"""is seeking (?P<treatement>) for (?P<diagnosis>[^.]+)""", re.IGNORECASE
-)
-admitted_regex = re.compile(
-    r"""admitted to the hospital for (?P<diagnosis>[^.]+)""", re.IGNORECASE
-)
-recommended_regex = re.compile(
-    r"""physicians recommended (?P<treatment>[^.]+)""", re.IGNORECASE
-)
-
-treatment_regexes = [
-    treatment_regex,
-    alt_treatment_regex,
-    more_alt_treatment_regex,
-    perscribed_regex,
-    wishes_to_regex,
-    health_plan_not_necessary_regex,
-    almost_sketchy_regex,
-    sketchy_regex,
-    seeking_regex,
-    recommended_regex,
-]
-
-diagnosis_regexes = [
-    seeking_regex,
-    admitted_regex,
-]
-
-
-def get_treatment_from_imr(imr):
-    findings = imr["Findings"]
-    for r in treatment_regexes:
-        matches = r.search(findings)
-        if matches is not None:
-            return matches.group("treatment")
-    return imr["TreatmentSubCategory"] or imr["TreatmentCategory"]
-
-
-def get_diagnosis_from_imr(imr):
-    findings = imr["Findings"]
-    for r in diagnosis_regexes:
-        matches = r.search(findings)
-        if matches is not None:
-            return matches.group("diagnosis")
-    return imr["DiagnosisSubCategory"] or imr["DiagnosisCategory"]
-
-
-def extract_text(result):
-    if result is None:
-        return None
-    if "generated_text" not in result[0]:
-        return None
-    return result[0]["generated_text"]
-
-
-def load_data(path):
+def load_data(path: str): pandas.DataFrame:
     imr = pandas.read_csv(
         path,
-        usecols=[
-            "Determination",
-            "TreatmentCategory",
-            "TreatmentSubCategory",
-            "DiagnosisCategory",
-            "DiagnosisSubCategory",
-            "Type",
-            "Findings",
-            "ReferenceID",
-        ],
+        usecols=relevant_columns,
         dtype=str,
     )
 
@@ -142,151 +34,12 @@ def load_data(path):
     return filtered_imr
 
 
-imrs = load_data(
-    "./data_sources/ca-independent-medical-review-imr-determinations-trends-utf8.csv"
-)
+imrs = load_data(imr_input_path)
 
-
-def generate_prompts_instruct(imr):
-    def format_for_model(x):
-        return f"<s>[INST]{x}[/INST]"
-
-    return generate_prompts(imr, format_for_model=format_for_model)
-
-
-def generate_prompts(imr, format_for_model=lambda x: x):
-    determination = imr["Determination"]
-    treatment = get_treatment_from_imr(imr)
-    diagnosis = get_diagnosis_from_imr(imr)
-    findings = imr["Findings"].strip("\n")
-    grounds = imr["Type"]
-    index = imr["ReferenceID"]
-    treatment_extra = ""
-    diagnosis_extra = ""
-    if treatment is not None and treatment.lower() != "other":
-        treatment_extra = f"We also guessed at treatment of {treatment}."
-    if diagnosis is not None and diagnosis.lower() != "other":
-        diagnosis_extra = f"We guessed at a diagnosis of {diagnosis}."
-
-    prompts = {
-        "denial": [
-            format_for_model(
-                f"""The independent medical review findings were {findings} and grounds for denial were {grounds}.{treatment_extra} Use this information to write the original insurance denial from the insurance company. Do not include any reference to the reviewers or their findings, instead focus on what the insurance company would have written denying the patients first claim. Keep in mind the denial would have been written before the independent review. Feel free to be verbose. You may wish to start your denial as a letter with \"Dear [Member];\""""),
-            format_for_model(
-                f"""Given the following medical reviewer findings:
-
-{findings}{treatment_extra}{diagnosis_extra}
-                Compose an initial rejection letter on behalf of the insurance company in response to a patient's request for medical coverage. Include specific details about the patient's case, addressing the reasons for denial without referencing any independent medical review findings. Ensure the letter is concise, professional, and clearly communicates the grounds for the denial. Focus on policy justifications, eligibility criteria, medical necessity, or any other relevant factors that would lead to the initial rejection. Omit any mention of the independent medical reviewers' assessments or findings as those happend later in the process.""")
-        ],
-        "appeal": [
-            format_for_model(
-                f"""The independent medical review findings were {findings} and grounds for denial were {grounds}.{treatment_extra} In your response you are writing on your own on behalf (not that of a doctors office) and you do not have any credentials. Do not include any reference to the reviewers or their findings. Use this information to write the original appeal by the patient. Keep in mind the denial would be written before the appeal. Remember you are writing for yourself, not on behalf of anyone else. If any studies or guidelines support the medical necessity include them. Feel free to be verbose and start your appeal with Dear [Insurance Company];"""),
-            format_for_model(
-                f"""Given the following medical reviewer findings:\n{findings}{treatment_extra}{diagnosis_extra}\n Do not include any information about the reviewers' findings. Instead, consider the patient's personal experience, medical history, and reasons for seeking the requested medical coverage. Craft the appeal to express the patient's perspective and emphasize their need for the requested medical intervention without referencing the independent medical review outcomes. Omit any mention of the independent medical reviewers' assessments or findings as those happend later in the process. Feel free to be verbose and write in the style of patio11 or a bureaucrat like sir humphrey appleby. Remember you are writing for yourself, not on behalf of anyone else. If any studies or guidelines from the reviewers support the medical necessity include them."""),
-        ],
-        "medically_necessary": [
-            format_for_model(
-                f"""Given the following medical review findings: {findings} and grounds for denial were {grounds}.{treatment_extra}. Why was the treatment considered medically necessary? Don't refer to the reviewers findings directly instead write in a general fashion. For example if the reviewers found that facial feminization surgery was needed to treat gender dysphoria based on WPATH guidelines you would write something like: Facial feminization surgery is medically necessary for gender dysphoria per the WPATH guidelines. Do not refer to the reviewers qualifications or the reviewers themselves directly. If any studies or guidelines are referenced that support the medical necessity include them but don't make up new ones. Be concise (each word costs $200) and remember do not mention the reviewers."""),
-        ],
-        "studies": [
-            format_for_model(
-                f"""What studies/references are mentioned in {findings}?  Be concise (each word costs $2000) and do not mention the reviewers, if none say NONE. Provide each reference as a bullet on a new line. If an article is not explicilty mentioned by name in the source text above do not include it. Including an incorrect journal could result in someone not getting health care. If there is a journal article referenced but not by name or by auhtor write just the name of the journal don't guess. Remember be concise leave out things like \"the case summary mentions\" or anything that is not the references (like the final decision) -- just provide bulleted list of the references."""),
-        ],
-        "patient_history": [
-            format_for_model(
-                f"""Given the following medical review findings: {findings}{treatment_extra}. What were relevant factors of the patients history? Don't refer to the reviewers findings directly instead write in a general fashion. For example if the reviewers found the patient needed a brand name drug because the generics did not work you would write something like: Previous treatments including the frontline #nameofdrug# were not effective. Do not refer to the reviewers qualifications or the reviewers themselves directly. If you don't know write NONE or UNKNOWN. It's expected you won't have a full history so only write NONE or UNKNOWN if you can't extract any relevant history."""),
-        ],
-        "reason_for_denial": [
-            format_for_model(f"""Given the following medical review findings:  {findings} and grounds for denial were {grounds}.{treatment_extra}. What excuse did the insurance company use to deny the treatment? Some common reasons are medical necessary, STEP treatment required, experimental treatments, or a procedure being considered cosmetic. These are just examples though, insurance companies can deny care for many reasons. What was the reason here? Be concise and do not mention reviewer findings. Please summarize.""")
-        ],
-        "treatment": [
-            format_for_model(
-                f"""Based on the independent review findings: {findings}{treatment_extra}{diagnosis_extra}. You do not need to stick to our initial guess. Be consise. For example if the treatment was LINX just write LINX. What was the treatment, procedure, therapy, or surgery denied?""")
-        ],
-        "diagnosis": [
-            format_for_model(
-                f"""Based on the independent review findings: {findings}{treatment_extra}{diagnosis_extra}. You do not need to stick to our initial guess. Be consise, for example if the diagnosis was gastroesophageal reflux disease just write gastroesophageal reflux disease. What was the diagnosis (or NONE if there was none)?""")
-        ]
-    }
-
-    known = {}
-    if not is_unknown(treatment):
-        del prompts["treatment"]
-        known["treatment"] = treatment
-    if not is_unknown(diagnosis):
-        del prompts["diagnosis"]
-        known["diagnosis"] = diagnosis
-    if not is_unknown(grounds):
-        del prompts["reason_for_denial"]
-        known["reason_for_denial"] = grounds
-    if not has_journal(grounds):
-        del prompts["studies"]
-
-    return (index, prompts, known)
 
 def work_with_generative_remote():
-    backend = os.getenv("BACKEND_PROVIDER",
-                        "https://api.perplexity.ai/chat/completions")
-    print(f"Using backend {backend}")
-    # Perplexity is an interesting backend for personal use.
-    # The inference costs are a little high though for full training data
-    # creation so look for whoever is cheapest when running in prod.
-    # deepinfra was cheap when working on this last. Always check TOS
-    # See https://artificialanalysis.ai/
-    url = backend
-
-    token = None
-    if backend == "https://api.perplexity.ai/chat/completions":
-        token = os.getenv("PERPLEXITY_API")
-    else:
-        token = os.getenv("SECRET_BACKEND_TOKEN")
-    if backend == "https://api.deepinfra.com/v1/openai":
-        token = os.getenv("DEEPINFRA_API")
-    if token is None:
-        raise Exception("Error no Token provided for inference.")
-
-    @backoff.on_exception(
-        backoff.expo, requests.exceptions.RequestException, max_time=600
-    )
-    def make_request(model, prompt, previous_response=None, error=None):
-        time.sleep(random.randint(0, 4))
-        messages = [{"role": "user", "content": prompt}]
-        if previous_response is not None:
-            messages.extend(
-                [{"role": "assistant", "content": previous_response},
-                 {"role": "user", "content": f"Please do better {error}"},
-                 ]
-                 )
-        payload = {
-            "model": model,
-            "messages": messages,
-        }
-        headers = {
-            "accept": "application/json",
-            "content-type": "application/json",
-            "Authorization": f"Bearer {token}",
-        }
-
-        print(f"Making request for {model} and {prompt}")
-        response = requests.post(url, json=payload, headers=headers)
-        response.raise_for_status()
-
-        response_text = response.json()["choices"][0]["message"]["content"]
-        print(f"Promxspt: {prompt}\nResponse text: {response_text}")
-        return response_text
-
     # Note: when adding models make sure to add to the end of the list so that
     # we apply the new model to the old records.
-    models = [
-        #("mistral-7b-instruct", 0),
-        #("openhermes-2-mistral-7b", 1),
-        #("mistralai/Mixtral-8x7B-Instruct-v0.1", 3)
-#        ("mixtral-8x7b-instruct", 3),
-        #("mixtral-8x22b-instruct", 4),
-        #("dbrx-instruct", 5),
-#        ("llama-3.1-70b-instruct", 6),
-        ("nvidia/Llama-3.1-Nemotron-70B-Instruct", 60),
-    ]
 
     print("Generating prompts...")
     l = imrs.apply(generate_prompts, axis=1).tolist()
@@ -308,7 +61,10 @@ def work_with_generative_remote():
             if m is None:
                 print("Skipping disabled model.")
                 continue
-            for response_type in r[1].keys():
+            results = {}
+            for response_type in prompt_order:
+                if response_type not in r[1]:
+                    continue
                 i = 0
                 for v in r[1][response_type]:
                     target_file = join(
@@ -316,16 +72,21 @@ def work_with_generative_remote():
                     i = i + 1
 #                    if not os.path.exists(target_file) and (response_type != "appeal" or not check_for_bad_file(response_type, response)):
                     if not os.path.exists(target_file) or check_for_bad_file(response_type, target_file):
+                        # Sub in previous responses
+                        if "#" in v:
+                            for prev in results.keys():
+                                v = v.replace(f"#{prev}#", results[prev])
                         response = make_request(m, v)
                         # If we find an invalid url ask the model to go again
                         if check_for_invalid_urls(response):
                             bad_urls = list_invalid_urls(response)
                             error = f"You referenced some invalid urls {bad_urls}."
                             response = make_request(m, v, response, error)
-                        bad_results = check_for_bad_and_return_result(response_type, data)
+                        bad_results = check_for_bad_and_return_result(response_type, response)
                         if len(bad_results) > 0:
-                            error = f"You referenced {bad_results} don't do that your writing as if it was before the reviewers looked."
+                            error = f"You referenced {bad_results} don't do that your writing as if it was before the reviewers looked & don't make up any references which are not in the input."
                             response = make_request(m, v, response, error)
+                        results[response_type] = response
                         if not check_for_bad(response_type, response):
                             print(f"Writing out to {target_file}")
                             with open(target_file, "w") as f:
@@ -333,114 +94,9 @@ def work_with_generative_remote():
                         else:
                             print(f"Bad response {response} skipping for now")
                     else:
+                        with open(target_file) as x: results[response_type] = x.read()
                         print(
                             f"We already good data for {target_file} skipping..")
-
-
-def work_with_generative_local():
-    # Load the model to do our magic
-
-    candidate_models = [
-        #        "ausboss/llama-30b-supercot",
-        #        "CalderaAI/30B-Lazarus",
-        #        "tiiuae/falcon-40b-instruct",
-        #("mistralai/Mixtral-8x7B-Instruct-v0.1", 3),
-        #        "teknium/OpenHermes-2-Mistral-7B",
-        #        "TheBloke/OpenHermes-2-Mistral-7B-GPTQ",
-        #        ("mistralai/Mistral-7B-v0.1", 0)
-        #        "databricks/dolly-v2-12b",
-        #        "databricks/dolly-v2-7b",
-        #        "databricks/dolly-v2-3b",
-        ("llama-3.1-70b-instruct", 6),
-    ]
-
-    # We load the model first to make sure we can actually do magic
-    instruct_pipeline = None
-
-    for (model, model_index) in candidate_models:
-        mistr = ""
-        if model_index > 0:
-            mistr = f"{model_index}-"
-        try:
-            tokenizer = AutoTokenizer.from_pretrained(model)
-            print(f"Loading {model}\n")
-            if args.small_gpu:
-                instruct_pipeline = pipeline(
-                    model=model,
-                    tokenizer=tokenizer,
-                    eos_token_id=tokenizer.eos_token_id,
-                    torch_dtype=torch.bfloat16,
-                    trust_remote_code=True,
-                    model_kwargs={"load_in_8bit": True},
-                    device_map="auto",
-                    max_new_tokens=1124,
-                )
-            else:
-                instruct_pipeline = pipeline(
-                    model=model,
-                    tokenizer=tokenizer,
-                    eos_token_id=tokenizer.eos_token_id,
-                    top_k=10,
-                    torch_dtype=torch.bfloat16,
-                    trust_remote_code=True,
-                    device_map="auto",
-                    max_new_tokens=1124,
-                )
-            break
-        except Exception as e:
-            print(f"Error {e} loading {model}")
-
-    if instruct_pipeline is None:
-        raise Exception("Could not load any model")
-
-    print("Generating prompts...")
-    l = imrs.apply(generate_prompts_instruct, axis=1).tolist()
-    batch_size = 20
-
-    for b in range(0, len(l), batch_size):
-        print(f"Running batch {b}")
-        batch = l[b: b + batch_size]
-
-        for k in batch[0].keys():
-            mybatch = list(map(lambda x: x[k], batch))
-            c = 0
-            start_idxs = []
-            prompts = []
-            for idx, batch_prompts in mybatch:
-                start_idxs += [c]
-                c = c + len(batch_prompts)
-                prompts += batch_prompts
-
-            try:
-                print(f"Computing {len(prompts)} prompts :) {prompts}")
-                results = list(map(extract_text, instruct_pipeline(prompts)))
-            except Exception as e:
-                print(f"Error with {e}")
-                break
-
-            print(f"Got back {len(results)}")
-            ci = 0
-
-            for idx, batch_prompts in mybatch:
-                start = start_idxs[ci]
-                ci = ci + 1
-                i = 3
-                local_results = results[start: start + len(batch_prompts)]
-                for r in local_results:
-                    if r is None:
-                        continue
-                    i = i + 1
-                    if not check_for_bad(response_type, r):
-                        print(
-                            f"Writing out to {idx}MAGIC{mistr}{i}{response_type}.txt")
-                        with open(
-                            join(
-                                gen_loc, f"{idx}MAGIC{mistr}{i}{response_type}.txt"), "w"
-                        ) as f:
-                            f.write(r)
-                    else:
-                        print(
-                            f"Skipping, found bad data in {r} for rt {response_type}")
 
 
 def work_with_biogpt():
