@@ -1,3 +1,7 @@
+# Health Insurance LLM
+
+This is the tooling used to generate early versions of the Fight Health Insurance LLM model. There is currently a private fork of this while we work on integrating live feedback data but this repo serves as a potential collaboration point.
+
 ## Inspiration
 
 One too many health insurance rejections. In America most of us pay a lot for our health insurance, but often get our claims denied on the grounds of "medical necessity", which is (in my opinion) frequently just an excuse for "I don't want to pay for this." This is especially common for folks with chronic or who fall outside of what is considered "normal."
